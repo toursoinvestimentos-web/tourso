@@ -307,67 +307,51 @@
     function toNum(v) { return v ? parseFloat(String(v).replace(',','.')) : 0; }
     function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
-    // ---- API multi-fonte ----
-    async function fetchUrl(url, ms) {
-        const c = new AbortController();
-        const t = setTimeout(() => c.abort(), ms);
-        try { const r = await fetch(url,{signal:c.signal}); clearTimeout(t); return r; }
-        catch(e) { clearTimeout(t); throw e; }
-    }
-
-    async function buscarPreco(ticker) {
-        const semSA = ticker.replace('.SA','');
-
-        // 1) brapi.dev — nativo BR, sem proxy, confiável
-        try {
-            const r = await fetchUrl(`https://brapi.dev/api/quote/${semSA}?token=demo`, 7000);
-            const j = await r.json();
-            const p = j?.results?.[0]?.regularMarketPrice;
-            if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
-        // 2) Yahoo query1 via AllOrigins
-        try {
-            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
-            const r   = await fetchUrl(url, 7000);
-            const j   = await r.json();
-            const d   = JSON.parse(j.contents);
-            const p   = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
-        // 3) Yahoo query2 via AllOrigins
-        try {
-            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
-            const r   = await fetchUrl(url, 7000);
-            const j   = await r.json();
-            const d   = JSON.parse(j.contents);
-            const p   = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
-            if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
-        return null;
-    }
-
-    async function buscarCotacao() {
-        if (_buscando) return;
-        _buscando = true;
-
-        const p = await buscarPreco('BBAS3.SA');
-        if (p !== null) {
-            cotacaoAcao = p;
-            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
-            document.getElementById('status-bolinha').style.background = '#00e676';
-        } else {
-            document.getElementById('status-bolinha').style.background = '#f1c40f';
+    // ---- API UNIFICADA (GOOGLE FINANCE) ----
+async function buscarPreco(ticker) {
+    const cod = ticker.replace('.SA', '');
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.google.com/search?q=BVMF:' + cod)}`;
+    
+    try {
+        const r = await fetch(url);
+        const j = await r.json();
+        const html = j.contents;
+        
+        // Captura o preço no HTML do Google
+        const match = html.match(/data-value="([\d.]+)"/) || html.match(/<span>R\$\s?([\d,.]+)/);
+        
+        if (match) {
+            let p = match[1].replace(',', '.');
+            return parseFloat(parseFloat(p).toFixed(2));
         }
+    } catch (e) { console.log("Erro de sinal: " + cod); }
+    return null;
+}
 
-        const cod = dados.setup?.codigoOpcao?.trim();
-        if (cod) cotacaoOpcao = await buscarPreco(cod + '.SA');
+async function buscarCotacao() {
+    if (_buscando) return;
+    _buscando = true;
 
-        _buscando = false;
-        atualizarTela();
+    // Busca ação principal
+    const p = await buscarPreco('BBAS3');
+    if (p !== null) {
+        cotacaoAcao = p;
+        document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
+        document.getElementById('status-bolinha').style.background = '#00e676';
+    } else {
+        document.getElementById('status-bolinha').style.background = '#f1c40f';
     }
+
+    const cod = dados.setup?.codigoOpcao?.trim();
+    // BUSCA OPÇÃO SEM O .SA PARA O GOOGLE ENCONTRAR
+    if (cod) {
+        const pOpcao = await buscarPreco(cod);
+        if (pOpcao !== null) cotacaoOpcao = pOpcao;
+    }
+
+    _buscando = false;
+    atualizarTela();
+}
 
     // ---- Monitor ----
     function atualizarMonitor() {
