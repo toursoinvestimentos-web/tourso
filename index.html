@@ -18,8 +18,8 @@
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .input-ninja { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; border: none; cursor: pointer; z-index: 2; }
         .digitando { color: var(--ciano) !important; font-size: 1.3em !important; font-weight: 900 !important; }
-        .area-botoes-inferior { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 400px; margin-top: 30px; }
-        .btn-discreto { background: none; border: 1px solid #555; color: #555; font-size: 0.65em; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .area-botoes-inferior { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; max-width: 400px; margin-top: 30px; }
+        .btn-discreto { background: none; border: 1px solid #555; color: #555; font-size: 0.6em; padding: 8px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -73,8 +73,10 @@
     <button class="btn-acao" onclick="abrirCompra()">EFETIVAR COMPRA DO CAIXA</button>
     
     <div class="area-botoes-inferior">
-        <button onclick="exportar()" class="btn-discreto">BACKUP DADOS</button>
-        <button onclick="limparTudo()" class="btn-discreto">ZERAR APLICATIVO</button>
+        <button onclick="exportar()" class="btn-discreto">SALVAR BACKUP</button>
+        <button onclick="document.getElementById('input-file').click()" class="btn-discreto">LER BACKUP</button>
+        <button onclick="limparTudo()" class="btn-discreto">ZERAR TUDO</button>
+        <input type="file" id="input-file" style="display:none" onchange="importar(this)">
     </div>
 
     <script>
@@ -85,19 +87,16 @@
 
         async function buscarCotacao() {
             try {
-                // Nova fonte de dados mais estável para GitHub Pages
                 const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BBAS3.SA'));
                 const json = await response.json();
                 const d = JSON.parse(json.contents);
                 const preco = d.chart.result[0].meta.regularMarketPrice;
-                
                 if(preco) {
                     cotacaoGlobal = preco;
                     document.getElementById('txt-cotacao').innerText = cotacaoGlobal.toFixed(2).replace('.', ',');
                     document.getElementById('status-bolinha').style.background = '#00e676';
                 }
             } catch (e) {
-                console.log("Erro na cotação real. Usando fallback.");
                 document.getElementById('status-bolinha').style.background = '#f1c40f';
             }
             atualizarTela();
@@ -167,8 +166,19 @@
             a.click();
         }
 
+        function importar(input) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                try {
+                    dados = JSON.parse(reader.result);
+                    atualizarTela();
+                    alert("Backup restaurado com sucesso, TOURSO!");
+                } catch(e) { alert("Erro ao ler o arquivo de backup."); }
+            };
+            reader.readAsText(input.files[0]);
+        }
+
         buscarCotacao();
-        // Atualiza a cada 5 minutos
         setInterval(buscarCotacao, 300000);
     </script>
 </body>
