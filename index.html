@@ -56,27 +56,28 @@
         .btn-salvar { background: var(--ciano); color: var(--fundo); }
         .btn-cancelar { background: #444; color: var(--branco); }
 
+        /* Pilares */
+        .camada-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+        .camada-row:first-child { border-bottom: 1px solid #555; padding-bottom: 8px; margin-bottom: 4px; }
+        .camada-label-small { font-size: 0.7em; color: #aaa; }
+        .camada-valor-small { font-size: 0.95em; font-weight: bold; }
+        .pilar-btns { display: flex; gap: 6px; margin-top: 10px; }
+        .pilar-btn-mini { flex: 1; padding: 8px 0; border-radius: 6px; border: none; font-size: 0.68em; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-guardar   { background: #444; color: var(--branco); }
+        .btn-transferir{ background: var(--ciano); color: var(--fundo); }
+
         /* Monitor */
         .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 10px 0 4px; position: relative; overflow: visible; }
-        .barra-fill { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
+        .barra-fill   { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
         .barra-marker { position: absolute; top: -2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--branco); transition: left 0.6s, background 0.5s; transform: translateX(-50%); }
         .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .monitor-item { background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; }
         .monitor-item-label { font-size: 0.63em; color: #aaa; text-transform: uppercase; }
-        .monitor-item-val { font-size: 1em; font-weight: bold; margin-top: 3px; }
+        .monitor-item-val   { font-size: 1em; font-weight: bold; margin-top: 3px; }
         .monitor-phrase { font-size: 0.82em; font-weight: bold; margin-top: 10px; text-align: center; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.25); }
-
-        #banner-install { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--ciano); color: var(--fundo); padding: 14px 20px; z-index: 200; align-items: center; justify-content: space-between; font-weight: bold; font-size: 0.9em; }
-        #banner-install.visivel { display: flex; }
-        #banner-install button { background: var(--fundo); color: var(--ciano); border: none; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <div id="banner-install">
-        <span>📲 Instalar TOURSO como app</span>
-        <button onclick="instalarApp()">INSTALAR</button>
-    </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:400px; margin-bottom:15px;">
         <svg width="95" height="47" viewBox="0 0 400 220">
@@ -126,13 +127,33 @@
     <div class="pilar-grid">
         <div class="pilar-card">
             <div class="pilar-label" style="margin-bottom:10px;">Troco/Troca</div>
-            <div id="troco-cofre" style="color:var(--alta); font-weight:bold;">R$ 0,00</div>
-            <button class="btn-discreto" style="width:100%; margin-top:5px;" onclick="abrirAcao('troco','guardar')">Guardar</button>
+            <div class="camada-row">
+                <span class="camada-label-small">💰 Cofre</span>
+                <span class="camada-valor-small" id="troco-cofre" style="color:var(--alta);">R$ 0,00</span>
+            </div>
+            <div class="camada-row">
+                <span class="camada-label-small">📤 Enviado</span>
+                <span class="camada-valor-small" id="troco-transferido" style="color:var(--ciano);">R$ 0,00</span>
+            </div>
+            <div class="pilar-btns">
+                <button class="pilar-btn-mini btn-guardar" onclick="abrirAcao('troco','guardar')">Guardar</button>
+                <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('troco','enviar')">Enviar</button>
+            </div>
         </div>
         <div class="pilar-card">
             <div class="pilar-label" style="margin-bottom:10px;">Aportes</div>
-            <div id="aportes-cofre" style="color:var(--alta); font-weight:bold;">R$ 0,00</div>
-            <button class="btn-discreto" style="width:100%; margin-top:5px;" onclick="abrirAcao('aportes','guardar')">Guardar</button>
+            <div class="camada-row">
+                <span class="camada-label-small">💰 Cofre</span>
+                <span class="camada-valor-small" id="aportes-cofre" style="color:var(--alta);">R$ 0,00</span>
+            </div>
+            <div class="camada-row">
+                <span class="camada-label-small">📤 Enviado</span>
+                <span class="camada-valor-small" id="aportes-transferido" style="color:var(--ciano);">R$ 0,00</span>
+            </div>
+            <div class="pilar-btns">
+                <button class="pilar-btn-mini btn-guardar" onclick="abrirAcao('aportes','guardar')">Guardar</button>
+                <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('aportes','enviar')">Enviar</button>
+            </div>
         </div>
     </div>
 
@@ -148,30 +169,12 @@
     <div class="modal-overlay" id="modal-setup">
         <div class="modal-box">
             <h3>⚙️ Configurar Venda Coberta</h3>
-            <div class="modal-campo">
-                <label>Código da Opção</label>
-                <input type="text" id="inp-codigo" placeholder="Ex: BBASE264" style="text-transform:uppercase">
-            </div>
-            <div class="modal-campo">
-                <label>Quantidade de Ações</label>
-                <input type="number" id="inp-qtd" placeholder="Ex: 100">
-            </div>
-            <div class="modal-campo">
-                <label>Preço de Entrada (R$)</label>
-                <input type="text" id="inp-entrada" placeholder="Ex: 24,50">
-            </div>
-            <div class="modal-campo">
-                <label>Valor do Strike (R$)</label>
-                <input type="text" id="inp-strike" placeholder="Ex: 27,00">
-            </div>
-            <div class="modal-campo">
-                <label>Data Vencimento</label>
-                <input type="date" id="inp-vencimento">
-            </div>
-            <div class="modal-campo">
-                <label>Prêmio Recebido (R$)</label>
-                <input type="text" id="inp-premio" placeholder="Ex: 1,00">
-            </div>
+            <div class="modal-campo"><label>Código da Opção</label><input type="text" id="inp-codigo" style="text-transform:uppercase"></div>
+            <div class="modal-campo"><label>Quantidade</label><input type="number" id="inp-qtd"></div>
+            <div class="modal-campo"><label>Preço de Entrada (R$)</label><input type="text" id="inp-entrada"></div>
+            <div class="modal-campo"><label>Strike (R$)</label><input type="text" id="inp-strike"></div>
+            <div class="modal-campo"><label>Vencimento</label><input type="date" id="inp-vencimento"></div>
+            <div class="modal-campo"><label>Prêmio por Ação (R$)</label><input type="text" id="inp-premio"></div>
             <div class="modal-btns">
                 <button class="btn-cancelar" onclick="fecharSetup()">Cancelar</button>
                 <button class="btn-salvar" onclick="salvarSetup()">Salvar</button>
@@ -179,12 +182,24 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-acao">
+        <div class="modal-box">
+            <h3 id="modal-acao-titulo">Ação</h3>
+            <div class="modal-campo"><label>Valor (R$)</label><input type="text" id="modal-acao-input"></div>
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharAcao()">Cancelar</button>
+                <button class="btn-salvar" onclick="confirmarAcao()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
     const CHAVE = 'dados_tourso_v3';
-    const BASE = { acoes:[], caixaDisponivel:0, troco:{cofre:0}, aportes:{cofre:0}, setup:{codigoOpcao:'',qtdAcoes:0,precoEntrada:0,strike:0,vencimento:'',premioRecebido:0} };
+    const BASE = { acoes:[], caixaDisponivel:0, troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0}, setup:{codigoOpcao:'',qtdAcoes:0,precoEntrada:0,strike:0,vencimento:'',premioRecebido:0} };
     let dados = JSON.parse(localStorage.getItem(CHAVE)) || JSON.parse(JSON.stringify(BASE));
-    let cotacaoAcao = 0;
+    let cotacaoAcao = 25.00;
     let cotacaoOpcao = null;
+    let _acaoAtiva = {};
     let _buscando = false;
 
     function fmt(n) { return 'R$ ' + parseFloat(n||0).toFixed(2).replace('.',','); }
@@ -192,7 +207,6 @@
     function toNum(v) { return v ? parseFloat(String(v).replace(',','.')) : 0; }
     function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
-    // NOVO MOTOR GOOGLE
     async function buscarPreco(ticker) {
         const cod = ticker.replace('.SA', '');
         const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.google.com/search?q=BVMF:' + cod)}`;
@@ -212,20 +226,19 @@
     async function buscarCotacao() {
         if (_buscando) return;
         _buscando = true;
-        
-        const pAcao = await buscarPreco('BBAS3');
-        if (pAcao) {
-            cotacaoAcao = pAcao;
+        const p = await buscarPreco('BBAS3');
+        if (p) {
+            cotacaoAcao = p;
             document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
             document.getElementById('status-bolinha').style.background = '#00e676';
+        } else {
+            document.getElementById('status-bolinha').style.background = '#f1c40f';
         }
-
-        const codOp = dados.setup?.codigoOpcao?.trim();
-        if (codOp) {
-            const pOp = await buscarPreco(codOp);
-            if (pOp) cotacaoOpcao = pOp;
+        const cod = dados.setup?.codigoOpcao?.trim();
+        if (cod) {
+            const po = await buscarPreco(cod);
+            if (po) cotacaoOpcao = po;
         }
-
         _buscando = false;
         atualizarTela();
     }
@@ -234,18 +247,16 @@
         const s = dados.setup;
         const el = document.getElementById('monitor-conteudo');
         const card = document.getElementById('card-monitor');
-        document.getElementById('header-opcao').innerText = s.codigoOpcao || '— sem setup —';
-
+        document.getElementById('header-opcao').innerText = s.codigoOpcao ? s.codigoOpcao.toUpperCase() : '— sem setup —';
         if (!s.codigoOpcao || !s.precoEntrada || !s.strike) return;
 
         const dist = ((s.strike - cotacaoAcao) / cotacaoAcao) * 100;
         const posPct = Math.min(Math.max(((cotacaoAcao - s.precoEntrada)/(s.strike - s.precoEntrada))*100, 0), 100);
-        
-        let cor = dist < 5 ? '#f1c40f' : (cotacaoAcao >= s.strike ? 'var(--queda)' : 'var(--alta)');
+        let cor = cotacaoAcao >= s.strike ? 'var(--queda)' : (dist < 5 ? '#f1c40f' : 'var(--alta)');
         card.style.borderLeftColor = cor;
 
         el.innerHTML = `
-            <div style="display:flex; justify-content:space-between; font-size:0.8em;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8em; margin-bottom:6px;">
                 <span>Entrada: <b>${fmt(s.precoEntrada)}</b></span>
                 <span>Strike: <b>${fmt(s.strike)}</b></span>
             </div>
@@ -264,22 +275,61 @@
         const q = dados.acoes.reduce((a,x)=>a+x.qtd, 0);
         const c = dados.acoes.reduce((a,x)=>a+(x.qtd*x.preco), 0);
         const pm = q > 0 ? c/q : 0;
-        document.getElementById('total-acoes-valor').innerText = fmt(q * cotacaoAcao);
+        const val = q * cotacaoAcao;
+        const rent = pm > 0 ? ((cotacaoAcao - pm)/pm)*100 : 0;
+
+        document.getElementById('total-acoes-valor').innerText = fmt(val);
         document.getElementById('qtd-total').innerText = q;
         document.getElementById('pm-oficial').innerText = fmt(pm);
+        document.getElementById('rent-tag').innerText = fmtP(rent);
+        document.getElementById('rent-tag').style.color = rent>=0 ? 'var(--alta)' : 'var(--queda)';
         document.getElementById('saldo-caixa').innerText = fmt(dados.caixaDisponivel);
-        document.getElementById('pode-comprar').innerText = `Pode comprar +${Math.floor(dados.caixaDisponivel/cotacaoAcao || 0)} ações`;
+        document.getElementById('pode-comprar').innerText = `Pode comprar +${Math.floor(dados.caixaDisponivel/cotacaoAcao)} ações BBAS3`;
         document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
+        document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
         document.getElementById('aportes-cofre').innerText = fmt(dados.aportes.cofre);
+        document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
         atualizarMonitor();
         salvar();
     }
 
-    function abrirSetup() { document.getElementById('modal-setup').classList.add('ativo'); }
+    function abrirAcao(tipo, acao) {
+        _acaoAtiva = { tipo, acao };
+        document.getElementById('modal-acao-titulo').innerText = acao === 'guardar' ? 'Guardar no Cofre' : 'Enviar para Investimento';
+        document.getElementById('modal-acao-input').value = '';
+        document.getElementById('modal-acao').classList.add('ativo');
+    }
+    function fecharAcao() { document.getElementById('modal-acao').classList.remove('ativo'); }
+    function confirmarAcao() {
+        const val = toNum(document.getElementById('modal-acao-input').value);
+        if (val > 0) {
+            const { tipo, acao } = _acaoAtiva;
+            if (acao === 'guardar') {
+                dados[tipo].cofre += val;
+            } else if (val <= dados[tipo].cofre) {
+                dados[tipo].cofre -= val;
+                dados[tipo].transferido += val;
+                dados.caixaDisponivel += val;
+            }
+        }
+        fecharAcao();
+        atualizarTela();
+    }
+
+    function abrirSetup() {
+        const s = dados.setup;
+        document.getElementById('inp-codigo').value = s.codigoOpcao;
+        document.getElementById('inp-qtd').value = s.qtdAcoes;
+        document.getElementById('inp-entrada').value = s.precoEntrada.toFixed(2).replace('.',',');
+        document.getElementById('inp-strike').value = s.strike.toFixed(2).replace('.',',');
+        document.getElementById('inp-vencimento').value = s.vencimento;
+        document.getElementById('inp-premio').value = s.premioRecebido.toFixed(2).replace('.',',');
+        document.getElementById('modal-setup').classList.add('ativo');
+    }
     function fecharSetup() { document.getElementById('modal-setup').classList.remove('ativo'); }
     function salvarSetup() {
         dados.setup = {
-            codigoOpcao: document.getElementById('inp-codigo').value.toUpperCase(),
+            codigoOpcao: document.getElementById('inp-codigo').value.toUpperCase().trim(),
             qtdAcoes: parseInt(document.getElementById('inp-qtd').value) || 0,
             precoEntrada: toNum(document.getElementById('inp-entrada').value),
             strike: toNum(document.getElementById('inp-strike').value),
@@ -291,29 +341,27 @@
         buscarCotacao();
     }
 
-    function abrirAcao(t, a) {
-        let v = toNum(prompt("Valor (R$):"));
-        if (v > 0) { dados[t].cofre += v; atualizarTela(); }
-    }
-
     function abrirCompra() {
-        let q = parseInt(prompt("Qtd:"));
-        let p = toNum(prompt("Preço:"));
+        const q = prompt("Qtd:");
+        const p = prompt("Preço:");
         if (q && p) {
-            dados.acoes.push({qtd:q, preco:p});
-            dados.caixaDisponivel -= (q*p);
+            dados.acoes.push({qtd:parseInt(q), preco:toNum(p)});
+            dados.caixaDisponivel -= (parseInt(q) * toNum(p));
             atualizarTela();
         }
     }
-
     function exportar() {
-        const blob = new Blob([JSON.stringify(dados)],{type:'application/json'});
+        const blob = new Blob([JSON.stringify(dados)], {type:'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `TOURSO_BACKUP.json`;
+        a.download = 'TOURSO_BACKUP.json';
         a.click();
     }
-
+    function importar(input) {
+        const r = new FileReader();
+        r.onload = () => { dados = JSON.parse(r.result); atualizarTela(); };
+        r.readAsText(input.files[0]);
+    }
     function limparTudo() { if(confirm("Zerar tudo?")) { localStorage.clear(); location.reload(); } }
 
     atualizarTela();
