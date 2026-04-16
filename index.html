@@ -232,33 +232,34 @@ window.addEventListener('appinstalled', () => { document.getElementById('banner-
 function instalarApp() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('banner-install').classList.remove('visivel'); }); }
 
 // ============================================================
-// CONFIGURAÇÃO DA API  ← única mudança de fundo desta versão
+// FONTES DE DADOS
 // ============================================================
-const BRAPI_TOKEN = '15bx8g3TjdaxDdpJHi1dzk';
+const BRAPI_TOKEN   = '15bx8g3TjdaxDdpJHi1dzk';
 
-// Busca qualquer ticker na brapi.dev com o token — funciona para
-// ações (BBAS3) E opções (BBASB270, BBAS264, etc.)
-async function buscarPreco(ticker) {
-    const semSA = ticker.replace('.SA','').toUpperCase().trim();
+// URL pública CSV da sua planilha Google Sheets
+// Célula C4 = linha 4 (índice 3), coluna C (índice 2)
+const PLANILHA_CSV  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?output=csv';
+const OPCAO_LINHA   = 3; // índice 0 → linha 4 da planilha
+const OPCAO_COLUNA  = 2; // índice 0 → coluna C da planilha
+
+// ---- Busca BBAS3 via brapi (com token) ----
+async function buscarPrecoAcao() {
     try {
         const ctrl = new AbortController();
-        const t    = setTimeout(() => ctrl.abort(), 8000);
-        const res  = await fetch(
-            `https://brapi.dev/api/quote/${semSA}?token=${BRAPI_TOKEN}`,
-            { signal: ctrl.signal }
-        );
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const res  = await fetch(`https://brapi.dev/api/quote/BBAS3?token=${BRAPI_TOKEN}`, { signal: ctrl.signal });
         clearTimeout(t);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error();
         const json = await res.json();
-        const p    = json?.results?.[0]?.regularMarketPrice;
+        const p = json?.results?.[0]?.regularMarketPrice;
         if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-    } catch(e) { /* continua para fallback */ }
+    } catch(e) {}
 
-    // Fallback: Yahoo Finance via AllOrigins (para o caso da brapi falhar)
+    // Fallback Yahoo
     try {
         const ctrl = new AbortController();
-        const t    = setTimeout(() => ctrl.abort(), 8000);
-        const url  = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+semSA+'.SA')}`;
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BBAS3.SA')}`;
         const res  = await fetch(url, { signal: ctrl.signal });
         clearTimeout(t);
         const json = await res.json();
@@ -270,6 +271,39 @@ async function buscarPreco(ticker) {
     return null;
 }
 
+// ---- Busca opção via Google Sheets CSV (célula C4) ----
+async function buscarPrecoOpcaoPlanilha() {
+    try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 10000);
+        // Adiciona timestamp para evitar cache
+        const res = await fetch(PLANILHA_CSV + '&t=' + Date.now(), {
+            signal: ctrl.signal,
+            cache:  'no-store'
+        });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const texto = await res.text();
+
+        // Parseia o CSV linha por linha
+        const linhas = texto.split('\n');
+        if (linhas.length <= OPCAO_LINHA) throw new Error('Planilha sem dados suficientes');
+
+        // Divide a linha respeitando campos com aspas (padrão CSV)
+        const colunas = linhas[OPCAO_LINHA].split(',');
+        if (colunas.length <= OPCAO_COLUNA) throw new Error('Linha sem colunas suficientes');
+
+        // Limpa o valor: remove aspas, espaços, símbolo R$, troca vírgula por ponto
+        const raw  = colunas[OPCAO_COLUNA].replace(/"/g,'').replace(/R\$\s*/i,'').replace(/\s/g,'').replace(',','.');
+        const valor = parseFloat(raw);
+        if (!isNaN(valor) && valor > 0) return valor;
+        throw new Error(`Valor inválido na célula C4: "${raw}"`);
+    } catch(e) {
+        console.warn('Planilha:', e.message);
+        return null;
+    }
+}
+
 // ============================================================
 // Estado
 // ============================================================
@@ -278,9 +312,9 @@ const BASE  = { acoes:[], caixaDisponivel:0, troco:{cofre:0,transferido:0}, apor
 
 let dados = (() => {
     const v3 = localStorage.getItem(CHAVE);
-    if (v3) { const d = JSON.parse(v3); if (!d.setup) d.setup = {...BASE.setup}; if (!d.setup.metaSaida) d.setup.metaSaida = 85; return d; }
+    if (v3) { const d = JSON.parse(v3); if (!d.setup) d.setup={...BASE.setup}; if (!d.setup.metaSaida) d.setup.metaSaida=85; return d; }
     const v2 = localStorage.getItem('dados_tourso');
-    if (v2) { const o = JSON.parse(v2); return { acoes:o.acoes||[], caixaDisponivel:o.caixaDisponivel||0, troco:{cofre:o.caixa?.troco||0,transferido:0}, aportes:{cofre:o.caixa?.aportes||0,transferido:0}, setup:{...BASE.setup} }; }
+    if (v2) { const o=JSON.parse(v2); return { acoes:o.acoes||[], caixaDisponivel:o.caixaDisponivel||0, troco:{cofre:o.caixa?.troco||0,transferido:0}, aportes:{cofre:o.caixa?.aportes||0,transferido:0}, setup:{...BASE.setup} }; }
     return JSON.parse(JSON.stringify(BASE));
 })();
 if (!dados.setup)           dados.setup   = {...BASE.setup};
@@ -302,19 +336,19 @@ function toNum(v) { return v ? parseFloat(String(v).replace(',','.')) : 0; }
 function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
 // ============================================================
-// Busca cotações — ação + opção em paralelo
+// Busca cotações — ação via brapi, opção via planilha
 // ============================================================
 async function buscarCotacao() {
     if (_buscando) return;
     _buscando = true;
 
     const cod = dados.setup?.codigoOpcao?.trim();
-    const promessas = [buscarPreco('BBAS3')];
-    if (cod) promessas.push(buscarPreco(cod));
 
-    const resultados = await Promise.all(promessas);
-    const pAcao  = resultados[0];
-    const pOpcao = resultados[1] ?? null;
+    // Dispara ação e opção em paralelo
+    const [pAcao, pOpcao] = await Promise.all([
+        buscarPrecoAcao(),
+        cod ? buscarPrecoOpcaoPlanilha() : Promise.resolve(null)
+    ]);
 
     if (pAcao !== null) {
         cotacaoAcao = pAcao;
@@ -324,7 +358,7 @@ async function buscarCotacao() {
         document.getElementById('status-bolinha').style.background = '#f1c40f';
     }
 
-    if (cod) cotacaoOpcao = pOpcao;
+    if (cod) cotacaoOpcao = pOpcao; // null se planilha falhou
 
     _buscando = false;
     atualizarTela();
@@ -355,9 +389,9 @@ function atualizarMonitor() {
 
     let ganhoHTML = '', alertaSaida = '';
     if (cotacaoOpcao !== null) {
-        const desv  = ((prem - cotacaoOpcao) / prem) * 100;
-        const corG  = desv >= 0 ? 'var(--alta)' : 'var(--queda)';
-        const tot   = qtd > 0 ? ` &nbsp;|&nbsp; Lucro: <b>${fmt((prem - cotacaoOpcao) * qtd)}</b>` : '';
+        const desv = ((prem - cotacaoOpcao) / prem) * 100;
+        const corG = desv >= 0 ? 'var(--alta)' : 'var(--queda)';
+        const tot  = qtd > 0 ? ` &nbsp;|&nbsp; Lucro: <b>${fmt((prem - cotacaoOpcao) * qtd)}</b>` : '';
         ganhoHTML = `<div style="text-align:center; font-size:0.8em; margin-top:8px;">
             Desvalorização do prêmio: <b style="color:${corG}">${fmtP(desv)}</b>${tot}<br>
             Opção agora: <b>${fmt(cotacaoOpcao)}</b>
@@ -369,10 +403,10 @@ function atualizarMonitor() {
                 <b>SAIA DA OPERAÇÃO — inicie novo ciclo!</b>
             </div>`;
         } else if (prem > 0 && meta > 0) {
-            const prog     = Math.min((desv / meta) * 100, 100);
+            const prog      = Math.min((desv / meta) * 100, 100);
             const precoAlvo = parseFloat((prem * (1 - meta/100)).toFixed(2));
             ganhoHTML += `<div style="margin-top:6px; font-size:0.75em; color:#aaa; text-align:center;">
-                Meta de saída (${meta}%): opção precisa chegar em ${fmt(precoAlvo)} · Progresso: ${fmtP(prog)}
+                Meta (${meta}%): opção precisa chegar em ${fmt(precoAlvo)} · Progresso: ${fmtP(prog)}
             </div>`;
         }
     } else if (prem > 0) {
@@ -396,7 +430,7 @@ function atualizarMonitor() {
     let diasHTML = '';
     if (s.vencimento) {
         const dias = Math.ceil((new Date(s.vencimento+'T12:00:00') - new Date()) / 86400000);
-        diasHTML = `<div style="text-align:center; font-size:0.75em; color:#aaa; margin-top:4px;">⏱ ${dias > 0 ? dias + ' dias para vencer' : '⚠️ VENCIDA'}</div>`;
+        diasHTML = `<div style="text-align:center; font-size:0.75em; color:#aaa; margin-top:4px;">⏱ ${dias > 0 ? dias+' dias para vencer' : '⚠️ VENCIDA'}</div>`;
     }
     const corVar = varAc >= 0 ? 'var(--queda)' : 'var(--alta)';
 
@@ -476,7 +510,7 @@ function salvarSetup() {
 function abrirAcao(tipo, acao) {
     _acaoAtiva = { tipo, acao };
     const nomes = { troco:'Troco/Troca', aportes:'Aportes' };
-    document.getElementById('modal-acao-titulo').innerText = acao==='guardar' ? `💰 Guardar em ${nomes[tipo]}` : `📤 Enviar para Conta Investimento`;
+    document.getElementById('modal-acao-titulo').innerText = acao==='guardar'?`💰 Guardar em ${nomes[tipo]}`:`📤 Enviar para Conta Investimento`;
     document.getElementById('modal-acao-input').value = '';
     document.getElementById('modal-acao').classList.add('ativo');
 }
