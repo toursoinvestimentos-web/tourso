@@ -398,7 +398,8 @@ function atualizarMonitor() {
     const el   = document.getElementById('monitor-conteudo');
     const card = document.getElementById('card-monitor');
     const valorMostrar = cotacaoOpcao !== null ? `${cotacaoOpcao.toFixed(2).replace('.',',')}` : '—';
-document.getElementById('header-opcao').innerHTML = s.codigoOpcao ? `${s.codigoOpcao.toUpperCase()} R$ ${valorMostrar}` : '— sem setup —';
+const valorMostrar = (cotacaoOpcao !== null) ? cotacaoOpcao.toFixed(2).replace('.', ',') : '—';
+document.getElementById('header-opcao').innerHTML = valorMostrar;
     if (!s.codigoOpcao || !s.precoEntrada || !s.strike) {
         el.innerHTML = `<span style="color:#555;">Toque ⚙️ para configurar sua operação</span>`;
         card.style.borderLeftColor = '#444'; return;
