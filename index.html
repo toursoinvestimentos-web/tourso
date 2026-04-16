@@ -166,7 +166,7 @@
         <h3>⚙️ Configurar Venda Coberta</h3>
         <div class="modal-campo">
             <label>Código da Opção</label>
-            <input type="text" id="inp-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
+            <input type="text" id="inp-codigo" placeholder="Ex: BBASE264" style="text-transform:uppercase">
         </div>
         <div class="modal-campo">
             <label>Quantidade de Ações</label>
@@ -178,7 +178,7 @@
         </div>
         <div class="modal-campo">
             <label>Valor do Strike (R$)</label>
-            <input type="text" inputmode="decimal" id="inp-strike" placeholder="Ex: 27,00">
+            <input type="text" inputmode="decimal" id="inp-strike" placeholder="Ex: 26,25">
         </div>
         <div class="modal-campo">
             <label>Data de Vencimento</label>
@@ -186,7 +186,7 @@
         </div>
         <div class="modal-campo">
             <label>Prêmio Recebido por Ação (R$)</label>
-            <input type="text" inputmode="decimal" id="inp-premio" placeholder="Ex: 0,48">
+            <input type="text" inputmode="decimal" id="inp-premio" placeholder="Ex: 0,37">
             <small id="premio-total-hint" style="color:var(--ciano);"></small>
         </div>
         <div class="modal-campo">
@@ -357,31 +357,67 @@ async function buscarPreco(ticker) {
 }
 
 // ============================================================
-// Busca de Opções via OpLab (Focado em B3/Brasil)
+// FUNÇÃO CORRIGIDA PARA BUSCAR PREÇO DA OPÇÃO
 // ============================================================
 async function buscarPrecoOpcao(codigo) {
     if (!codigo) return null;
+    
     const ticker = codigo.toUpperCase().trim();
     
-    // Usamos o link direto da BBAS3 no OpLab para garantir o dado real
-    const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://opcoes.oplab.com.br/mercado/opcoes/BBAS3/' + ticker)}`;
+    // ============================================================
+    // FONTE 1: API direta da B3 (mais confiável para opções)
+    // ============================================================
+    try {
+        // Endpoint de cotações da B3 para opções
+        const urlB3 = `https://sistemaswebb3-listados.b3.com.br/listedCompaniesProxy/CompanyCall/GetQuote/${ticker}`;
+        const response = await fetchComTimeout(urlB3, 6000);
+        
+        if (response.ok) {
+            const texto = await response.text();
+            // Tenta parsear como JSON
+            try {
+                const json = JSON.parse(texto);
+                const preco = json?.lastPrice || json?.price || json?.last;
+                if (preco && !isNaN(preco)) {
+                    console.log(`✅ B3 API: ${ticker} = R$ ${preco}`);
+                    return parseFloat(parseFloat(preco).toFixed(2));
+                }
+            } catch(e) {
+                // Não era JSON, tenta regex
+                const match = texto.match(/"lastPrice":"?([0-9,.]+)"?/);
+                if (match) {
+                    const preco = parseFloat(match[1].replace(',', '.'));
+                    if (!isNaN(preco)) return preco;
+                }
+            }
+        }
+    } catch(e) {
+        console.log(`B3 API falhou: ${e.message}`);
+    }
+    
+    // ============================================================
+    // FONTE 2: Yahoo Finance via scraping alternativo
+    // ============================================================
+    // Opções B3 no Yahoo têm formato: [CODIGO].SA
+    const yahooTicker = `${ticker}.SA`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+yahooTicker)}`;
     
     try {
-        const r = await fetch(url);
-        const j = await r.json();
-        const h = j.contents; // Conteúdo da página do OpLab
-
-        // BUSCA 1: Tenta capturar o preço no formato técnico ("last_price")
-        const m1 = h.match(/"last_price":\s?([\d.]+)/);
-        if (m1 && m1[1]) return parseFloat(m1[1]);
-
-        // BUSCA 2: Se falhar, busca o valor visual que aparece no site (R$ 0,00)
-        const m2 = h.match(/price">R\$\s?([\d,.]+)/);
-        if (m2 && m2[1]) return parseFloat(m2[1].replace(',', '.'));
-
-    } catch (e) { 
-        console.log("Erro ao acessar OpLab para a opção: " + ticker); 
+        const response = await fetchComTimeout(proxyUrl, 8000);
+        if (response.ok) {
+            const data = await response.json();
+            const parsed = JSON.parse(data.contents);
+            const preco = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+            if (preco && !isNaN(preco)) {
+                console.log(`✅ Yahoo: ${yahooTicker} = R$ ${preco}`);
+                return parseFloat(preco.toFixed(2));
+            }
+        }
+    } catch(e) {
+        console.log(`Yahoo falhou: ${e.message}`);
     }
+    
+    console.log(`❌ Não foi possível obter preço para ${ticker}`);
     return null;
 }
 
