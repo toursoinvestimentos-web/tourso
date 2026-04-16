@@ -356,25 +356,33 @@ async function buscarPreco(ticker) {
     return Promise.any([p1, p2, p3]).catch(() => null);
 }
 
-// Para opções B3: o ticker no Yahoo é diferente do que se espera.
-// Tentamos com .SA e sem, e também com brapi diretamente
+// ============================================================
+// Busca de Opções via OpLab (Focado em B3/Brasil)
+// ============================================================
 async function buscarPrecoOpcao(codigo) {
-    const semSA = codigo.toUpperCase().trim();
+    if (!codigo) return null;
+    const ticker = codigo.toUpperCase().trim();
+    
+    // Usamos o link direto da BBAS3 no OpLab para garantir o dado real
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://opcoes.oplab.com.br/mercado/opcoes/BBAS3/' + ticker)}`;
+    
+    try {
+        const r = await fetch(url);
+        const j = await r.json();
+        const h = j.contents; // Conteúdo da página do OpLab
 
-    const p1 = fetchComTimeout(`https://brapi.dev/api/quote/${semSA}`, 8000)
-        .then(r => extrairPrecoBrapi(r));
+        // BUSCA 1: Tenta capturar o preço no formato técnico ("last_price")
+        const m1 = h.match(/"last_price":\s?([\d.]+)/);
+        if (m1 && m1[1]) return parseFloat(m1[1]);
 
-    const urlY1 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+semSA+'.SA')}`;
-    const p2 = fetchComTimeout(urlY1, 8000).then(r => extrairPrecoYahoo(r));
+        // BUSCA 2: Se falhar, busca o valor visual que aparece no site (R$ 0,00)
+        const m2 = h.match(/price">R\$\s?([\d,.]+)/);
+        if (m2 && m2[1]) return parseFloat(m2[1].replace(',', '.'));
 
-    const urlY2 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+semSA+'.SA')}`;
-    const p3 = fetchComTimeout(urlY2, 8000).then(r => extrairPrecoYahoo(r));
-
-    // Algumas opções B3 no Yahoo não têm o .SA — tenta sem também
-    const urlY3 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+semSA)}`;
-    const p4 = fetchComTimeout(urlY3, 8000).then(r => extrairPrecoYahoo(r));
-
-    return Promise.any([p1, p2, p3, p4]).catch(() => null);
+    } catch (e) { 
+        console.log("Erro ao acessar OpLab para a opção: " + ticker); 
+    }
+    return null;
 }
 
 async function buscarCotacao() {
