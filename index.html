@@ -237,9 +237,37 @@ const BRAPI_TOKEN = "15bx8g3TjdaxDdpJHi1dzk";
 // URL pública CSV da sua planilha Google Sheets
 // Célula C4 = linha 4 (índice 3), coluna C (índice 2)
 const PLANILHA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
-const OPCAO_LINHA = 3; // índice 0 = linha 4 da planilha
-const OPCAO_COLUNA = 2; // índice 0 = coluna C da planilha
+const OPCAO_LINHA = 3;
+const OPCAO_COLUNA = 2;
 
+// FUNÇÃO QUE BUSCA O VALOR DA OPÇÃO NA PLANILHA
+async function buscarPrecoOpcaoPlanilha() {
+    try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 10000);
+        const res = await fetch(PLANILHA_CSV + '&t=' + Date.now(), {
+            signal: ctrl.signal,
+            cache: 'no-store'
+        });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const texto = await res.text();
+
+        const linhas = texto.split('\n');
+        if (linhas.length <= OPCAO_LINHA) throw new Error('Planilha sem dados suficientes');
+
+        const colunas = linhas[OPCAO_LINHA].split(',');
+        if (colunas.length <= OPCAO_COLUNA) throw new Error('Linha sem colunas suficientes');
+
+        const raw = colunas[OPCAO_COLUNA].replace(/"/g, '').replace(/R\$\s*/i, '').replace(/\s/g, '').replace(',', '.');
+        const valor = parseFloat(raw);
+        if (!isNaN(valor) && valor > 0) return valor;
+        throw new Error(`Valor inválido: "${raw}"`);
+    } catch(e) {
+        console.warn('Planilha:', e.message);
+        return null;
+    }
+}
 // ---- Busca BBAS3 via brapi (com token) ----
 async function buscarPrecoAcao() {
     try {
