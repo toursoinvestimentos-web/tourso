@@ -231,16 +231,14 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferr
 window.addEventListener('appinstalled', () => { document.getElementById('banner-install').classList.remove('visivel'); deferredPrompt = null; });
 function instalarApp() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('banner-install').classList.remove('visivel'); }); }
 
-// ============================================================
 // FONTES DE DADOS
-// ============================================================
-const BRAPI_TOKEN   = '15bx8g3TjdaxDdpJHi1dzk';
+const BRAPI_TOKEN = "15bx8g3TjdaxDdpJHi1dzk";
 
 // URL pública CSV da sua planilha Google Sheets
 // Célula C4 = linha 4 (índice 3), coluna C (índice 2)
-const PLANILHA_CSV  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?output=csv';
-const OPCAO_LINHA   = 3; // índice 0 → linha 4 da planilha
-const OPCAO_COLUNA  = 2; // índice 0 → coluna C da planilha
+const PLANILHA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
+const OPCAO_LINHA = 3; // índice 0 = linha 4 da planilha
+const OPCAO_COLUNA = 2; // índice 0 = coluna C da planilha
 
 // ---- Busca BBAS3 via brapi (com token) ----
 async function buscarPrecoAcao() {
