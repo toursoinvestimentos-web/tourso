@@ -356,25 +356,31 @@ async function buscarPreco(ticker) {
     return Promise.any([p1, p2, p3]).catch(() => null);
 }
 
-// Para opções B3: o ticker no Yahoo é diferente do que se espera.
-// Tentamos com .SA e sem, e também com brapi diretamente
+// Busca preço da opção no site opcoes.oplab.com.br (especializado em opções B3)
 async function buscarPrecoOpcao(codigo) {
-    const semSA = codigo.toUpperCase().trim();
-
-    const p1 = fetchComTimeout(`https://brapi.dev/api/quote/${semSA}`, 8000)
-        .then(r => extrairPrecoBrapi(r));
-
-    const urlY1 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+semSA+'.SA')}`;
-    const p2 = fetchComTimeout(urlY1, 8000).then(r => extrairPrecoYahoo(r));
-
-    const urlY2 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+semSA+'.SA')}`;
-    const p3 = fetchComTimeout(urlY2, 8000).then(r => extrairPrecoYahoo(r));
-
-    // Algumas opções B3 no Yahoo não têm o .SA — tenta sem também
-    const urlY3 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+semSA)}`;
-    const p4 = fetchComTimeout(urlY3, 8000).then(r => extrairPrecoYahoo(r));
-
-    return Promise.any([p1, p2, p3, p4]).catch(() => null);
+    if (!codigo) return null;
+    
+    const ticker = codigo.toUpperCase().trim();
+    
+    try {
+        const url = `https://opcoes.oplab.com.br/mercado/opcoes/BBAS3/${ticker}`;
+        const response = await fetch(url);
+        
+        if (response.ok) {
+            const html = await response.text();
+            const match = html.match(/Preço<\/span>\s*<span[^>]*>R\$([0-9,]+)/);
+            if (match) {
+                const preco = parseFloat(match[1].replace(',', '.'));
+                if (!isNaN(preco) && preco > 0) {
+                    return preco;
+                }
+            }
+        }
+    } catch(e) {
+        console.log(e);
+    }
+    
+    return null;
 }
 
 async function buscarCotacao() {
