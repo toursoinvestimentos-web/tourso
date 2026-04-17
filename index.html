@@ -190,7 +190,6 @@
             <div class="modal-campo">
                 <label>Código da Opção</label>
                 <input type="text" id="inp-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
-                <small>O app buscará o preço automaticamente.</small>
             </div>
             <div class="modal-campo">
                 <label>Quantidade de Ações Comprometidas</label>
@@ -307,7 +306,7 @@
     function toNum(v) { return v ? parseFloat(String(v).replace(',','.')) : 0; }
     function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
-    // ---- API multi-fonte ----
+    // ---- Busca BBAS3 (inalterada) ----
     async function fetchUrl(url, ms) {
         const c = new AbortController();
         const t = setTimeout(() => c.abort(), ms);
@@ -318,7 +317,6 @@
     async function buscarPreco(ticker) {
         const semSA = ticker.replace('.SA','');
 
-        // 1) brapi.dev — nativo BR, sem proxy, confiável
         try {
             const r = await fetchUrl(`https://brapi.dev/api/quote/${semSA}?token=demo`, 7000);
             const j = await r.json();
@@ -326,7 +324,6 @@
             if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
         } catch(e) {}
 
-        // 2) Yahoo query1 via AllOrigins
         try {
             const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
             const r   = await fetchUrl(url, 7000);
@@ -336,7 +333,6 @@
             if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
         } catch(e) {}
 
-        // 3) Yahoo query2 via AllOrigins
         try {
             const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
             const r   = await fetchUrl(url, 7000);
@@ -349,27 +345,70 @@
         return null;
     }
 
+    // ---- NOVO: busca opção via Google Sheets CSV (célula C4) ----
+    // Linha 4 = índice 3 | Coluna C = índice 2
+    const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
+
+    async function buscarPrecoOpcao() {
+        try {
+            const c = new AbortController();
+            const t = setTimeout(() => c.abort(), 10000);
+            const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
+                signal: c.signal,
+                cache: 'no-store'
+            });
+            clearTimeout(t);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const texto = await res.text();
+
+            // Divide em linhas e pega a linha 4 (índice 3)
+            const linhas = texto.trim().split('\n');
+            if (linhas.length < 4) throw new Error('Planilha com menos de 4 linhas');
+
+            // Divide a linha por vírgula (CSV simples)
+            // Remove aspas que o Google às vezes coloca
+            const cols = linhas[3].split(',').map(c => c.replace(/"/g,'').trim());
+            if (cols.length < 3) throw new Error('Linha 4 sem coluna C');
+
+            // Coluna C = índice 2
+            // Limpa: remove R$, espaços, troca vírgula decimal por ponto
+            const raw   = cols[2].replace(/R\$\s*/i,'').replace(/\s/g,'').replace(',','.');
+            const valor = parseFloat(raw);
+
+            if (!isNaN(valor) && valor > 0) return valor;
+            throw new Error('Valor inválido: ' + raw);
+        } catch(e) {
+            console.warn('Planilha opção:', e.message);
+            return null;
+        }
+    }
+
+    // ---- Busca cotações ----
     async function buscarCotacao() {
         if (_buscando) return;
         _buscando = true;
 
-        const p = await buscarPreco('BBAS3.SA');
-        if (p !== null) {
-            cotacaoAcao = p;
+        // BBAS3 e opção em paralelo
+        const [pAcao, pOpcao] = await Promise.all([
+            buscarPreco('BBAS3.SA'),
+            dados.setup?.codigoOpcao?.trim() ? buscarPrecoOpcao() : Promise.resolve(null)
+        ]);
+
+        if (pAcao !== null) {
+            cotacaoAcao = pAcao;
             document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
             document.getElementById('status-bolinha').style.background = '#00e676';
         } else {
             document.getElementById('status-bolinha').style.background = '#f1c40f';
         }
 
-        const cod = dados.setup?.codigoOpcao?.trim();
-        if (cod) cotacaoOpcao = await buscarPreco(cod + '.SA');
+        cotacaoOpcao = pOpcao; // null se planilha falhou ou não há opção configurada
 
         _buscando = false;
         atualizarTela();
     }
 
-    // ---- Monitor ----
+    // ---- Monitor (inalterado) ----
     function atualizarMonitor() {
         const s    = dados.setup;
         const el   = document.getElementById('monitor-conteudo');
@@ -392,7 +431,6 @@
         const dist  = ((strike - preco) / preco) * 100;
         const varAc = ((preco - entrada) / entrada) * 100;
 
-        // Ganho no prêmio
         let ganhoHTML = '';
         if (cotacaoOpcao !== null && prem > 0) {
             const ganho = ((prem - cotacaoOpcao) / prem) * 100;
@@ -452,7 +490,7 @@
         `;
     }
 
-    // ---- Modais Setup ----
+    // ---- Modais Setup (inalterado) ----
     function abrirSetup() {
         const s = dados.setup;
         document.getElementById('inp-codigo').value     = s.codigoOpcao    || '';
@@ -476,11 +514,11 @@
         };
         cotacaoOpcao = null;
         fecharSetup();
-        atualizarTela();        // renderiza imediatamente com dados locais
-        buscarCotacao();        // busca cotação em background
+        atualizarTela();
+        buscarCotacao();
     }
 
-    // ---- Modais Pilar ----
+    // ---- Modais Pilar (inalterado) ----
     function abrirAcao(tipo, acao) {
         _acaoAtiva = { tipo, acao };
         const nomes = { troco:'Troco/Troca', aportes:'Aportes' };
@@ -506,7 +544,7 @@
         atualizarTela();
     }
 
-    // ---- Tela principal ----
+    // ---- Tela principal (inalterada) ----
     function atualizarTela() {
         const q    = dados.acoes.reduce((a,x)=>a+x.qtd, 0);
         const c    = dados.acoes.reduce((a,x)=>a+(x.qtd*x.preco), 0);
@@ -530,7 +568,7 @@
         salvar();
     }
 
-    // ---- Compra ----
+    // ---- Compra (inalterada) ----
     function abrirCompra() {
         const q = prompt("Quantidade comprada:");
         const p = prompt("Preço pago (ex: 25,50):");
@@ -541,7 +579,7 @@
         }
     }
 
-    // ---- Backup ----
+    // ---- Backup (inalterado) ----
     function exportar() {
         const blob = new Blob([JSON.stringify(dados,null,2)],{type:'application/json'});
         const a    = document.createElement('a');
