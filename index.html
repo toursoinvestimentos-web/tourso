@@ -530,7 +530,7 @@
             </div>
         `;
 
-        // ── Seção 3: Monitor de Prêmio ─────────────────────────────
+                // ── Seção 3: Monitor de Prêmio ─────────────────────────────
         let secaoPremio = '';
         if (prem > 0) {
             let desv = null;
@@ -552,13 +552,15 @@
             } else if (desv >= meta) {
                 pColor  = 'var(--alta)'; pBarW = 100;
                 pLinha1 = '💰 Meta atingida — Encerrar posição';
-                pLinha2 = `Prêmio atual: ${fmt(cotacaoOpcao)}`;
+                const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
+                pLinha2 = `💰 Fechar agora: ${fmt(valorTotalAtual)}`;
             } else {
                 pColor  = '#f1c40f';
                 pBarW   = (desv / meta) * 100;
                 const faltam = (meta - desv).toFixed(2).replace('.', ',');
                 pLinha1 = `⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;
-                pLinha2 = `💰 Prêmio atual: ${fmt(cotacaoOpcao)}`;
+                const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
+                pLinha2 = `💰 Fechar agora: ${fmt(valorTotalAtual)}`;
             }
 
             secaoPremio = `
