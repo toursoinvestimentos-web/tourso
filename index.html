@@ -333,11 +333,12 @@
     if (!dados.aportes)            dados.aportes = { cofre: 0, transferido: 0 };
     if (!dados.setup.metaSaida)    dados.setup.metaSaida = 85;
 
-    let cotacaoAcao  = 24.92;
-    let cotacaoOpcao = null;
-    let ultimoValorOpcao = null;
-    let _acaoAtiva   = {};
-    let _buscando    = false;
+    let cotacaoAcao  = null;
+let ultimoValorAcao = null;
+let cotacaoOpcao = null;
+let ultimoValorOpcao = null;
+let _acaoAtiva   = {};
+let _buscando    = false;
 
     // ---- Utils ----
     function fmt(n)   { return 'R$ ' + parseFloat(n).toFixed(2).replace('.', ','); }
@@ -413,7 +414,7 @@
     }
 }
 
-   // ---- Busca cotações ----
+  // ---- Busca cotações ----
 async function buscarCotacao() {
     if (_buscando) return;
     _buscando = true;
@@ -424,17 +425,27 @@ async function buscarCotacao() {
         cod ? buscarPrecoOpcao() : Promise.resolve(null)
     ]);
 
+    // AÇÃO
     if (pAcao !== null) {
+        ultimoValorAcao = cotacaoAcao;  // guarda o valor anterior
         cotacaoAcao = pAcao;
         document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
         document.getElementById('status-bolinha').style.background = '#00e676';
     } else {
         document.getElementById('status-bolinha').style.background = '#f1c40f';
+        // NÃO muda cotacaoAcao - mantém o último valor bom
+        // Se nunca teve valor, mostra null
     }
     
+    // OPÇÃO
     if (cod) {
-        cotacaoOpcao = pOpcao;
-        if (pOpcao !== null) ultimoValorOpcao = pOpcao;
+        if (pOpcao !== null) {
+            ultimoValorOpcao = pOpcao;
+            cotacaoOpcao = pOpcao;
+        } else {
+            cotacaoOpcao = null;
+            // ultimoValorOpcao continua com o último valor bom
+        }
     }
 
     _buscando = false;
@@ -474,23 +485,27 @@ async function buscarCotacao() {
             ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
             : '';
 
-       // ── Seção 1: Ação | Opção ──────────────────────────────────
-// Usa cotacaoAcao para saber se está online (valor diferente do padrão)
-const acaoOnline = (cotacaoAcao !== 24.92); // 24.92 é o valor padrão inicial
+      // ── Seção 1: Ação | Opção ──────────────────────────────────
+// Usa a bolinha como referência de online/offline para ação
+const acaoOnline = (document.getElementById('status-bolinha').style.background === '#00e676');
 const opcaoOnline = (cotacaoOpcao !== null);
 
 const corAcao = acaoOnline ? '#aaa' : '#555';
 const corOpcao = opcaoOnline ? '#aaa' : '#555';
 
+// Para exibir: se online mostra valor atual, se offline mostra último valor salvo
+const valorAcaoExibir = acaoOnline ? fmt(preco) : (ultimoValorAcao !== undefined ? fmt(ultimoValorAcao) : fmt(preco));
+const valorOpcaoExibir = opcaoOnline ? fmt(cotacaoOpcao) : (ultimoValorOpcao !== null ? fmt(ultimoValorOpcao) : '—');
+
 const secaoTopo = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
             <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
-            <div style="font-size:1.15em; font-weight:bold; color:${corAcao};">${fmt(preco)}</div>
+            <div style="font-size:1.15em; font-weight:bold; color:${corAcao};">${valorAcaoExibir}</div>
         </div>
         <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
             <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
-            <div style="font-size:1.15em; font-weight:bold; color:${corOpcao};">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : (ultimoValorOpcao !== null ? fmt(ultimoValorOpcao) : '—')}</div>
+            <div style="font-size:1.15em; font-weight:bold; color:${corOpcao};">${valorOpcaoExibir}</div>
         </div>
     </div>
     ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
