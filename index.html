@@ -384,7 +384,7 @@ let _buscando    = false;
     // ---- Busca OPÇÃO via Google Sheets CSV (célula C4) ----
     const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 
-    async function buscarPrecoOpcao() {
+async function buscarPrecoOpcao() {
     try {
         const c = new AbortController();
         const t = setTimeout(() => c.abort(), 10000);
@@ -404,12 +404,19 @@ let _buscando    = false;
         
         if (match) {
             const valor = parseFloat(match[1] + '.' + match[2]);
-            if (!isNaN(valor) && valor > 0) return valor;
+            if (!isNaN(valor) && valor > 0) {
+                // 🔥 GUARDA O ÚLTIMO VALOR BOM
+                localStorage.setItem('ultimoValorOpcao', valor);
+                return valor;
+            }
         }
         
         throw new Error('Valor não encontrado');
     } catch(e) {
         console.warn('Planilha opção:', e.message);
+        // 🔥 SE FALHOU, USA O ÚLTIMO VALOR GUARDADO
+        const ultimo = localStorage.getItem('ultimoValorOpcao');
+        if (ultimo !== null) return parseFloat(ultimo);
         return null;
     }
 }
