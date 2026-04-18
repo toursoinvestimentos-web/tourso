@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.0</title>
+    <title>TOURSO_vCALL 1.1</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -67,7 +67,7 @@
         .btn-guardar   { background: #444; color: var(--branco); }
         .btn-transferir{ background: var(--ciano); color: var(--fundo); }
 
-        /* Barra Strike (ponto móvel) */
+        /* Barra Strike */
         .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 8px 0 4px; position: relative; overflow: visible; }
         .barra-fill   { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
         .barra-marker { position: absolute; top: -2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--branco); transition: left 0.6s, background 0.5s; transform: translateX(-50%); }
@@ -77,10 +77,59 @@
         #banner-install.visivel { display: flex; }
         #banner-install button { background: var(--fundo); color: var(--ciano); border: none; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer; }
 
-        /* Separadores internos do monitor */
+        /* Monitor */
         .monitor-sep { font-size: 0.63em; color: #aaa; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
-        /* Caixinhas de observação */
         .obs-box { border-radius: 8px; padding: 10px 12px; background: rgba(0,0,0,0.25); }
+
+        /* ── NOVO: Modal de Extrato ── */
+        #modal-extrato .modal-box { border-top-color: var(--ciano); }
+        .extrato-total {
+            background: rgba(0,188,212,0.1);
+            border: 1px solid var(--ciano);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .extrato-total-label { font-size: 0.7em; color: #aaa; text-transform: uppercase; }
+        .extrato-total-valor { font-size: 1.6em; font-weight: bold; color: var(--ciano); margin-top: 3px; }
+        .extrato-mes-titulo {
+            font-size: 0.72em;
+            color: var(--ciano);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.06em;
+            margin: 16px 0 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .extrato-mes-total { color: #aaa; font-weight: normal; font-size: 0.9em; }
+        .extrato-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 7px;
+            margin-bottom: 4px;
+            background: rgba(0,0,0,0.18);
+            font-size: 0.83em;
+        }
+        .extrato-linha-data { color: #aaa; }
+        .extrato-linha-valor { font-weight: bold; color: var(--branco); }
+        .extrato-vazio { text-align: center; color: #555; font-size: 0.85em; padding: 20px 0; }
+        .btn-extrato-fechar {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #444;
+            color: var(--branco);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 18px;
+        }
     </style>
 </head>
 <body>
@@ -91,7 +140,7 @@
         <button onclick="instalarApp()">INSTALAR</button>
     </div>
 
-    <!-- Header: Logo ESQUERDA, info DIREITA -->
+    <!-- Header -->
     <div style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:400px; margin-bottom:15px;">
         <svg width="95" height="47" viewBox="0 0 400 220">
             <rect x="80" y="40" width="240" height="15" fill="#00bcd4"/>
@@ -140,10 +189,14 @@
         <div id="pode-comprar" style="color:var(--alta); font-size:0.85em; font-weight:bold;">+0 ações possíveis</div>
     </div>
 
-    <!-- Pilares -->
+    <!-- Pilares — ÚNICO BLOCO ALTERADO: adicionado ícone 📄 no cabeçalho de cada pilar -->
     <div class="pilar-grid">
         <div class="pilar-card">
-            <div class="pilar-label" style="margin-bottom:10px;">Troco/Troca</div>
+            <!-- cabeçalho com título e ícone de extrato -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div class="pilar-label">Troco/Troca</div>
+                <span style="font-size:1.1em; cursor:pointer;" title="Ver histórico" onclick="abrirExtrato('troco')">📄</span>
+            </div>
             <div class="camada-row">
                 <span class="camada-label-small">💰 Cofre</span>
                 <span class="camada-valor-small" id="troco-cofre" style="color:var(--alta);">R$ 0,00</span>
@@ -158,7 +211,10 @@
             </div>
         </div>
         <div class="pilar-card">
-            <div class="pilar-label" style="margin-bottom:10px;">Aportes</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div class="pilar-label">Aportes</div>
+                <span style="font-size:1.1em; cursor:pointer;" title="Ver histórico" onclick="abrirExtrato('aportes')">📄</span>
+            </div>
             <div class="camada-row">
                 <span class="camada-label-small">💰 Cofre</span>
                 <span class="camada-valor-small" id="aportes-cofre" style="color:var(--alta);">R$ 0,00</span>
@@ -241,10 +297,20 @@
         </div>
     </div>
 
+    <!-- ── NOVO: Modal de Extrato ── -->
+    <div class="modal-overlay" id="modal-extrato">
+        <div class="modal-box" id="modal-extrato-box">
+            <h3 id="extrato-titulo">Extrato</h3>
+            <div id="extrato-corpo"></div>
+            <button class="btn-extrato-fechar" onclick="fecharExtrato()">Fechar</button>
+        </div>
+    </div>
+
     <script>
-    // ---- PWA: ícone igual ao logo do header ----
+    // ════════════════════════════════════════════════════════
+    // PWA (inalterado)
+    // ════════════════════════════════════════════════════════
     (function() {
-        // Mesmo logo do header, centralizado em 400x400
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
             <rect width="400" height="400" fill="#2c2f33"/>
             <rect x="80" y="130" width="240" height="15" fill="#00bcd4"/>
@@ -254,7 +320,7 @@
         </svg>`;
         const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
         const mf = {
-            name: "TOURSO_vCALL 1.0", short_name: "vCALL",
+            name: "TOURSO_vCALL 1.1", short_name: "vCALL",
             start_url: "./", scope: "./", display: "standalone",
             background_color: "#2c2f33", theme_color: "#00bcd4",
             icons: [
@@ -265,7 +331,6 @@
         document.getElementById('manifest-link').href =
             URL.createObjectURL(new Blob([JSON.stringify(mf)], { type: 'application/manifest+json' }));
     })();
-
     if ('serviceWorker' in navigator) {
         const sw = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
         navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw], { type: 'text/javascript' }))).catch(() => {});
@@ -288,7 +353,9 @@
         });
     }
 
-    // ---- Hints do modal ----
+    // ════════════════════════════════════════════════════════
+    // Hints do modal (inalterado)
+    // ════════════════════════════════════════════════════════
     function bindHints() {
         ['inp-qtd', 'inp-premio', 'inp-saida'].forEach(id =>
             document.getElementById(id)?.addEventListener('input', calcHints)
@@ -309,7 +376,9 @@
         }
     }
 
-    // ---- Estado ----
+    // ════════════════════════════════════════════════════════
+    // Estado principal (inalterado)
+    // ════════════════════════════════════════════════════════
     const CHAVE = 'dados_tourso_v3';
     const BASE  = {
         acoes: [], caixaDisponivel: 0,
@@ -317,7 +386,6 @@
         aportes: { cofre: 0, transferido: 0 },
         setup: { codigoOpcao: '', qtdAcoes: 0, precoEntrada: 0, strike: 0, vencimento: '', premioRecebido: 0, metaSaida: 85 }
     };
-
     let dados = (() => {
         const v3 = localStorage.getItem(CHAVE);
         if (v3) return JSON.parse(v3);
@@ -328,30 +396,120 @@
         }
         return JSON.parse(JSON.stringify(BASE));
     })();
-    if (!dados.setup)              dados.setup   = { ...BASE.setup };
-    if (!dados.troco)              dados.troco   = { cofre: 0, transferido: 0 };
-    if (!dados.aportes)            dados.aportes = { cofre: 0, transferido: 0 };
-    if (!dados.setup.metaSaida)    dados.setup.metaSaida = 85;
+    if (!dados.setup)           dados.setup   = { ...BASE.setup };
+    if (!dados.troco)           dados.troco   = { cofre: 0, transferido: 0 };
+    if (!dados.aportes)         dados.aportes = { cofre: 0, transferido: 0 };
+    if (!dados.setup.metaSaida) dados.setup.metaSaida = 85;
 
     let cotacaoAcao  = null;
     let cotacaoOpcao = null;
     let _acaoAtiva   = {};
     let _buscando    = false;
 
-    // ---- Utils ----
+    // ════════════════════════════════════════════════════════
+    // Utils (inalterado)
+    // ════════════════════════════════════════════════════════
     function fmt(n)   { return 'R$ ' + parseFloat(n).toFixed(2).replace('.', ','); }
     function fmtP(n)  { return parseFloat(n).toFixed(2).replace('.', ',') + '%'; }
     function toNum(v) { return v ? parseFloat(String(v).replace(',', '.')) : 0; }
     function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
-    // ---- Busca BBAS3 (inalterada) ----
+    // ════════════════════════════════════════════════════════
+    // ── NOVO: Histórico por pilar ──
+    // Chaves separadas no localStorage: 'hist_troco' e 'hist_aportes'
+    // Cada entrada: { valor, data, hora }
+    // ════════════════════════════════════════════════════════
+    const HIST_KEYS = { troco: 'hist_troco', aportes: 'hist_aportes' };
+
+    function carregarHistorico(tipo) {
+        try { return JSON.parse(localStorage.getItem(HIST_KEYS[tipo])) || []; }
+        catch(e) { return []; }
+    }
+    function salvarHistorico(tipo, lista) {
+        localStorage.setItem(HIST_KEYS[tipo], JSON.stringify(lista));
+    }
+    function registrarLancamento(tipo, valor) {
+        const agora  = new Date();
+        const data   = agora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });        // "05/05"
+        const hora   = agora.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });      // "14:32"
+        const mesAno = agora.toLocaleDateString('pt-BR', { month:'long', year:'numeric' })            // "maio de 2026"
+                            .replace(' de ', '/').replace(/^\w/, c => c.toUpperCase());               // "Maio/2026"
+        const entrada = { valor: parseFloat(valor.toFixed(2)), data, hora, mesAno };
+        const lista = carregarHistorico(tipo);
+        lista.unshift(entrada); // mais recente primeiro
+        salvarHistorico(tipo, lista);
+    }
+
+    // ── Abre o modal de extrato ──
+    const NOMES = { troco: 'Troco/Troca', aportes: 'Aportes' };
+    function abrirExtrato(tipo) {
+        const lista = carregarHistorico(tipo);
+        document.getElementById('extrato-titulo').innerText = `📄 Extrato — ${NOMES[tipo]}`;
+
+        const corpo = document.getElementById('extrato-corpo');
+
+        if (lista.length === 0) {
+            corpo.innerHTML = `<div class="extrato-vazio">Nenhum lançamento registrado ainda.</div>`;
+            document.getElementById('modal-extrato').classList.add('ativo');
+            return;
+        }
+
+        // Total geral
+        const totalGeral = lista.reduce((s, e) => s + e.valor, 0);
+
+        // Agrupa por mesAno mantendo ordem (lista já está do mais recente para o mais antigo)
+        const grupos = [];
+        const mapaIdx = {};
+        for (const e of lista) {
+            if (mapaIdx[e.mesAno] === undefined) {
+                mapaIdx[e.mesAno] = grupos.length;
+                grupos.push({ mesAno: e.mesAno, total: 0, entradas: [] });
+            }
+            const g = grupos[mapaIdx[e.mesAno]];
+            g.total += e.valor;
+            g.entradas.push(e);
+        }
+
+        let html = `
+            <div class="extrato-total">
+                <div class="extrato-total-label">Total Geral</div>
+                <div class="extrato-total-valor">${fmt(totalGeral)}</div>
+            </div>
+        `;
+
+        for (const g of grupos) {
+            html += `
+                <div class="extrato-mes-titulo">
+                    <span>${g.mesAno}</span>
+                    <span class="extrato-mes-total">Total: ${fmt(g.total)}</span>
+                </div>
+            `;
+            for (const e of g.entradas) {
+                html += `
+                    <div class="extrato-linha">
+                        <span class="extrato-linha-data">${e.data} &nbsp; ${e.hora}</span>
+                        <span class="extrato-linha-valor">${fmt(e.valor)}</span>
+                    </div>
+                `;
+            }
+        }
+
+        corpo.innerHTML = html;
+        document.getElementById('modal-extrato').classList.add('ativo');
+    }
+    function fecharExtrato() {
+        document.getElementById('modal-extrato').classList.remove('ativo');
+    }
+
+    // ════════════════════════════════════════════════════════
+    // Busca BBAS3 (inalterada)
+    // ════════════════════════════════════════════════════════
     async function fetchUrl(url, ms) {
         const c = new AbortController();
         const t = setTimeout(() => c.abort(), ms);
         try { const r = await fetch(url, { signal: c.signal }); clearTimeout(t); return r; }
         catch (e) { clearTimeout(t); throw e; }
     }
-
     async function buscarPreco(ticker) {
         const semSA = ticker.replace('.SA', '');
         try {
@@ -379,50 +537,40 @@
         return null;
     }
 
-    // ---- Busca OPÇÃO via Google Sheets CSV (célula C4) ----
+    // Busca opção via Google Sheets CSV (inalterada)
     const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
-
     async function buscarPrecoOpcao() {
-    try {
-        const c = new AbortController();
-        const t = setTimeout(() => c.abort(), 10000);
-        const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
-            signal: c.signal,
-            cache: 'no-store'
-        });
-        clearTimeout(t);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const texto = await res.text();
-
-        const linhas = texto.split('\n');
-        if (linhas.length < 4) throw new Error('Planilha com menos de 4 linhas');
-
-        const linha4 = linhas[3];
-        const match = linha4.match(/"(\d+),(\d+)"/);
-        
-        if (match) {
-            const valor = parseFloat(match[1] + '.' + match[2]);
-            if (!isNaN(valor) && valor > 0) return valor;
+        try {
+            const c = new AbortController();
+            const t = setTimeout(() => c.abort(), 10000);
+            const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: c.signal, cache: 'no-store' });
+            clearTimeout(t);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const texto = await res.text();
+            const linhas = texto.split('\n');
+            if (linhas.length < 4) throw new Error('Planilha com menos de 4 linhas');
+            const linha4 = linhas[3];
+            const match = linha4.match(/"(\d+),(\d+)"/);
+            if (match) {
+                const valor = parseFloat(match[1] + '.' + match[2]);
+                if (!isNaN(valor) && valor > 0) return valor;
+            }
+            throw new Error('Valor não encontrado');
+        } catch(e) {
+            console.warn('Planilha opção:', e.message);
+            return null;
         }
-        
-        throw new Error('Valor não encontrado');
-    } catch(e) {
-        console.warn('Planilha opção:', e.message);
-        return null;
     }
-}
 
-    // ---- Busca cotações ----
+    // Busca cotações (inalterada)
     async function buscarCotacao() {
         if (_buscando) return;
         _buscando = true;
-
         const cod = dados.setup?.codigoOpcao?.trim();
         const [pAcao, pOpcao] = await Promise.all([
             buscarPreco('BBAS3.SA'),
             cod ? buscarPrecoOpcao() : Promise.resolve(null)
         ]);
-
         if (pAcao !== null) {
             cotacaoAcao = pAcao;
             document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
@@ -431,92 +579,56 @@
             document.getElementById('status-bolinha').style.background = '#f1c40f';
         }
         if (cod) cotacaoOpcao = pOpcao;
-
         _buscando = false;
         atualizarTela();
     }
 
-    // ================================================================
-    // MONITOR — totalmente novo para vCALL 1.0
-    // ================================================================
+    // ════════════════════════════════════════════════════════
+    // Monitor (inalterado)
+    // ════════════════════════════════════════════════════════
     function atualizarMonitor() {
         const s    = dados.setup;
         const el   = document.getElementById('monitor-conteudo');
         const card = document.getElementById('card-monitor');
-
         document.getElementById('header-opcao').innerText =
             s.codigoOpcao ? s.codigoOpcao.toUpperCase() : '— sem setup —';
-
         if (!s.codigoOpcao || !s.precoEntrada || !s.strike) {
             el.innerHTML = `<span style="color:#555;">Toque ⚙️ para configurar sua operação</span>`;
-            card.style.borderLeftColor = '#444';
-            return;
+            card.style.borderLeftColor = '#444'; return;
         }
-
         const preco   = cotacaoAcao;
         const strike  = s.strike;
         const entrada = s.precoEntrada;
         const prem    = s.premioRecebido;
         const qtd     = s.qtdAcoes  || 0;
         const meta    = s.metaSaida || 85;
-
-        // Dias para vencer
         let dias = null;
-        if (s.vencimento) {
-            dias = Math.ceil((new Date(s.vencimento + 'T12:00:00') - new Date()) / 86400000);
-        }
-        const diasTxt = dias !== null
-            ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
-            : '';
-
-        // ── Seção 1: Ação | Opção ──────────────────────────────────
-const valorAcao = (preco !== null && preco !== undefined) ? fmt(preco) : '—';
-const valorOpcao = (cotacaoOpcao !== null) ? fmt(cotacaoOpcao) : '—';
-
-const secaoTopo = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
-            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorAcao}</div>
-        </div>
-        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
-            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorOpcao}</div>
-        </div>
-    </div>
-    ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
-`;
-
-        // ── Seção 2: Monitor de Strike ─────────────────────────────
+        if (s.vencimento) dias = Math.ceil((new Date(s.vencimento + 'T12:00:00') - new Date()) / 86400000);
+        const diasTxt = dias !== null ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA') : '';
+        const valorAcao  = (preco !== null && preco !== undefined) ? fmt(preco) : '—';
+        const valorOpcao = (cotacaoOpcao !== null) ? fmt(cotacaoOpcao) : '—';
+        const secaoTopo = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
+                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorAcao}</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
+                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorOpcao}</div>
+                </div>
+            </div>
+            ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}`;
         const range  = strike - entrada;
         const rawPos = range > 0 ? (preco - entrada) / range : 0;
         const barPct = (Math.min(Math.max(rawPos, 0), 1) * 100).toFixed(1);
-
         let sColor, sLinha1, sLinha2;
-        if (rawPos >= 1.0) {
-            sColor = 'var(--queda)';
-            sLinha1 = '🔴 Ação — Rolar imediatamente';
-            sLinha2 = 'ITM: preço ultrapassou o strike';
-        } else if (rawPos >= 0.85) {
-            sColor = 'var(--queda)';
-            sLinha1 = '🔴 Decisão — Preparar rolagem';
-            sLinha2 = 'ATM: ação no limite do strike';
-        } else if (rawPos >= 0.60) {
-            sColor = '#f1c40f';
-            sLinha1 = '🟡 Alerta — Avaliar rolagem';
-            sLinha2 = 'Ação aproximando do strike';
-        } else if (rawPos >= 0.30) {
-            sColor = '#aaaaaa';
-            sLinha1 = '⚖️ Neutro — Acompanhar';
-            sLinha2 = 'Posição equilibrada';
-        } else {
-            sColor = 'var(--alta)';
-            sLinha1 = '🟢 OTM — Prêmio protegido';
-            sLinha2 = 'Sem risco | Aguardar';
-        }
-
+        if      (rawPos >= 1.0)  { sColor='var(--queda)'; sLinha1='🔴 Ação — Rolar imediatamente';  sLinha2='ITM: preço ultrapassou o strike'; }
+        else if (rawPos >= 0.85) { sColor='var(--queda)'; sLinha1='🔴 Decisão — Preparar rolagem';  sLinha2='ATM: ação no limite do strike'; }
+        else if (rawPos >= 0.60) { sColor='#f1c40f';      sLinha1='🟡 Alerta — Avaliar rolagem';    sLinha2='Ação aproximando do strike'; }
+        else if (rawPos >= 0.30) { sColor='#aaaaaa';      sLinha1='⚖️ Neutro — Acompanhar';         sLinha2='Posição equilibrada'; }
+        else                     { sColor='var(--alta)';  sLinha1='🟢 OTM — Prêmio protegido';      sLinha2='Sem risco | Aguardar'; }
         card.style.borderLeftColor = sColor;
-
         const secaoStrike = `
             <div class="monitor-sep">── Monitor de Strike ──</div>
             <div class="barra-container">
@@ -530,42 +642,21 @@ const secaoTopo = `
             <div class="obs-box" style="border-left:3px solid ${sColor};">
                 <div style="font-size:0.83em; font-weight:bold; color:${sColor};">${sLinha1}</div>
                 <div style="font-size:0.75em; color:#aaa; margin-top:3px;">${sLinha2}</div>
-            </div>
-        `;
-
-                // ── Seção 3: Monitor de Prêmio ─────────────────────────────
+            </div>`;
         let secaoPremio = '';
         if (prem > 0) {
-            let desv = null;
-            if (cotacaoOpcao !== null) {
-                desv = ((prem - cotacaoOpcao) / prem) * 100;
-            }
-
+            let desv = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
             let pColor, pLinha1, pLinha2, pBarW = 0;
             const desvStr = desv !== null ? desv.toFixed(2).replace('.', ',') + '%' : '—';
-
-            if (desv === null) {
-                pColor  = '#555'; pBarW = 0;
-                pLinha1 = 'Buscando cotação da opção…';
-                pLinha2 = `Prêmio recebido: ${fmt(prem)}/ação`;
-            } else if (desv < 0) {
-                pColor  = 'var(--queda)'; pBarW = 0;
-                pLinha1 = '🔺 Risco — Opção valorizando';
-                pLinha2 = `Prêmio atual: ${fmt(cotacaoOpcao)}`;
-            } else if (desv >= meta) {
-                pColor  = 'var(--alta)'; pBarW = 100;
-                pLinha1 = '💰 Meta atingida — Encerrar posição';
-                const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
-                pLinha2 = `💰 Se fechar: ${fmt(valorTotalAtual)}`;
-            } else {
-                pColor  = '#f1c40f';
-                pBarW   = (desv / meta) * 100;
-                const faltam = (meta - desv).toFixed(2).replace('.', ',');
-                pLinha1 = `⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;
-                const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
-                pLinha2 = `💰 Se fechar: ${fmt(valorTotalAtual)}`;
+            if (desv === null)     { pColor='#555';          pBarW=0;   pLinha1='Buscando cotação da opção…';          pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`; }
+            else if (desv < 0)     { pColor='var(--queda)';  pBarW=0;   pLinha1='🔺 Risco — Opção valorizando';        pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)}`; }
+            else if (desv >= meta) { pColor='var(--alta)';   pBarW=100; pLinha1='💰 Meta atingida — Encerrar posição'; pLinha2=`💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`; }
+            else {
+                pColor='#f1c40f'; pBarW=(desv/meta)*100;
+                const faltam = (meta-desv).toFixed(2).replace('.', ',');
+                pLinha1=`⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;
+                pLinha2=`💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`;
             }
-
             secaoPremio = `
                 <div class="monitor-sep">── Monitor de Prêmio ──</div>
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -577,61 +668,39 @@ const secaoTopo = `
                 <div class="obs-box" style="border-left:3px solid ${pColor};">
                     <div style="font-size:0.83em; font-weight:bold; color:${pColor};">${pLinha1}</div>
                     <div style="font-size:0.75em; color:#aaa; margin-top:3px;">${pLinha2}</div>
-                </div>
-            `;
+                </div>`;
         }
-
-        // ── Seção 4: Decisão Estratégica ───────────────────────────
         let secaoDecisao = '';
         if (prem > 0) {
             const desv    = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
             const desvStr = desv !== null ? desv.toFixed(0) : '—';
-
             let dColor, dLinha1, dLinha2;
-
-            if (desv !== null && desv >= meta) {
-                dColor  = 'var(--alta)';
-                dLinha1 = `💰 ${desvStr}% lucro`;
-                dLinha2 = '💰 ENCERRAR POSIÇÃO';
-            } else if (rawPos >= 1.0) {
-                dColor  = 'var(--queda)';
-                dLinha1 = `🔴 ITM + ${desvStr}% lucro`;
-                dLinha2 = '🔴 ROLAR IMEDIATAMENTE';
-            } else if (rawPos >= 0.85 || (dias !== null && dias <= 7 && rawPos >= 0.70)) {
-                dColor  = '#f1c40f';
-                dLinha1 = dias !== null ? `🟡 ATM + ${dias} dias` : '🟡 ATM + poucos dias';
-                dLinha2 = '🟡 PREPARAR ROLAGEM';
-            } else if (rawPos >= 0.60 && desv !== null && desv >= 70) {
-                dColor  = '#f1c40f';
-                dLinha1 = `🟡 Risco crescente + ${desvStr}% lucro`;
-                dLinha2 = '⚠️ ZONA IDEAL PARA ROLAGEM';
-            } else {
-                dColor  = 'var(--alta)';
-                dLinha1 = `🟢 OTM + ${desvStr}% lucro`;
-                dLinha2 = '✅ AGUARDAR DESVALORIZAÇÃO';
-            }
-
+            if      (desv !== null && desv >= meta)                                        { dColor='var(--alta)';  dLinha1=`💰 ${desvStr}% lucro`;                   dLinha2='💰 ENCERRAR POSIÇÃO'; }
+            else if (rawPos >= 1.0)                                                        { dColor='var(--queda)'; dLinha1=`🔴 ITM + ${desvStr}% lucro`;             dLinha2='🔴 ROLAR IMEDIATAMENTE'; }
+            else if (rawPos >= 0.85 || (dias !== null && dias <= 7 && rawPos >= 0.70))     { dColor='#f1c40f';     dLinha1=dias!==null?`🟡 ATM + ${dias} dias`:'🟡 ATM + poucos dias'; dLinha2='🟡 PREPARAR ROLAGEM'; }
+            else if (rawPos >= 0.60 && desv !== null && desv >= 70)                        { dColor='#f1c40f';     dLinha1=`🟡 Risco crescente + ${desvStr}% lucro`; dLinha2='⚠️ ZONA IDEAL PARA ROLAGEM'; }
+            else                                                                            { dColor='var(--alta)';  dLinha1=`🟢 OTM + ${desvStr}% lucro`;             dLinha2='✅ AGUARDAR DESVALORIZAÇÃO'; }
             secaoDecisao = `
                 <div class="monitor-sep">── Decisão Estratégica ──</div>
                 <div class="obs-box" style="border-left:3px solid ${dColor}; text-align:center;">
                     <div style="font-size:0.9em; font-weight:bold; color:${dColor};">${dLinha1}</div>
                     <div style="font-size:0.9em; font-weight:bold; color:${dColor}; margin-top:5px;">${dLinha2}</div>
-                </div>
-            `;
+                </div>`;
         }
-
         el.innerHTML = secaoTopo + secaoStrike + secaoPremio + secaoDecisao;
     }
 
-    // ---- Modais Setup ----
+    // ════════════════════════════════════════════════════════
+    // Modais Setup (inalterado)
+    // ════════════════════════════════════════════════════════
     function abrirSetup() {
         const s = dados.setup;
         document.getElementById('inp-codigo').value     = s.codigoOpcao    || '';
         document.getElementById('inp-qtd').value        = s.qtdAcoes       || '';
-        document.getElementById('inp-entrada').value    = s.precoEntrada    ? s.precoEntrada.toFixed(2).replace('.', ',')    : '';
-        document.getElementById('inp-strike').value     = s.strike          ? s.strike.toFixed(2).replace('.', ',')          : '';
+        document.getElementById('inp-entrada').value    = s.precoEntrada    ? s.precoEntrada.toFixed(2).replace('.', ',')   : '';
+        document.getElementById('inp-strike').value     = s.strike          ? s.strike.toFixed(2).replace('.', ',')         : '';
         document.getElementById('inp-vencimento').value = s.vencimento      || '';
-        document.getElementById('inp-premio').value     = s.premioRecebido  ? s.premioRecebido.toFixed(2).replace('.', ',')  : '';
+        document.getElementById('inp-premio').value     = s.premioRecebido  ? s.premioRecebido.toFixed(2).replace('.', ',') : '';
         document.getElementById('inp-saida').value      = s.metaSaida       || 85;
         calcHints();
         document.getElementById('modal-setup').classList.add('ativo');
@@ -653,7 +722,9 @@ const secaoTopo = `
         buscarCotacao();
     }
 
-    // ---- Modais Pilar ----
+    // ════════════════════════════════════════════════════════
+    // Modais Pilar — ÚNICA MUDANÇA: chama registrarLancamento ao confirmar
+    // ════════════════════════════════════════════════════════
     function abrirAcao(tipo, acao) {
         _acaoAtiva = { tipo, acao };
         const nomes = { troco: 'Troco/Troca', aportes: 'Aportes' };
@@ -677,39 +748,41 @@ const secaoTopo = `
             dados[tipo].transferido = parseFloat((dados[tipo].transferido + val).toFixed(2));
             dados.caixaDisponivel   = parseFloat((dados.caixaDisponivel + val).toFixed(2));
         }
+        // ── NOVO: registra o lançamento no histórico do pilar ──
+        registrarLancamento(tipo, val);
+
         fecharAcao();
         atualizarTela();
     }
 
-    // ---- Tela principal ----
-function atualizarTela() {
-    const q    = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const c    = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
-    const pm   = q > 0 ? c / q : 0;
-    const val  = (cotacaoAcao !== null && q > 0) ? parseFloat((q * cotacaoAcao).toFixed(2)) : 0;
-    const rent = (pm > 0 && cotacaoAcao !== null) ? ((cotacaoAcao - pm) / pm) * 100 : 0;
-    
-    document.getElementById('total-acoes-valor').innerText   = val > 0 ? fmt(val) : 'R$ 0,00';
-    document.getElementById('qtd-total').innerText           = q;
-    document.getElementById('pm-oficial').innerText          = fmt(pm);
-    document.getElementById('rent-tag').innerText            = fmtP(rent);
-    document.getElementById('rent-tag').style.color          = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
-    document.getElementById('saldo-caixa').innerText         = fmt(dados.caixaDisponivel);
-    
-    // Proteção para cotacaoAcao ser null
-    const cotacaoParaCompra = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
-    document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel / cotacaoParaCompra)} ações BBAS3`;
-    
-    document.getElementById('troco-cofre').innerText         = fmt(dados.troco.cofre);
-    document.getElementById('troco-transferido').innerText   = fmt(dados.troco.transferido);
-    document.getElementById('aportes-cofre').innerText       = fmt(dados.aportes.cofre);
-    document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
-    
-    atualizarMonitor();
-    salvar();
-}
+    // ════════════════════════════════════════════════════════
+    // Tela principal (inalterada)
+    // ════════════════════════════════════════════════════════
+    function atualizarTela() {
+        const q    = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+        const c    = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
+        const pm   = q > 0 ? c / q : 0;
+        const val  = (cotacaoAcao !== null && q > 0) ? parseFloat((q * cotacaoAcao).toFixed(2)) : 0;
+        const rent = (pm > 0 && cotacaoAcao !== null) ? ((cotacaoAcao - pm) / pm) * 100 : 0;
+        document.getElementById('total-acoes-valor').innerText   = val > 0 ? fmt(val) : 'R$ 0,00';
+        document.getElementById('qtd-total').innerText           = q;
+        document.getElementById('pm-oficial').innerText          = fmt(pm);
+        document.getElementById('rent-tag').innerText            = fmtP(rent);
+        document.getElementById('rent-tag').style.color          = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
+        document.getElementById('saldo-caixa').innerText         = fmt(dados.caixaDisponivel);
+        const cotacaoParaCompra = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
+        document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel / cotacaoParaCompra)} ações BBAS3`;
+        document.getElementById('troco-cofre').innerText         = fmt(dados.troco.cofre);
+        document.getElementById('troco-transferido').innerText   = fmt(dados.troco.transferido);
+        document.getElementById('aportes-cofre').innerText       = fmt(dados.aportes.cofre);
+        document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
+        atualizarMonitor();
+        salvar();
+    }
 
-    // ---- Compra (inalterada) ----
+    // ════════════════════════════════════════════════════════
+    // Compra, Backup (inalterados)
+    // ════════════════════════════════════════════════════════
     function abrirCompra() {
         const q = prompt("Quantidade comprada:");
         const p = prompt("Preço pago (ex: 25,50):");
@@ -719,8 +792,6 @@ function atualizarTela() {
             atualizarTela();
         }
     }
-
-    // ---- Backup (inalterado) ----
     function exportar() {
         const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
         const a    = document.createElement('a');
@@ -746,11 +817,17 @@ function atualizarTela() {
     }
     function limparTudo() {
         if (confirm("TOURSO, zerar o aplicativo agora?")) {
-            localStorage.removeItem(CHAVE); location.reload();
+            localStorage.removeItem(CHAVE);
+            // Limpa também os históricos
+            localStorage.removeItem(HIST_KEYS.troco);
+            localStorage.removeItem(HIST_KEYS.aportes);
+            location.reload();
         }
     }
 
-    // ---- Init ----
+    // ════════════════════════════════════════════════════════
+    // Init
+    // ════════════════════════════════════════════════════════
     bindHints();
     atualizarTela();
     buscarCotacao();
