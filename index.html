@@ -383,26 +383,34 @@
     const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 
     async function buscarPrecoOpcao() {
-        try {
-            const c   = new AbortController();
-            const t   = setTimeout(() => c.abort(), 10000);
-            const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: c.signal, cache: 'no-store' });
-            clearTimeout(t);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const texto  = await res.text();
-            const linhas = texto.trim().split('\n');
-            if (linhas.length < 4) throw new Error('Linhas insuficientes');
-            const cols  = linhas[3].split(',').map(c => c.replace(/"/g, '').trim());
-            if (cols.length < 3) throw new Error('Colunas insuficientes');
-            const raw   = cols[2].replace(/R\$\s*/i, '').replace(/\s/g, '').replace(',', '.');
-            const valor = parseFloat(raw);
+    try {
+        const c = new AbortController();
+        const t = setTimeout(() => c.abort(), 10000);
+        const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
+            signal: c.signal,
+            cache: 'no-store'
+        });
+        clearTimeout(t);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const texto = await res.text();
+
+        const linhas = texto.split('\n');
+        if (linhas.length < 4) throw new Error('Planilha com menos de 4 linhas');
+
+        const linha4 = linhas[3];
+        const match = linha4.match(/"(\d+),(\d+)"/);
+        
+        if (match) {
+            const valor = parseFloat(match[1] + '.' + match[2]);
             if (!isNaN(valor) && valor > 0) return valor;
-            throw new Error('Valor inválido: ' + raw);
-        } catch (e) {
-            console.warn('Planilha opção:', e.message);
-            return null;
         }
+        
+        throw new Error('Valor não encontrado');
+    } catch(e) {
+        console.warn('Planilha opção:', e.message);
+        return null;
     }
+}
 
     // ---- Busca cotações ----
     async function buscarCotacao() {
