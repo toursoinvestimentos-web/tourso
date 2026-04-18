@@ -553,14 +553,14 @@
                 pColor  = 'var(--alta)'; pBarW = 100;
                 pLinha1 = '💰 Meta atingida — Encerrar posição';
                 const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
-                pLinha2 = `💰 Fechar agora: ${fmt(valorTotalAtual)}`;
+                pLinha2 = `💰 Se fechar: ${fmt(valorTotalAtual)}`;
             } else {
                 pColor  = '#f1c40f';
                 pBarW   = (desv / meta) * 100;
                 const faltam = (meta - desv).toFixed(2).replace('.', ',');
                 pLinha1 = `⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;
                 const valorTotalAtual = (prem - cotacaoOpcao) * qtd;
-                pLinha2 = `💰 Fechar agora: ${fmt(valorTotalAtual)}`;
+                pLinha2 = `💰 Se fechar: ${fmt(valorTotalAtual)}`;
             }
 
             secaoPremio = `
