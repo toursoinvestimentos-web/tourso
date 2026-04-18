@@ -333,7 +333,7 @@
     if (!dados.aportes)            dados.aportes = { cofre: 0, transferido: 0 };
     if (!dados.setup.metaSaida)    dados.setup.metaSaida = 85;
 
-    let cotacaoAcao  = 24.92;
+    let cotacaoAcao  = null;
     let cotacaoOpcao = null;
     let _acaoAtiva   = {};
     let _buscando    = false;
@@ -470,19 +470,22 @@
             : '';
 
         // ── Seção 1: Ação | Opção ──────────────────────────────────
-        const secaoTopo = `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
-                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${fmt(preco)}</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
-                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div>
-                </div>
-            </div>
-            ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
-        `;
+const valorAcao = (preco !== null && preco !== undefined) ? fmt(preco) : '—';
+const valorOpcao = (cotacaoOpcao !== null) ? fmt(cotacaoOpcao) : '—';
+
+const secaoTopo = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
+            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorAcao}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
+            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${valorOpcao}</div>
+        </div>
+    </div>
+    ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
+`;
 
         // ── Seção 2: Monitor de Strike ─────────────────────────────
         const range  = strike - entrada;
@@ -678,27 +681,33 @@
         atualizarTela();
     }
 
-    // ---- Tela principal (inalterada) ----
-    function atualizarTela() {
-        const q    = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-        const c    = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
-        const pm   = q > 0 ? c / q : 0;
-        const val  = parseFloat((q * cotacaoAcao).toFixed(2));
-        const rent = pm > 0 ? ((cotacaoAcao - pm) / pm) * 100 : 0;
-        document.getElementById('total-acoes-valor').innerText   = fmt(val);
-        document.getElementById('qtd-total').innerText           = q;
-        document.getElementById('pm-oficial').innerText          = fmt(pm);
-        document.getElementById('rent-tag').innerText            = fmtP(rent);
-        document.getElementById('rent-tag').style.color          = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
-        document.getElementById('saldo-caixa').innerText         = fmt(dados.caixaDisponivel);
-        document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel / cotacaoAcao)} ações BBAS3`;
-        document.getElementById('troco-cofre').innerText         = fmt(dados.troco.cofre);
-        document.getElementById('troco-transferido').innerText   = fmt(dados.troco.transferido);
-        document.getElementById('aportes-cofre').innerText       = fmt(dados.aportes.cofre);
-        document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
-        atualizarMonitor();
-        salvar();
-    }
+    // ---- Tela principal ----
+function atualizarTela() {
+    const q    = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const c    = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
+    const pm   = q > 0 ? c / q : 0;
+    const val  = (cotacaoAcao !== null && q > 0) ? parseFloat((q * cotacaoAcao).toFixed(2)) : 0;
+    const rent = (pm > 0 && cotacaoAcao !== null) ? ((cotacaoAcao - pm) / pm) * 100 : 0;
+    
+    document.getElementById('total-acoes-valor').innerText   = val > 0 ? fmt(val) : 'R$ 0,00';
+    document.getElementById('qtd-total').innerText           = q;
+    document.getElementById('pm-oficial').innerText          = fmt(pm);
+    document.getElementById('rent-tag').innerText            = fmtP(rent);
+    document.getElementById('rent-tag').style.color          = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
+    document.getElementById('saldo-caixa').innerText         = fmt(dados.caixaDisponivel);
+    
+    // Proteção para cotacaoAcao ser null
+    const cotacaoParaCompra = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
+    document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel / cotacaoParaCompra)} ações BBAS3`;
+    
+    document.getElementById('troco-cofre').innerText         = fmt(dados.troco.cofre);
+    document.getElementById('troco-transferido').innerText   = fmt(dados.troco.transferido);
+    document.getElementById('aportes-cofre').innerText       = fmt(dados.aportes.cofre);
+    document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
+    
+    atualizarMonitor();
+    salvar();
+}
 
     // ---- Compra (inalterada) ----
     function abrirCompra() {
