@@ -333,12 +333,10 @@
     if (!dados.aportes)            dados.aportes = { cofre: 0, transferido: 0 };
     if (!dados.setup.metaSaida)    dados.setup.metaSaida = 85;
 
-    let cotacaoAcao  = null;
-let ultimoValorAcao = null;
-let cotacaoOpcao = null;
-let ultimoValorOpcao = null;
-let _acaoAtiva   = {};
-let _buscando    = false;
+    let cotacaoAcao  = 24.92;
+    let cotacaoOpcao = null;
+    let _acaoAtiva   = {};
+    let _buscando    = false;
 
     // ---- Utils ----
     function fmt(n)   { return 'R$ ' + parseFloat(n).toFixed(2).replace('.', ','); }
@@ -384,7 +382,7 @@ let _buscando    = false;
     // ---- Busca OPÇÃO via Google Sheets CSV (célula C4) ----
     const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 
-async function buscarPrecoOpcao() {
+    async function buscarPrecoOpcao() {
     try {
         const c = new AbortController();
         const t = setTimeout(() => c.abort(), 10000);
@@ -404,60 +402,39 @@ async function buscarPrecoOpcao() {
         
         if (match) {
             const valor = parseFloat(match[1] + '.' + match[2]);
-            if (!isNaN(valor) && valor > 0) {
-                // 🔥 GUARDA O ÚLTIMO VALOR BOM
-                localStorage.setItem('ultimoValorOpcao', valor);
-                return valor;
-            }
+            if (!isNaN(valor) && valor > 0) return valor;
         }
         
         throw new Error('Valor não encontrado');
     } catch(e) {
         console.warn('Planilha opção:', e.message);
-        // 🔥 SE FALHOU, USA O ÚLTIMO VALOR GUARDADO
-        const ultimo = localStorage.getItem('ultimoValorOpcao');
-        if (ultimo !== null) return parseFloat(ultimo);
         return null;
     }
 }
 
-  // ---- Busca cotações ----
-async function buscarCotacao() {
-    if (_buscando) return;
-    _buscando = true;
+    // ---- Busca cotações ----
+    async function buscarCotacao() {
+        if (_buscando) return;
+        _buscando = true;
 
-    const cod = dados.setup?.codigoOpcao?.trim();
-    const [pAcao, pOpcao] = await Promise.all([
-        buscarPreco('BBAS3.SA'),
-        cod ? buscarPrecoOpcao() : Promise.resolve(null)
-    ]);
+        const cod = dados.setup?.codigoOpcao?.trim();
+        const [pAcao, pOpcao] = await Promise.all([
+            buscarPreco('BBAS3.SA'),
+            cod ? buscarPrecoOpcao() : Promise.resolve(null)
+        ]);
 
-    // AÇÃO
-    if (pAcao !== null) {
-        ultimoValorAcao = cotacaoAcao;  // guarda o valor anterior
-        cotacaoAcao = pAcao;
-        document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
-        document.getElementById('status-bolinha').style.background = '#00e676';
-    } else {
-        document.getElementById('status-bolinha').style.background = '#f1c40f';
-        // NÃO muda cotacaoAcao - mantém o último valor bom
-        // Se nunca teve valor, mostra null
-    }
-    
-    // OPÇÃO
-    if (cod) {
-        if (pOpcao !== null) {
-            ultimoValorOpcao = pOpcao;
-            cotacaoOpcao = pOpcao;
+        if (pAcao !== null) {
+            cotacaoAcao = pAcao;
+            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
+            document.getElementById('status-bolinha').style.background = '#00e676';
         } else {
-            cotacaoOpcao = null;
-            // ultimoValorOpcao continua com o último valor bom
+            document.getElementById('status-bolinha').style.background = '#f1c40f';
         }
-    }
+        if (cod) cotacaoOpcao = pOpcao;
 
-    _buscando = false;
-    atualizarTela();
-}
+        _buscando = false;
+        atualizarTela();
+    }
 
     // ================================================================
     // MONITOR — totalmente novo para vCALL 1.0
@@ -492,20 +469,20 @@ async function buscarCotacao() {
             ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
             : '';
 
-    // ── Seção 1: Ação | Opção ──────────────────────────────────
-const secaoTopo = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
-            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${fmt(preco)}</div>
-        </div>
-        <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
-            <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
-            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div>
-        </div>
-    </div>
-    ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
-`;
+        // ── Seção 1: Ação | Opção ──────────────────────────────────
+        const secaoTopo = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
+                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${fmt(preco)}</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
+                    <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div>
+                </div>
+            </div>
+            ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
+        `;
 
         // ── Seção 2: Monitor de Strike ─────────────────────────────
         const range  = strike - entrada;
