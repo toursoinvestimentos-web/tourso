@@ -402,12 +402,17 @@
         
         if (match) {
             const valor = parseFloat(match[1] + '.' + match[2]);
-            if (!isNaN(valor) && valor > 0) return valor;
+            if (!isNaN(valor) && valor > 0) {
+                // 🔥 GUARDA NO LOCALSTORAGE
+                localStorage.setItem('opcao_cache', valor);
+                return valor;
+            }
         }
         
         throw new Error('Valor não encontrado');
     } catch(e) {
         console.warn('Planilha opção:', e.message);
+        // 🔥 USA O CACHE SE EXISTIR
         const cache = localStorage.getItem('opcao_cache');
         if (cache !== null) return parseFloat(cache);
         return null;
