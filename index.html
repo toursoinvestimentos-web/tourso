@@ -485,27 +485,16 @@ async function buscarCotacao() {
             ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
             : '';
 
-      // ── Seção 1: Ação | Opção ──────────────────────────────────
-// Usa a bolinha como referência de online/offline para ação
-const acaoOnline = (document.getElementById('status-bolinha').style.background === '#00e676');
-const opcaoOnline = (cotacaoOpcao !== null);
-
-const corAcao = acaoOnline ? '#aaa' : '#555';
-const corOpcao = opcaoOnline ? '#aaa' : '#555';
-
-// Para exibir: se online mostra valor atual, se offline mostra último valor salvo
-const valorAcaoExibir = acaoOnline ? fmt(preco) : (ultimoValorAcao !== undefined ? fmt(ultimoValorAcao) : fmt(preco));
-const valorOpcaoExibir = opcaoOnline ? fmt(cotacaoOpcao) : (ultimoValorOpcao !== null ? fmt(ultimoValorOpcao) : '—');
-
+    // ── Seção 1: Ação | Opção ──────────────────────────────────
 const secaoTopo = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
             <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
-            <div style="font-size:1.15em; font-weight:bold; color:${corAcao};">${valorAcaoExibir}</div>
+            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${fmt(preco)}</div>
         </div>
         <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
             <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
-            <div style="font-size:1.15em; font-weight:bold; color:${corOpcao};">${valorOpcaoExibir}</div>
+            <div style="font-size:1.15em; font-weight:bold; color:#aaa;">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div>
         </div>
     </div>
     ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
