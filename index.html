@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.2</title>
+    <title>TOURSO_vCALL 1.3</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -108,13 +108,12 @@
 </div>
 
 <!-- Monitor de Venda Coberta -->
-<div id="card-monitor" class="card" style="border-left-color:#444; cursor:pointer;" onclick="abrirSetup()">
+<div id="card-monitor" class="card" style="border-left-color:#444;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div class="pilar-label">Monitor de Venda Coberta (CALL)</div>
-        <span style="font-size:1.2em;">⚙️</span>
     </div>
     <div id="monitor-conteudo" style="text-align:center; padding:14px 0; color:#555; font-size:0.85em;">
-        Toque ⚙️ para configurar a meta, depois abra uma operação abaixo.
+        Abra uma operação no card abaixo para iniciar o monitoramento.
     </div>
 </div>
 
@@ -229,28 +228,7 @@
     <input type="file" id="input-file" style="display:none" onchange="importar(this)">
 </div>
 
-<!-- ══ Modal Setup (simplificado: só código da opção + meta) ══ -->
-<div class="modal-overlay" id="modal-setup">
-    <div class="modal-box">
-        <h3>⚙️ Configurações</h3>
-        <div class="modal-campo">
-            <label>Código da Opção</label>
-            <input type="text" id="inp-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
-            <small>Preço buscado via planilha Google Sheets.</small>
-        </div>
-        <div class="modal-campo">
-            <label>Meta de Saída da Cautelar (%)</label>
-            <input type="number" inputmode="numeric" id="inp-saida" placeholder="Ex: 85" min="1" max="100">
-            <small id="saida-hint" style="color:var(--ciano);"></small>
-        </div>
-        <div class="modal-btns">
-            <button class="btn-cancelar" onclick="fecharSetup()">Cancelar</button>
-            <button class="btn-salvar"   onclick="salvarSetup()">Salvar</button>
-        </div>
-    </div>
-</div>
-
-<!-- ══ NOVO: Modal Nova Operação ══ -->
+<!-- ══ Modal Nova Operação ══ -->
 <div class="modal-overlay" id="modal-nova-op">
     <div class="modal-box">
         <h3>📈 Nova Operação de CALL</h3>
@@ -279,6 +257,16 @@
         <div class="modal-campo">
             <label>Data de Vencimento</label>
             <input type="date" id="nop-venc">
+        </div>
+        <div class="modal-campo">
+            <label>Código da Opção</label>
+            <input type="text" inputmode="text" id="nop-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
+            <small>Aparece no topo como "Opção Ativa" e busca a cotação.</small>
+        </div>
+        <div class="modal-campo">
+            <label>Meta de saída da operação (%)</label>
+            <input type="number" inputmode="numeric" id="nop-meta" placeholder="Ex: 85" min="1" max="100" value="85">
+            <small id="nop-meta-hint" style="color:var(--ciano);"></small>
         </div>
         <div class="modal-btns">
             <button class="btn-cancelar" onclick="fecharNovaOp()">Cancelar</button>
@@ -357,7 +345,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 1.2", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 1.3", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -434,35 +422,6 @@ function formatarDataCurta(iso) {
 }
 
 // ════════════════════════════════════════════════════════════
-// Setup (simplificado — só código da opção + meta)
-// ════════════════════════════════════════════════════════════
-function abrirSetup() {
-    document.getElementById('inp-codigo').value = dados.setup.codigoOpcao || '';
-    document.getElementById('inp-saida').value  = dados.setup.metaSaida   || 85;
-    atualizarHintSaida();
-    document.getElementById('modal-setup').classList.add('ativo');
-}
-function fecharSetup() { document.getElementById('modal-setup').classList.remove('ativo'); }
-function atualizarHintSaida() {
-    const prem = dados.setup.premioRecebido;
-    const meta = parseInt(document.getElementById('inp-saida').value) || 0;
-    if (prem && meta) {
-        const alvo = parseFloat((prem*(1-meta/100)).toFixed(2));
-        document.getElementById('saida-hint').innerText = `Sair quando opção chegar em ${fmt(alvo)} (${meta}% de queda)`;
-    } else { document.getElementById('saida-hint').innerText = ''; }
-}
-document.getElementById('inp-saida').addEventListener('input', atualizarHintSaida);
-
-function salvarSetup() {
-    dados.setup.codigoOpcao = document.getElementById('inp-codigo').value.toUpperCase().trim();
-    dados.setup.metaSaida   = parseInt(document.getElementById('inp-saida').value) || 85;
-    cotacaoOpcao = null;
-    fecharSetup();
-    atualizarTela();
-    buscarCotacao();
-}
-
-// ════════════════════════════════════════════════════════════
 // Operações de CALL — Nova operação
 // ════════════════════════════════════════════════════════════
 function acaoBotaoCall() {
@@ -480,17 +439,30 @@ function abrirNovaOp() {
     document.getElementById('nop-qtd').value    = '';
     document.getElementById('nop-premio').value = '';
     document.getElementById('nop-venc').value   = '';
-    document.getElementById('nop-hint').innerText = '';
+    document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
+    document.getElementById('nop-meta').value   = dados.setup.metaSaida   || 85;
+    document.getElementById('nop-hint').innerText      = '';
+    document.getElementById('nop-meta-hint').innerText = '';
     document.getElementById('modal-nova-op').classList.add('ativo');
 }
 function fecharNovaOp() { document.getElementById('modal-nova-op').classList.remove('ativo'); }
 
-// Hint do prêmio total na nova operação
+// Hints na nova operação
 ['nop-qtd','nop-premio'].forEach(id => document.getElementById(id).addEventListener('input', () => {
     const qtd  = parseInt(document.getElementById('nop-qtd').value) || 0;
     const prem = toNum(document.getElementById('nop-premio').value);
     document.getElementById('nop-hint').innerText = (qtd && prem) ? `Total: ${fmt(qtd*prem)} (${qtd} × ${fmt(prem)})` : '';
+    atualizarHintMeta();
 }));
+document.getElementById('nop-meta').addEventListener('input', atualizarHintMeta);
+function atualizarHintMeta() {
+    const prem = toNum(document.getElementById('nop-premio').value);
+    const meta = parseInt(document.getElementById('nop-meta').value) || 0;
+    if (prem && meta) {
+        const alvo = parseFloat((prem*(1-meta/100)).toFixed(2));
+        document.getElementById('nop-meta-hint').innerText = `Sair quando opção chegar em ${fmt(alvo)} (${meta}% de queda)`;
+    } else { document.getElementById('nop-meta-hint').innerText = ''; }
+}
 
 function confirmarNovaOp() {
     const dataAb = document.getElementById('nop-data').value;
@@ -499,21 +471,26 @@ function confirmarNovaOp() {
     const qtd    = parseInt(document.getElementById('nop-qtd').value) || 0;
     const premio = toNum(document.getElementById('nop-premio').value);
     const venc   = document.getElementById('nop-venc').value;
+    const codigo = document.getElementById('nop-codigo').value.toUpperCase().trim();
+    const meta   = parseInt(document.getElementById('nop-meta').value) || 85;
 
-    if (!dataAb || !preco || !strike || !qtd || !premio || !venc) {
+    if (!dataAb || !preco || !strike || !qtd || !premio || !venc || !codigo) {
         alert('Preencha todos os campos antes de abrir a operação.'); return;
     }
 
     const otm = ((strike - preco) / preco) * 100;
 
-    ops.operacaoAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, otm };
+    ops.operacaoAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, otm, codigoOpcao:codigo };
 
-    // Alimenta o monitor automaticamente
-    dados.setup.precoEntrada  = preco;
-    dados.setup.strike        = strike;
-    dados.setup.qtdAcoes      = qtd;
-    dados.setup.premioRecebido= premio;
-    dados.setup.vencimento    = venc;
+    // Alimenta o monitor e o setup automaticamente
+    dados.setup.precoEntrada   = preco;
+    dados.setup.strike         = strike;
+    dados.setup.qtdAcoes       = qtd;
+    dados.setup.premioRecebido = premio;
+    dados.setup.vencimento     = venc;
+    dados.setup.codigoOpcao    = codigo;   // → alimenta "Opção Ativa" no topo
+    dados.setup.metaSaida      = meta;     // → alimenta Monitor de Prêmio
+    cotacaoOpcao = null;
 
     fecharNovaOp();
     salvarOp();
@@ -790,7 +767,7 @@ async function buscarCotacao() {
 function atualizarMonitor() {
     const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
     document.getElementById('header-opcao').innerText=s.codigoOpcao?s.codigoOpcao.toUpperCase():'— sem setup —';
-    if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Toque ⚙️ para configurar a meta, depois abra uma operação abaixo.</span>`; card.style.borderLeftColor='#444'; return; }
+    if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
     const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0, meta=s.metaSaida||85;
     let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
     const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
