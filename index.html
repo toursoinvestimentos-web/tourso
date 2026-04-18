@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO Invest</title>
+    <title>TOURSO_vCALL 1.0</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -67,27 +67,27 @@
         .btn-guardar   { background: #444; color: var(--branco); }
         .btn-transferir{ background: var(--ciano); color: var(--fundo); }
 
-        /* Monitor */
-        .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 10px 0 4px; position: relative; overflow: visible; }
+        /* Barra Strike (ponto móvel) */
+        .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 8px 0 4px; position: relative; overflow: visible; }
         .barra-fill   { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
         .barra-marker { position: absolute; top: -2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--branco); transition: left 0.6s, background 0.5s; transform: translateX(-50%); }
-        .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .monitor-item { background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; }
-        .monitor-item-label { font-size: 0.63em; color: #aaa; text-transform: uppercase; }
-        .monitor-item-val   { font-size: 1em; font-weight: bold; margin-top: 3px; }
-        .monitor-phrase { font-size: 0.82em; font-weight: bold; margin-top: 10px; text-align: center; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.25); }
 
         /* Banner instalação */
         #banner-install { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--ciano); color: var(--fundo); padding: 14px 20px; z-index: 200; align-items: center; justify-content: space-between; font-weight: bold; font-size: 0.9em; }
         #banner-install.visivel { display: flex; }
         #banner-install button { background: var(--fundo); color: var(--ciano); border: none; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer; }
+
+        /* Separadores internos do monitor */
+        .monitor-sep { font-size: 0.63em; color: #555; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
+        /* Caixinhas de observação */
+        .obs-box { border-radius: 8px; padding: 10px 12px; background: rgba(0,0,0,0.25); }
     </style>
 </head>
 <body>
 
     <!-- Banner PWA -->
     <div id="banner-install">
-        <span>📲 Instalar TOURSO como app</span>
+        <span>📲 Instalar TOURSO_vCALL como app</span>
         <button onclick="instalarApp()">INSTALAR</button>
     </div>
 
@@ -107,8 +107,8 @@
 
     <!-- Monitor de Venda Coberta -->
     <div id="card-monitor" class="card" style="border-left-color:#444; cursor:pointer;" onclick="abrirSetup()">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div class="pilar-label">Monitor de Venda Coberta</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div class="pilar-label">Monitor de Venda Coberta (CALL)</div>
             <span style="font-size:1.2em;">⚙️</span>
         </div>
         <div id="monitor-conteudo" style="text-align:center; padding:14px 0; color:#555; font-size:0.85em;">
@@ -190,6 +190,7 @@
             <div class="modal-campo">
                 <label>Código da Opção</label>
                 <input type="text" id="inp-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
+                <small>Preço buscado via planilha Google Sheets.</small>
             </div>
             <div class="modal-campo">
                 <label>Quantidade de Ações Comprometidas</label>
@@ -210,8 +211,13 @@
             </div>
             <div class="modal-campo">
                 <label>Prêmio Recebido por Ação (R$)</label>
-                <input type="text" inputmode="decimal" id="inp-premio" placeholder="Ex: 1,00">
+                <input type="text" inputmode="decimal" id="inp-premio" placeholder="Ex: 0,48">
                 <small id="premio-total-hint" style="color:var(--ciano);"></small>
+            </div>
+            <div class="modal-campo">
+                <label>Meta de Saída da Cautelar (%)</label>
+                <input type="number" inputmode="numeric" id="inp-saida" placeholder="Ex: 85" min="1" max="100">
+                <small id="saida-hint" style="color:var(--ciano);"></small>
             </div>
             <div class="modal-btns">
                 <button class="btn-cancelar" onclick="fecharSetup()">Cancelar</button>
@@ -236,21 +242,37 @@
     </div>
 
     <script>
-    // ---- PWA ----
+    // ---- PWA: ícone igual ao logo do header ----
     (function() {
-        const svg  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#2c2f33"/><polygon points="256,80 200,180 312,180" fill="#00bcd4"/><text x="256" y="390" font-family="Arial" font-size="150" font-weight="bold" fill="white" text-anchor="middle">T</text></svg>`;
+        // Mesmo logo do header, centralizado em 400x400
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+            <rect width="400" height="400" fill="#2c2f33"/>
+            <rect x="80" y="130" width="240" height="15" fill="#00bcd4"/>
+            <polygon points="200,150 170,200 230,200" fill="#00bcd4"/>
+            <text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text>
+            <text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text>
+        </svg>`;
         const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-        const mf   = { name:"TOURSO Invest", short_name:"TOURSO", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
-        document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
+        const mf = {
+            name: "TOURSO_vCALL 1.0", short_name: "vCALL",
+            start_url: "./", scope: "./", display: "standalone",
+            background_color: "#2c2f33", theme_color: "#00bcd4",
+            icons: [
+                { src: icon, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+                { src: icon, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+            ]
+        };
+        document.getElementById('manifest-link').href =
+            URL.createObjectURL(new Blob([JSON.stringify(mf)], { type: 'application/manifest+json' }));
     })();
+
     if ('serviceWorker' in navigator) {
         const sw = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
-        navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
+        navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw], { type: 'text/javascript' }))).catch(() => {});
     }
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
+        e.preventDefault(); deferredPrompt = e;
         document.getElementById('banner-install').classList.add('visivel');
     });
     window.addEventListener('appinstalled', () => {
@@ -266,20 +288,35 @@
         });
     }
 
-    // ---- Hint prêmio total ----
-    function bindHint() {
-        ['inp-qtd','inp-premio'].forEach(id => document.getElementById(id).addEventListener('input', calcHint));
+    // ---- Hints do modal ----
+    function bindHints() {
+        ['inp-qtd', 'inp-premio', 'inp-saida'].forEach(id =>
+            document.getElementById(id)?.addEventListener('input', calcHints)
+        );
     }
-    function calcHint() {
-        const qtd  = parseInt(document.getElementById('inp-qtd').value) || 0;
+    function calcHints() {
+        const qtd  = parseInt(document.getElementById('inp-qtd').value)   || 0;
         const prem = toNum(document.getElementById('inp-premio').value);
+        const meta = parseInt(document.getElementById('inp-saida').value) || 0;
         document.getElementById('premio-total-hint').innerText =
             (qtd && prem) ? `Total recebido: ${fmt(qtd * prem)} (${qtd} × ${fmt(prem)})` : '';
+        if (prem && meta) {
+            const alvo = parseFloat((prem * (1 - meta / 100)).toFixed(2));
+            document.getElementById('saida-hint').innerText =
+                `Sair quando opção chegar em ${fmt(alvo)} (${meta}% de queda)`;
+        } else {
+            document.getElementById('saida-hint').innerText = '';
+        }
     }
 
     // ---- Estado ----
     const CHAVE = 'dados_tourso_v3';
-    const BASE  = { acoes:[], caixaDisponivel:0, troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0}, setup:{codigoOpcao:'',qtdAcoes:0,precoEntrada:0,strike:0,vencimento:'',premioRecebido:0} };
+    const BASE  = {
+        acoes: [], caixaDisponivel: 0,
+        troco:   { cofre: 0, transferido: 0 },
+        aportes: { cofre: 0, transferido: 0 },
+        setup: { codigoOpcao: '', qtdAcoes: 0, precoEntrada: 0, strike: 0, vencimento: '', premioRecebido: 0, metaSaida: 85 }
+    };
 
     let dados = (() => {
         const v3 = localStorage.getItem(CHAVE);
@@ -287,13 +324,14 @@
         const v2 = localStorage.getItem('dados_tourso');
         if (v2) {
             const o = JSON.parse(v2);
-            return { acoes:o.acoes||[], caixaDisponivel:o.caixaDisponivel||0, troco:{cofre:o.caixa?.troco||0,transferido:0}, aportes:{cofre:o.caixa?.aportes||0,transferido:0}, setup:{...BASE.setup} };
+            return { acoes: o.acoes||[], caixaDisponivel: o.caixaDisponivel||0, troco:{cofre:o.caixa?.troco||0,transferido:0}, aportes:{cofre:o.caixa?.aportes||0,transferido:0}, setup:{...BASE.setup} };
         }
         return JSON.parse(JSON.stringify(BASE));
     })();
-    if (!dados.setup)   dados.setup   = {...BASE.setup};
-    if (!dados.troco)   dados.troco   = {cofre:0,transferido:0};
-    if (!dados.aportes) dados.aportes = {cofre:0,transferido:0};
+    if (!dados.setup)              dados.setup   = { ...BASE.setup };
+    if (!dados.troco)              dados.troco   = { cofre: 0, transferido: 0 };
+    if (!dados.aportes)            dados.aportes = { cofre: 0, transferido: 0 };
+    if (!dados.setup.metaSaida)    dados.setup.metaSaida = 85;
 
     let cotacaoAcao  = 24.92;
     let cotacaoOpcao = null;
@@ -301,116 +339,105 @@
     let _buscando    = false;
 
     // ---- Utils ----
-    function fmt(n)   { return 'R$ ' + parseFloat(n).toFixed(2).replace('.',','); }
-    function fmtP(n)  { return parseFloat(n).toFixed(2).replace('.',',') + '%'; }
-    function toNum(v) { return v ? parseFloat(String(v).replace(',','.')) : 0; }
+    function fmt(n)   { return 'R$ ' + parseFloat(n).toFixed(2).replace('.', ','); }
+    function fmtP(n)  { return parseFloat(n).toFixed(2).replace('.', ',') + '%'; }
+    function toNum(v) { return v ? parseFloat(String(v).replace(',', '.')) : 0; }
     function salvar() { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 
     // ---- Busca BBAS3 (inalterada) ----
     async function fetchUrl(url, ms) {
         const c = new AbortController();
         const t = setTimeout(() => c.abort(), ms);
-        try { const r = await fetch(url,{signal:c.signal}); clearTimeout(t); return r; }
-        catch(e) { clearTimeout(t); throw e; }
+        try { const r = await fetch(url, { signal: c.signal }); clearTimeout(t); return r; }
+        catch (e) { clearTimeout(t); throw e; }
     }
 
     async function buscarPreco(ticker) {
-        const semSA = ticker.replace('.SA','');
-
+        const semSA = ticker.replace('.SA', '');
         try {
             const r = await fetchUrl(`https://brapi.dev/api/quote/${semSA}?token=demo`, 7000);
             const j = await r.json();
             const p = j?.results?.[0]?.regularMarketPrice;
             if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
+        } catch (e) {}
         try {
-            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
+            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker)}`;
             const r   = await fetchUrl(url, 7000);
             const j   = await r.json();
             const d   = JSON.parse(j.contents);
             const p   = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
             if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
+        } catch (e) {}
         try {
-            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+ticker)}`;
+            const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/' + ticker)}`;
             const r   = await fetchUrl(url, 7000);
             const j   = await r.json();
             const d   = JSON.parse(j.contents);
             const p   = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
             if (p && !isNaN(p)) return parseFloat(p.toFixed(2));
-        } catch(e) {}
-
+        } catch (e) {}
         return null;
     }
 
-    // ---- NOVO: busca opção via Google Sheets CSV (célula C4) ----
-    // Linha 4 = índice 3 | Coluna C = índice 2
+    // ---- Busca OPÇÃO via Google Sheets CSV (célula C4) ----
     const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 
-   async function buscarPrecoOpcao() {
-    try {
-        const c = new AbortController();
-        const t = setTimeout(() => c.abort(), 10000);
-        const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
-            signal: c.signal,
-            cache: 'no-store'
-        });
-        clearTimeout(t);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const texto = await res.text();
-
-        const linhas = texto.split('\n');
-        if (linhas.length < 4) throw new Error('Planilha com menos de 4 linhas');
-
-        const linha4 = linhas[3];
-        const match = linha4.match(/"(\d+),(\d+)"/);
-        
-        if (match) {
-            const valor = parseFloat(match[1] + '.' + match[2]);
+    async function buscarPrecoOpcao() {
+        try {
+            const c   = new AbortController();
+            const t   = setTimeout(() => c.abort(), 10000);
+            const res = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: c.signal, cache: 'no-store' });
+            clearTimeout(t);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const texto  = await res.text();
+            const linhas = texto.trim().split('\n');
+            if (linhas.length < 4) throw new Error('Linhas insuficientes');
+            const cols  = linhas[3].split(',').map(c => c.replace(/"/g, '').trim());
+            if (cols.length < 3) throw new Error('Colunas insuficientes');
+            const raw   = cols[2].replace(/R\$\s*/i, '').replace(/\s/g, '').replace(',', '.');
+            const valor = parseFloat(raw);
             if (!isNaN(valor) && valor > 0) return valor;
+            throw new Error('Valor inválido: ' + raw);
+        } catch (e) {
+            console.warn('Planilha opção:', e.message);
+            return null;
         }
-        
-        throw new Error('Valor não encontrado');
-    } catch(e) {
-        console.warn('Planilha opção:', e.message);
-        return null;
     }
-}
 
     // ---- Busca cotações ----
     async function buscarCotacao() {
         if (_buscando) return;
         _buscando = true;
 
-        // BBAS3 e opção em paralelo
+        const cod = dados.setup?.codigoOpcao?.trim();
         const [pAcao, pOpcao] = await Promise.all([
             buscarPreco('BBAS3.SA'),
-            dados.setup?.codigoOpcao?.trim() ? buscarPrecoOpcao() : Promise.resolve(null)
+            cod ? buscarPrecoOpcao() : Promise.resolve(null)
         ]);
 
         if (pAcao !== null) {
             cotacaoAcao = pAcao;
-            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
+            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
             document.getElementById('status-bolinha').style.background = '#00e676';
         } else {
             document.getElementById('status-bolinha').style.background = '#f1c40f';
         }
-
-        cotacaoOpcao = pOpcao; // null se planilha falhou ou não há opção configurada
+        if (cod) cotacaoOpcao = pOpcao;
 
         _buscando = false;
         atualizarTela();
     }
 
-    // ---- Monitor (inalterado) ----
+    // ================================================================
+    // MONITOR — totalmente novo para vCALL 1.0
+    // ================================================================
     function atualizarMonitor() {
         const s    = dados.setup;
         const el   = document.getElementById('monitor-conteudo');
         const card = document.getElementById('card-monitor');
 
-        document.getElementById('header-opcao').innerText = s.codigoOpcao ? s.codigoOpcao.toUpperCase() : '— sem setup —';
+        document.getElementById('header-opcao').innerText =
+            s.codigoOpcao ? s.codigoOpcao.toUpperCase() : '— sem setup —';
 
         if (!s.codigoOpcao || !s.precoEntrada || !s.strike) {
             el.innerHTML = `<span style="color:#555;">Toque ⚙️ para configurar sua operação</span>`;
@@ -422,91 +449,190 @@
         const strike  = s.strike;
         const entrada = s.precoEntrada;
         const prem    = s.premioRecebido;
-        const qtd     = s.qtdAcoes || 0;
+        const qtd     = s.qtdAcoes  || 0;
+        const meta    = s.metaSaida || 85;
 
-        const dist  = ((strike - preco) / preco) * 100;
-        const varAc = ((preco - entrada) / entrada) * 100;
-
-        let ganhoHTML = '';
-        if (cotacaoOpcao !== null && prem > 0) {
-            const ganho = ((prem - cotacaoOpcao) / prem) * 100;
-            const corG  = ganho >= 0 ? 'var(--alta)' : 'var(--queda)';
-            const tot   = qtd > 0 ? ` &nbsp;|&nbsp; Total: <b>${fmt((prem - cotacaoOpcao) * qtd)}</b>` : '';
-            ganhoHTML = `<div style="text-align:center; font-size:0.8em; margin-top:8px;">
-                Ganho no Prêmio: <b style="color:${corG}">${fmtP(ganho)}</b>${tot}
-                &nbsp;|&nbsp; Opção agora: <b>${fmt(cotacaoOpcao)}</b>
-            </div>`;
-        } else if (prem > 0) {
-            const tot = qtd > 0 ? ` &nbsp;|&nbsp; Total: <b style="color:var(--ciano)">${fmt(prem * qtd)}</b>` : '';
-            ganhoHTML = `<div style="text-align:center; font-size:0.8em; margin-top:8px; color:#aaa;">
-                Prêmio: <b>${fmt(prem)}/ação</b>${tot}
-            </div>`;
-        }
-
-        const rawPos = strike > entrada ? Math.min(Math.max((preco - entrada)/(strike - entrada), 0), 1) : 0;
-        const posPct = (rawPos * 100).toFixed(1);
-
-        let cor, frase;
-        if (preco >= strike)    { cor='var(--queda)'; frase='🔴 PREPARE ROLAGEM: Risco de exercício!'; }
-        else if (dist < 5)      { cor='#f1c40f';      frase='⚠️ ALVO ATINGIDO: Recompre agora'; }
-        else                    { cor='var(--alta)';   frase='✅ Seguro — Aguarde a desvalorização'; }
-
-        card.style.borderLeftColor = cor;
-
-        let diasHTML = '';
+        // Dias para vencer
+        let dias = null;
         if (s.vencimento) {
-            const dias = Math.ceil((new Date(s.vencimento+'T12:00:00') - new Date()) / 86400000);
-            diasHTML = `<div style="text-align:center; font-size:0.75em; color:#aaa; margin-top:4px;">⏱ ${dias > 0 ? dias + ' dias para vencer' : 'VENCIDA'}</div>`;
+            dias = Math.ceil((new Date(s.vencimento + 'T12:00:00') - new Date()) / 86400000);
+        }
+        const diasTxt = dias !== null
+            ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
+            : '';
+
+        // ── Seção 1: Ação | Opção ──────────────────────────────────
+        const secaoTopo = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Ação</div>
+                    <div style="font-size:1.15em; font-weight:bold;">${fmt(preco)}</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.22); padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:0.63em; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Opção</div>
+                    <div style="font-size:1.15em; font-weight:bold;">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div>
+                </div>
+            </div>
+            ${diasTxt ? `<div style="text-align:center; font-size:0.8em; color:#aaa; margin-top:10px;">${diasTxt}</div>` : ''}
+        `;
+
+        // ── Seção 2: Monitor de Strike ─────────────────────────────
+        const range  = strike - entrada;
+        const rawPos = range > 0 ? (preco - entrada) / range : 0;
+        const barPct = (Math.min(Math.max(rawPos, 0), 1) * 100).toFixed(1);
+
+        let sColor, sLinha1, sLinha2;
+        if (rawPos >= 1.0) {
+            sColor = 'var(--queda)';
+            sLinha1 = '🔴 Ação — Rolar imediatamente';
+            sLinha2 = 'ITM: preço ultrapassou o strike';
+        } else if (rawPos >= 0.85) {
+            sColor = 'var(--queda)';
+            sLinha1 = '🔴 Decisão — Preparar rolagem';
+            sLinha2 = 'ATM: ação no limite do strike';
+        } else if (rawPos >= 0.60) {
+            sColor = '#f1c40f';
+            sLinha1 = '🟡 Alerta — Avaliar rolagem';
+            sLinha2 = 'Ação aproximando do strike';
+        } else if (rawPos >= 0.30) {
+            sColor = '#aaaaaa';
+            sLinha1 = '⚖️ Neutro — Acompanhar';
+            sLinha2 = 'Posição equilibrada';
+        } else {
+            sColor = 'var(--alta)';
+            sLinha1 = '🟢 OTM — Prêmio protegido';
+            sLinha2 = 'Sem risco | Aguardar';
         }
 
-        const corVar = varAc >= 0 ? 'var(--queda)' : 'var(--alta)';
+        card.style.borderLeftColor = sColor;
 
-        el.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8em; margin-bottom:6px;">
-                <span>Entrada: <b>${fmt(entrada)}</b></span>
-                ${qtd ? `<span style="color:#aaa; font-size:0.85em;">${qtd} ações</span>` : ''}
-                <span>Strike: <b style="color:${cor}">${fmt(strike)}</b></span>
-            </div>
+        const secaoStrike = `
+            <div class="monitor-sep">── Monitor de Strike ──</div>
             <div class="barra-container">
-                <div class="barra-fill" style="width:${posPct}%; background:${cor};"></div>
-                <div class="barra-marker" style="left:${posPct}%; background:${cor};"></div>
+                <div class="barra-fill" style="width:${barPct}%; background:${sColor};"></div>
+                <div class="barra-marker" style="left:${barPct}%; background:${sColor};"></div>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.72em; color:#555; margin-bottom:8px;">
-                <span>${fmt(entrada)}</span><span>${fmt(strike)}</span>
+            <div style="display:flex; justify-content:space-between; font-size:0.82em; font-weight:bold; margin:8px 0 10px;">
+                <span style="color:#ddd;">R$ ${entrada.toFixed(2).replace('.', ',')}</span>
+                <span style="color:#ddd;">R$ ${strike.toFixed(2).replace('.', ',')}</span>
             </div>
-            <div class="monitor-grid">
-                <div class="monitor-item"><div class="monitor-item-label">Ação Atual</div><div class="monitor-item-val">${fmt(preco)}</div></div>
-                <div class="monitor-item"><div class="monitor-item-label">Dist. Strike</div><div class="monitor-item-val" style="color:${cor}">${fmtP(dist)}</div></div>
-                <div class="monitor-item"><div class="monitor-item-label">Δ desde Entrada</div><div class="monitor-item-val" style="color:${corVar}">${varAc>=0?'+':''}${fmtP(varAc)}</div></div>
-                <div class="monitor-item"><div class="monitor-item-label">Opção Atual</div><div class="monitor-item-val">${cotacaoOpcao !== null ? fmt(cotacaoOpcao) : '—'}</div></div>
+            <div class="obs-box" style="border-left:3px solid ${sColor};">
+                <div style="font-size:0.83em; font-weight:bold; color:${sColor};">${sLinha1}</div>
+                <div style="font-size:0.75em; color:#aaa; margin-top:3px;">${sLinha2}</div>
             </div>
-            ${ganhoHTML}
-            ${diasHTML}
-            <div class="monitor-phrase" style="color:${cor};">${frase}</div>
         `;
+
+        // ── Seção 3: Monitor de Prêmio ─────────────────────────────
+        let secaoPremio = '';
+        if (prem > 0) {
+            let desv = null;
+            if (cotacaoOpcao !== null) {
+                desv = ((prem - cotacaoOpcao) / prem) * 100;
+            }
+
+            let pColor, pLinha1, pLinha2, pBarW = 0;
+            const desvStr = desv !== null ? desv.toFixed(2).replace('.', ',') + '%' : '—';
+
+            if (desv === null) {
+                pColor  = '#555'; pBarW = 0;
+                pLinha1 = 'Buscando cotação da opção…';
+                pLinha2 = `Prêmio recebido: ${fmt(prem)}/ação`;
+            } else if (desv < 0) {
+                pColor  = 'var(--queda)'; pBarW = 0;
+                pLinha1 = '🔺 Risco — Opção valorizando';
+                pLinha2 = `Prêmio atual: ${fmt(cotacaoOpcao)}`;
+            } else if (desv >= meta) {
+                pColor  = 'var(--alta)'; pBarW = 100;
+                pLinha1 = '💰 Meta atingida — Encerrar posição';
+                pLinha2 = `Prêmio atual: ${fmt(cotacaoOpcao)}`;
+            } else {
+                pColor  = '#f1c40f';
+                pBarW   = (desv / meta) * 100;
+                const faltam = (meta - desv).toFixed(2).replace('.', ',');
+                pLinha1 = `⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;
+                pLinha2 = `💰 Prêmio atual: ${fmt(cotacaoOpcao)}`;
+            }
+
+            secaoPremio = `
+                <div class="monitor-sep">── Monitor de Prêmio ──</div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <div style="flex:1; background:#1a1c1f; border-radius:8px; height:13px; overflow:hidden;">
+                        <div style="height:100%; border-radius:8px; background:${pColor}; width:${pBarW.toFixed(1)}%; transition:width 0.6s;"></div>
+                    </div>
+                    <span style="font-size:0.8em; font-weight:bold; color:${pColor}; min-width:46px; text-align:right;">${desvStr}</span>
+                </div>
+                <div class="obs-box" style="border-left:3px solid ${pColor};">
+                    <div style="font-size:0.83em; font-weight:bold; color:${pColor};">${pLinha1}</div>
+                    <div style="font-size:0.75em; color:#aaa; margin-top:3px;">${pLinha2}</div>
+                </div>
+            `;
+        }
+
+        // ── Seção 4: Decisão Estratégica ───────────────────────────
+        let secaoDecisao = '';
+        if (prem > 0) {
+            const desv    = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
+            const desvStr = desv !== null ? desv.toFixed(0) : '—';
+
+            let dColor, dLinha1, dLinha2;
+
+            if (desv !== null && desv >= meta) {
+                dColor  = 'var(--alta)';
+                dLinha1 = `💰 ${desvStr}% lucro`;
+                dLinha2 = '💰 ENCERRAR POSIÇÃO';
+            } else if (rawPos >= 1.0) {
+                dColor  = 'var(--queda)';
+                dLinha1 = `🔴 ITM + ${desvStr}% lucro`;
+                dLinha2 = '🔴 ROLAR IMEDIATAMENTE';
+            } else if (rawPos >= 0.85 || (dias !== null && dias <= 7 && rawPos >= 0.70)) {
+                dColor  = '#f1c40f';
+                dLinha1 = dias !== null ? `🟡 ATM + ${dias} dias` : '🟡 ATM + poucos dias';
+                dLinha2 = '🟡 PREPARAR ROLAGEM';
+            } else if (rawPos >= 0.60 && desv !== null && desv >= 70) {
+                dColor  = '#f1c40f';
+                dLinha1 = `🟡 Risco crescente + ${desvStr}% lucro`;
+                dLinha2 = '⚠️ ZONA IDEAL PARA ROLAGEM';
+            } else {
+                dColor  = 'var(--alta)';
+                dLinha1 = `🟢 OTM + ${desvStr}% lucro`;
+                dLinha2 = '✅ AGUARDAR DESVALORIZAÇÃO';
+            }
+
+            secaoDecisao = `
+                <div class="monitor-sep">── Decisão Estratégica ──</div>
+                <div class="obs-box" style="border-left:3px solid ${dColor}; text-align:center;">
+                    <div style="font-size:0.9em; font-weight:bold; color:${dColor};">${dLinha1}</div>
+                    <div style="font-size:0.9em; font-weight:bold; color:${dColor}; margin-top:5px;">${dLinha2}</div>
+                </div>
+            `;
+        }
+
+        el.innerHTML = secaoTopo + secaoStrike + secaoPremio + secaoDecisao;
     }
 
-    // ---- Modais Setup (inalterado) ----
+    // ---- Modais Setup ----
     function abrirSetup() {
         const s = dados.setup;
         document.getElementById('inp-codigo').value     = s.codigoOpcao    || '';
         document.getElementById('inp-qtd').value        = s.qtdAcoes       || '';
-        document.getElementById('inp-entrada').value    = s.precoEntrada    ? s.precoEntrada.toFixed(2).replace('.',',')    : '';
-        document.getElementById('inp-strike').value     = s.strike          ? s.strike.toFixed(2).replace('.',',')          : '';
+        document.getElementById('inp-entrada').value    = s.precoEntrada    ? s.precoEntrada.toFixed(2).replace('.', ',')    : '';
+        document.getElementById('inp-strike').value     = s.strike          ? s.strike.toFixed(2).replace('.', ',')          : '';
         document.getElementById('inp-vencimento').value = s.vencimento      || '';
-        document.getElementById('inp-premio').value     = s.premioRecebido  ? s.premioRecebido.toFixed(2).replace('.',',')  : '';
-        calcHint();
+        document.getElementById('inp-premio').value     = s.premioRecebido  ? s.premioRecebido.toFixed(2).replace('.', ',')  : '';
+        document.getElementById('inp-saida').value      = s.metaSaida       || 85;
+        calcHints();
         document.getElementById('modal-setup').classList.add('ativo');
     }
     function fecharSetup() { document.getElementById('modal-setup').classList.remove('ativo'); }
     function salvarSetup() {
         dados.setup = {
             codigoOpcao:    document.getElementById('inp-codigo').value.toUpperCase().trim(),
-            qtdAcoes:       parseInt(document.getElementById('inp-qtd').value)     || 0,
+            qtdAcoes:       parseInt(document.getElementById('inp-qtd').value)    || 0,
             precoEntrada:   toNum(document.getElementById('inp-entrada').value),
             strike:         toNum(document.getElementById('inp-strike').value),
             vencimento:     document.getElementById('inp-vencimento').value,
-            premioRecebido: toNum(document.getElementById('inp-premio').value)
+            premioRecebido: toNum(document.getElementById('inp-premio').value),
+            metaSaida:      parseInt(document.getElementById('inp-saida').value)  || 85
         };
         cotacaoOpcao = null;
         fecharSetup();
@@ -514,10 +640,10 @@
         buscarCotacao();
     }
 
-    // ---- Modais Pilar (inalterado) ----
+    // ---- Modais Pilar ----
     function abrirAcao(tipo, acao) {
         _acaoAtiva = { tipo, acao };
-        const nomes = { troco:'Troco/Troca', aportes:'Aportes' };
+        const nomes = { troco: 'Troco/Troca', aportes: 'Aportes' };
         document.getElementById('modal-acao-titulo').innerText =
             acao === 'guardar' ? `💰 Guardar em ${nomes[tipo]}` : `📤 Enviar para Conta Investimento`;
         document.getElementById('modal-acao-input').value = '';
@@ -531,7 +657,9 @@
         if (acao === 'guardar') {
             dados[tipo].cofre = parseFloat((dados[tipo].cofre + val).toFixed(2));
         } else {
-            if (val > dados[tipo].cofre + 0.001) { alert(`Saldo insuficiente no cofre.\nDisponível: ${fmt(dados[tipo].cofre)}`); return; }
+            if (val > dados[tipo].cofre + 0.001) {
+                alert(`Saldo insuficiente no cofre.\nDisponível: ${fmt(dados[tipo].cofre)}`); return;
+            }
             dados[tipo].cofre       = parseFloat((dados[tipo].cofre - val).toFixed(2));
             dados[tipo].transferido = parseFloat((dados[tipo].transferido + val).toFixed(2));
             dados.caixaDisponivel   = parseFloat((dados.caixaDisponivel + val).toFixed(2));
@@ -542,24 +670,22 @@
 
     // ---- Tela principal (inalterada) ----
     function atualizarTela() {
-        const q    = dados.acoes.reduce((a,x)=>a+x.qtd, 0);
-        const c    = dados.acoes.reduce((a,x)=>a+(x.qtd*x.preco), 0);
-        const pm   = q > 0 ? c/q : 0;
+        const q    = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+        const c    = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
+        const pm   = q > 0 ? c / q : 0;
         const val  = parseFloat((q * cotacaoAcao).toFixed(2));
-        const rent = pm > 0 ? ((cotacaoAcao - pm)/pm)*100 : 0;
-
+        const rent = pm > 0 ? ((cotacaoAcao - pm) / pm) * 100 : 0;
         document.getElementById('total-acoes-valor').innerText   = fmt(val);
         document.getElementById('qtd-total').innerText           = q;
         document.getElementById('pm-oficial').innerText          = fmt(pm);
         document.getElementById('rent-tag').innerText            = fmtP(rent);
-        document.getElementById('rent-tag').style.color          = rent>=0 ? 'var(--alta)' : 'var(--queda)';
+        document.getElementById('rent-tag').style.color          = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
         document.getElementById('saldo-caixa').innerText         = fmt(dados.caixaDisponivel);
-        document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel/cotacaoAcao)} ações BBAS3`;
+        document.getElementById('pode-comprar').innerText        = `Pode comprar +${Math.floor(dados.caixaDisponivel / cotacaoAcao)} ações BBAS3`;
         document.getElementById('troco-cofre').innerText         = fmt(dados.troco.cofre);
         document.getElementById('troco-transferido').innerText   = fmt(dados.troco.transferido);
         document.getElementById('aportes-cofre').innerText       = fmt(dados.aportes.cofre);
         document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
-
         atualizarMonitor();
         salvar();
     }
@@ -570,43 +696,43 @@
         const p = prompt("Preço pago (ex: 25,50):");
         if (q && p) {
             dados.acoes.push({ qtd: parseInt(q), preco: toNum(p) });
-            dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - parseInt(q)*toNum(p)).toFixed(2));
+            dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - parseInt(q) * toNum(p)).toFixed(2));
             atualizarTela();
         }
     }
 
     // ---- Backup (inalterado) ----
     function exportar() {
-        const blob = new Blob([JSON.stringify(dados,null,2)],{type:'application/json'});
+        const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
         const a    = document.createElement('a');
         a.href     = URL.createObjectURL(blob);
-        a.download = `TOURSO_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `TOURSO_vCALL_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
     }
     function importar(input) {
         const r = new FileReader();
-        r.onload = function() {
+        r.onload = function () {
             try {
                 dados = JSON.parse(r.result);
-                if (!dados.troco)   dados.troco   = {cofre:0,transferido:0};
-                if (!dados.aportes) dados.aportes = {cofre:0,transferido:0};
-                if (!dados.setup)   dados.setup   = {...BASE.setup};
+                if (!dados.troco)           dados.troco   = { cofre: 0, transferido: 0 };
+                if (!dados.aportes)         dados.aportes = { cofre: 0, transferido: 0 };
+                if (!dados.setup)           dados.setup   = { ...BASE.setup };
+                if (!dados.setup.metaSaida) dados.setup.metaSaida = 85;
                 cotacaoOpcao = null;
                 atualizarTela();
                 alert("Backup restaurado com sucesso, TOURSO!");
-            } catch(e) { alert("Erro ao ler o arquivo de backup."); }
+            } catch (e) { alert("Erro ao ler o arquivo de backup."); }
         };
         r.readAsText(input.files[0]);
     }
     function limparTudo() {
         if (confirm("TOURSO, zerar o aplicativo agora?")) {
-            localStorage.removeItem(CHAVE);
-            location.reload();
+            localStorage.removeItem(CHAVE); location.reload();
         }
     }
 
     // ---- Init ----
-    bindHint();
+    bindHints();
     atualizarTela();
     buscarCotacao();
     setInterval(buscarCotacao, 300000);
