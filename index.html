@@ -402,50 +402,39 @@
         
         if (match) {
             const valor = parseFloat(match[1] + '.' + match[2]);
-            if (!isNaN(valor) && valor > 0) {
-                // 🔥 GUARDA NO LOCALSTORAGE
-                localStorage.setItem('opcao_cache', valor);
-                return valor;
-            }
+            if (!isNaN(valor) && valor > 0) return valor;
         }
         
         throw new Error('Valor não encontrado');
     } catch(e) {
         console.warn('Planilha opção:', e.message);
-        // 🔥 USA O CACHE SE EXISTIR
-        const cache = localStorage.getItem('opcao_cache');
-        if (cache !== null) return parseFloat(cache);
         return null;
     }
 }
 
-   // ---- Busca cotações ----
-async function buscarCotacao() {
-    if (_buscando) return;
-    _buscando = true;
+    // ---- Busca cotações ----
+    async function buscarCotacao() {
+        if (_buscando) return;
+        _buscando = true;
 
-    const cod = dados.setup?.codigoOpcao?.trim();
-    const [pAcao, pOpcao] = await Promise.all([
-        buscarPreco('BBAS3.SA'),
-        cod ? buscarPrecoOpcao() : Promise.resolve(null)
-    ]);
+        const cod = dados.setup?.codigoOpcao?.trim();
+        const [pAcao, pOpcao] = await Promise.all([
+            buscarPreco('BBAS3.SA'),
+            cod ? buscarPrecoOpcao() : Promise.resolve(null)
+        ]);
 
-    if (pAcao !== null) {
-        cotacaoAcao = pAcao;
-        document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
-        document.getElementById('status-bolinha').style.background = '#00e676';
-    } else {
-        document.getElementById('status-bolinha').style.background = '#f1c40f';
+        if (pAcao !== null) {
+            cotacaoAcao = pAcao;
+            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.', ',');
+            document.getElementById('status-bolinha').style.background = '#00e676';
+        } else {
+            document.getElementById('status-bolinha').style.background = '#f1c40f';
+        }
+        if (cod) cotacaoOpcao = pOpcao;
+
+        _buscando = false;
+        atualizarTela();
     }
-    
-    if (cod) {
-        cotacaoOpcao = pOpcao;
-        if (pOpcao !== null) localStorage.setItem('opcao_cache', pOpcao);
-    }
-
-    _buscando = false;
-    atualizarTela();
-}
 
     // ================================================================
     // MONITOR — totalmente novo para vCALL 1.0
