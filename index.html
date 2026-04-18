@@ -474,9 +474,13 @@ async function buscarCotacao() {
             ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA')
             : '';
 
-        // ── Seção 1: Ação | Opção ──────────────────────────────────
-const corAcao = (pAcao !== null) ? '#aaa' : '#555';
-const corOpcao = (cotacaoOpcao !== null) ? '#aaa' : '#555';
+       // ── Seção 1: Ação | Opção ──────────────────────────────────
+// Usa cotacaoAcao para saber se está online (valor diferente do padrão)
+const acaoOnline = (cotacaoAcao !== 24.92); // 24.92 é o valor padrão inicial
+const opcaoOnline = (cotacaoOpcao !== null);
+
+const corAcao = acaoOnline ? '#aaa' : '#555';
+const corOpcao = opcaoOnline ? '#aaa' : '#555';
 
 const secaoTopo = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
