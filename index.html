@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.5</title>
+    <title>TOURSO_vCALL 1.6</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -233,7 +233,7 @@
     </div>
 </div>
 
-<button class="btn-acao" onclick="abrirCompra()">EFETIVAR COMPRA DO CAIXA</button>
+<button class="btn-acao" onclick="abrirCompra()">COMPRAR AÇÕES</button>
 
 <div class="area-botoes-inferior">
     <button onclick="exportar()" class="btn-discreto">Salvar Backup</button>
@@ -380,7 +380,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 1.5", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 1.6", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -835,20 +835,23 @@ function atualizarMonitor() {
     const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
     const range=strike-entrada, rawPos=range>0?(preco-entrada)/range:0, barPct=(Math.min(Math.max(rawPos,0),1)*100).toFixed(1);
 
-    // v1.5: Zonas baseadas em PM (preço de entrada), Strike e Gap
-    const PM      = dados.setup.precoEntrada || 0;
-    const gap     = strike - PM;               // distância PM→Strike
-    const precoAzul = PM - gap;                // simetria: tão longe abaixo do PM quanto o Strike está acima
+    // v1.6: Zonas baseadas em PM (preço de entrada), Strike e Gap simétrico
+    const PM  = dados.setup.precoEntrada || 0;
+    const gap = PM > 0 ? (strike - PM) : 0; // distância absoluta PM→Strike em R$
+    // Azul: simetria perfeita — tão abaixo do PM quanto o Strike está acima
+    // Ex: PM=20, Strike=21 (gap=1) → Azul quando preço < 19
+    const precoAzul = PM > 0 ? (PM - gap) : -Infinity;
 
-    // Preços-limite das zonas configuráveis (em valor absoluto)
+    // Preços-limite das zonas configuráveis
     const zonaMonitorPrice = strike * (1 - zMonitor / 100);
     const zonaAcaoPrice    = strike * (1 - zAcao    / 100);
 
-    // Distância % do strike: ((Strike/Preço)-1)*100  — usada nas linhas dinâmicas
+    // Distância % até o strike em tempo real: ((Strike/Preço)-1)*100
     const distStrikePct = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
     const distStrikeStr = distStrikePct.toFixed(2).replace('.', ',') + '% do Strike';
 
     let sColor, sLinha1, sLinha2, isGuerra = false;
+    let entrandoZonaAlerta = false; // controla notificação
 
     if (preco >= strike) {
         // ITM — Vermelho Escuro — Estado de Guerra
@@ -859,11 +862,13 @@ function atualizarMonitor() {
     } else if (preco >= zonaAcaoPrice) {
         // Zona Ação — Vermelho Vivo — Estado de Guerra
         isGuerra = true;
+        entrandoZonaAlerta = true;
         sColor  = 'var(--queda)';
         sLinha1 = '🛑 ROLAGEM AGORA';
         sLinha2 = 'PREÇO NO LIMITE DO STRIKE';
     } else if (preco >= zonaMonitorPrice) {
         // Zona Monitor — Laranja
+        entrandoZonaAlerta = true;
         sColor  = '#ff9900';
         sLinha1 = '📢 PREPARAR ROLAGEM';
         sLinha2 = 'Distância: ' + distStrikeStr;
@@ -872,17 +877,20 @@ function atualizarMonitor() {
         sColor  = '#f1c40f';
         sLinha1 = '⚠️ ATENÇÃO: ZONA DE ROLAGEM';
         sLinha2 = 'Aproximação: ' + distStrikeStr;
-    } else if (PM > 0 && preco >= precoAzul) {
-        // Entre (PM-Gap) e PM — Verde
+    } else if (PM > 0 && preco > precoAzul) {
+        // Entre precoAzul e PM — Verde (OTM seguro)
         sColor  = 'var(--alta)';
         sLinha1 = '✅ OTM — PRÊMIO PROTEGIDO';
         sLinha2 = 'Operação em área segura';
     } else {
-        // Abaixo de (PM-Gap) — Azul Vivo — Rumo ao Pó
+        // Abaixo de (PM - gap) — Azul Vivo — Rumo ao Pó (simetria máxima)
         sColor  = '#00bcd4';
         sLinha1 = '🌀 RUMO AO PÓ';
         sLinha2 = 'SEGURANÇA MÁXIMA';
     }
+
+    // v1.6: Dispara notificação/badge quando entra na zona de alerta
+    dispararAlerta(entrandoZonaAlerta, isGuerra);
 
     // v1.5: ativa/desativa Estado de Guerra (bordas piscantes em todos os cards)
     document.body.classList.toggle('guerra', isGuerra);
@@ -1045,8 +1053,65 @@ function limparTudo(){
 }
 
 // ════════════════════════════════════════════════════════════
+// v1.6: Sistema de Notificações e Badge
+// ════════════════════════════════════════════════════════════
+let _alertaAtivo = false; // evita spam de notificações repetidas
+
+async function pedirPermissaoNotificacao() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+    }
+}
+
+function dispararAlerta(emZonaAlerta, emGuerra) {
+    // Badge no ícone do app (Android/Chrome)
+    if ('setAppBadge' in navigator) {
+        if (emZonaAlerta || emGuerra) {
+            navigator.setAppBadge(1).catch(() => {});
+        } else {
+            navigator.clearAppBadge().catch(() => {});
+        }
+    }
+
+    // Push notification — só dispara UMA vez quando entra na zona
+    // Para não incomodar a cada atualização de 5 min
+    if (emZonaAlerta && !_alertaAtivo) {
+        _alertaAtivo = true;
+        if (Notification.permission === 'granted') {
+            const titulo  = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
+            const corpo   = emGuerra
+                ? 'Preço atingiu o Strike. Rolar posição imediatamente!'
+                : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
+            // Tenta via ServiceWorker (mais confiável em segundo plano)
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(titulo, {
+                        body:    corpo,
+                        icon:    'icon-192.png',
+                        badge:   'icon-192.png',
+                        vibrate: [300, 100, 300],
+                        tag:     'tourso-alerta', // substitui notificação anterior
+                        renotify: true
+                    });
+                }).catch(() => {
+                    // Fallback: Notification direta
+                    new Notification(titulo, { body: corpo });
+                });
+            } else {
+                new Notification(titulo, { body: corpo });
+            }
+        }
+    } else if (!emZonaAlerta) {
+        // Saiu da zona — reseta para poder notificar de novo na próxima entrada
+        _alertaAtivo = false;
+    }
+}
+
+// ════════════════════════════════════════════════════════════
 // Init
 // ════════════════════════════════════════════════════════════
+pedirPermissaoNotificacao(); // pede permissão logo ao abrir
 atualizarTela();
 buscarCotacao();
 setInterval(buscarCotacao, 300000);
