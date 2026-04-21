@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.7</title>
+    <title>TOURSO_vCALL 1.8</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -182,7 +182,7 @@
     </div>
     <div class="call-status-row">
         <span class="call-status-txt" id="call-status-txt">⚪ Sem operação aberta</span>
-        <button class="btn-call btn-call-nova" id="btn-call-acao" onclick="acaoBotaoCall()">Nova</button>
+        <button class="btn-call btn-call-nova" id="btn-call-acao" onclick="acaoBotaoCall()">Lançar Call</button>
     </div>
 </div>
 
@@ -190,7 +190,10 @@
 <div class="card" style="border-left-color:var(--alta);">
     <div class="pilar-label">Conta Investimento</div>
     <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
-    <div id="pode-comprar" style="color:var(--alta); font-size:0.85em; font-weight:bold;">+0 ações possíveis</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+        <div id="pode-comprar" style="color:var(--alta); font-size:0.85em; font-weight:bold;">+0 ações possíveis</div>
+        <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
+    </div>
 </div>
 
 <!-- Pilares -->
@@ -233,7 +236,6 @@
     </div>
 </div>
 
-<button class="btn-acao" onclick="abrirCompra()">COMPRAR AÇÕES</button>
 
 <div class="area-botoes-inferior">
     <button onclick="exportar()" class="btn-discreto">Salvar Backup</button>
@@ -380,7 +382,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 1.7", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 1.8", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -723,11 +725,11 @@ function atualizarCardCall() {
     const txt = document.getElementById('call-status-txt');
     if (ops.operacaoAtual && ops.operacaoAtual.aberta) {
         txt.innerText = '🟡 Operação em andamento';
-        btn.textContent = 'Finalizar';
+        btn.textContent = 'Recomprar';
         btn.className = 'btn-call btn-call-fin';
     } else {
         txt.innerText = '⚪ Sem operação aberta';
-        btn.textContent = 'Nova';
+        btn.textContent = 'Lançar Call';
         btn.className = 'btn-call btn-call-nova';
     }
 }
@@ -841,8 +843,8 @@ function atualizarMonitor() {
     const precoAzul = entrada > 0 ? (entrada - gap) : -Infinity; // espelho simétrico
 
     // Preços-limite das zonas configuráveis
-    const zonaMonitorPrice = strike * (1 - zMonitor / 100);
-    const zonaAcaoPrice    = strike * (1 - zAcao    / 100);
+    const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
+    const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
 
     // Distância % até o strike em tempo real: ((Strike/Preço)-1)*100
     const distStrikePct = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
@@ -949,6 +951,14 @@ function atualizarMonitor() {
         }
         secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div></div>`;
     }
+    // v1.8: Notificação de meta de prêmio
+    if (prem > 0 && cotacaoOpcao !== null) {
+        const desvMeta = ((prem - cotacaoOpcao) / prem) * 100;
+        dispararMeta(desvMeta >= meta);
+    } else {
+        dispararMeta(false);
+    }
+
     el.innerHTML=secaoTopo+secaoStrike+secaoPremio+secaoDecisao;
 }
 
@@ -1065,7 +1075,8 @@ function limparTudo(){
 // ════════════════════════════════════════════════════════════
 // v1.6: Sistema de Notificações e Badge
 // ════════════════════════════════════════════════════════════
-let _alertaAtivo = false; // evita spam de notificações repetidas
+let _alertaAtivo  = false; // evita spam de notificações de zona
+let _metaAtiva    = false; // evita spam de notificação de meta
 
 async function pedirPermissaoNotificacao() {
     if (!('Notification' in window)) return;
@@ -1115,6 +1126,35 @@ function dispararAlerta(emZonaAlerta, emGuerra) {
     } else if (!emZonaAlerta) {
         // Saiu da zona — reseta para poder notificar de novo na próxima entrada
         _alertaAtivo = false;
+    }
+}
+
+function dispararMeta(metaAtingida) {
+    // Badge
+    if ('setAppBadge' in navigator) {
+        if (metaAtingida) navigator.setAppBadge(1).catch(() => {});
+        // Não limpa badge aqui — pode coexistir com alerta de zona
+    }
+    // Push — dispara só uma vez ao atingir meta
+    if (metaAtingida && !_metaAtiva) {
+        _metaAtiva = true;
+        if (Notification.permission === 'granted') {
+            const titulo = '💰 META ATINGIDA';
+            const corpo  = 'Recomprar';
+            const opts   = {
+                body: corpo, icon: 'icon-192.png', badge: 'icon-192.png',
+                vibrate: [200, 100, 200], tag: 'tourso-meta', renotify: true
+            };
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready
+                    .then(reg => reg.showNotification(titulo, opts))
+                    .catch(() => new Notification(titulo, opts));
+            } else {
+                new Notification(titulo, opts);
+            }
+        }
+    } else if (!metaAtingida) {
+        _metaAtiva = false; // reseta ao sair da meta
     }
 }
 
