@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.6</title>
+    <title>TOURSO_vCALL 1.7</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -380,7 +380,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 1.6", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 1.7", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -835,12 +835,10 @@ function atualizarMonitor() {
     const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
     const range=strike-entrada, rawPos=range>0?(preco-entrada)/range:0, barPct=(Math.min(Math.max(rawPos,0),1)*100).toFixed(1);
 
-    // v1.6: Zonas baseadas em PM (preço de entrada), Strike e Gap simétrico
-    const PM  = dados.setup.precoEntrada || 0;
-    const gap = PM > 0 ? (strike - PM) : 0; // distância absoluta PM→Strike em R$
-    // Azul: simetria perfeita — tão abaixo do PM quanto o Strike está acima
-    // Ex: PM=20, Strike=21 (gap=1) → Azul quando preço < 19
-    const precoAzul = PM > 0 ? (PM - gap) : -Infinity;
+    // v1.7: Zonas baseadas em entrada (PM), Strike e Gap simétrico
+    // 'entrada' já declarado acima como s.precoEntrada
+    const gap      = entrada > 0 ? (strike - entrada) : 0; // R$ PM→Strike
+    const precoAzul = entrada > 0 ? (entrada - gap) : -Infinity; // espelho simétrico
 
     // Preços-limite das zonas configuráveis
     const zonaMonitorPrice = strike * (1 - zMonitor / 100);
@@ -853,9 +851,21 @@ function atualizarMonitor() {
     let sColor, sLinha1, sLinha2, isGuerra = false;
     let entrandoZonaAlerta = false; // controla notificação
 
+    // v1.7 Bug1: sem cotação → não entra nas zonas
+    if (preco === null || preco === undefined || preco <= 0) {
+        document.body.classList.remove('guerra');
+        card.style.borderLeftColor = '#444';
+        el.innerHTML = secaoTopo + '<div class="monitor-sep">── Monitor de Strike ──</div>'
+            + '<div class="obs-box" style="border-left:3px solid #555; text-align:center;">'
+            + '<div style="font-size:0.85em; color:#555;">⏳ Aguardando cotação da BBAS3…</div></div>';
+        dispararAlerta(false, false);
+        return;
+    }
+
     if (preco >= strike) {
         // ITM — Vermelho Escuro — Estado de Guerra
         isGuerra = true;
+        entrandoZonaAlerta = true; // v1.7 Bug2: ITM também notifica
         sColor  = '#8b0000';
         sLinha1 = '🚨 ITM — ROLAGEM OBRIGATÓRIA';
         sLinha2 = 'VALOR INTRÍNSECO SUBINDO';
@@ -872,13 +882,13 @@ function atualizarMonitor() {
         sColor  = '#ff9900';
         sLinha1 = '📢 PREPARAR ROLAGEM';
         sLinha2 = 'Distância: ' + distStrikeStr;
-    } else if (PM > 0 && preco >= PM) {
-        // Entre PM e Zona Monitor — Amarelo
+    } else if (entrada > 0 && preco >= entrada) {
+        // Entre entrada e Zona Monitor — Amarelo
         sColor  = '#f1c40f';
         sLinha1 = '⚠️ ATENÇÃO: ZONA DE ROLAGEM';
         sLinha2 = 'Aproximação: ' + distStrikeStr;
-    } else if (PM > 0 && preco > precoAzul) {
-        // Entre precoAzul e PM — Verde (OTM seguro)
+    } else if (entrada > 0 && preco > precoAzul) {
+        // Entre precoAzul e entrada — Verde (OTM seguro)
         sColor  = 'var(--alta)';
         sLinha1 = '✅ OTM — PRÊMIO PROTEGIDO';
         sLinha2 = 'Operação em área segura';
@@ -924,11 +934,11 @@ function atualizarMonitor() {
             // P2: Estado de Guerra — Vermelho piscante
             dColor='var(--queda)'; dClasse='piscante-vermelho';
             dTexto='🛑 ROLAGEM OBRIGATÓRIA AGORA!';
-        } else if(PM>0 && preco>=zonaMonitorPrice){
+        } else if(entrada>0 && preco>=zonaMonitorPrice){
             // P3: Zona Monitor — Vermelho fixo
             dColor='var(--queda)';
             dTexto='📢 PREPARAR ROLAGEM';
-        } else if(PM>0 && preco>=PM){
+        } else if(entrada>0 && preco>=entrada){
             // P4: Entre PM e Zona Monitor — Amarelo fixo
             dColor='#f1c40f';
             dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
