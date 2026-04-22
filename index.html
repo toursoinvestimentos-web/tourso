@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.9</title>
+    <title>TOURSO_vCALL 2.0</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -329,6 +329,7 @@
                 <option value="po">Virou pó ✅</option>
                 <option value="exercida">Exercida 🔄</option>
                 <option value="rolada">Rolada ↩️</option>
+                <option value="liquidada">Liquidada 💰</option>
             </select>
         </div>
         <!-- Campo extra apenas para Rolada -->
@@ -623,10 +624,10 @@ function confirmarFinOp() {
 
     let resultadoBruto, darfOp=0, escudoUsado=0, darfPagoOp=0, resultadoLiquido, statusNome;
 
-    if (tipo === 'po' || tipo === 'exercida') {
+    if (tipo === 'po' || tipo === 'exercida' || tipo === 'liquidada') {
         resultadoBruto = op.premio * op.quantidade;
         darfOp         = parseFloat((resultadoBruto * 0.15).toFixed(2));
-        statusNome     = tipo === 'po' ? 'Virou pó' : 'Exercida';
+        statusNome     = tipo === 'po' ? 'Virou pó' : (tipo === 'exercida' ? 'Exercida' : 'Liquidada');
 
         // Aplica escudo fiscal
         if (ops.resumo.escudoFiscal >= darfOp) {
@@ -733,7 +734,7 @@ function atualizarCardCall() {
     const txt = document.getElementById('call-status-txt');
     if (ops.operacaoAtual && ops.operacaoAtual.aberta) {
         txt.innerText = '🟡 Operação em andamento';
-        btn.textContent = 'Recomprar';
+        btn.textContent = 'Finalizar';
         btn.className = 'btn-call btn-call-fin';
     } else {
         txt.innerText = '⚪ Sem operação aberta';
@@ -755,8 +756,8 @@ function abrirExtratoCiclos() {
     }
     let html = '';
     for (const c of hist) {
-        const corStatus = c.status==='Virou pó'||c.status==='Exercida' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
-        const bgStatus  = c.status==='Virou pó'||c.status==='Exercida' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
+        const corStatus = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
+        const bgStatus  = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
 
         let darfLinha = '';
         if (c.darfPago > 0) {
