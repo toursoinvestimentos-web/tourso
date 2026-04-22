@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.0</title>
+    <title>TOURSO_vCALL 2.2</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -391,7 +391,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.0", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.2", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -586,7 +586,7 @@ function fecharFinOp() { document.getElementById('modal-fin-op').classList.remov
 
 function atualizarFinTipo() {
     const tipo = document.getElementById('fin-tipo').value;
-    document.getElementById('fin-campo-recompra').style.display = tipo==='rolada' ? 'block' : 'none';
+    document.getElementById('fin-campo-recompra').style.display = (tipo==='rolada' || tipo==='liquidada') ? 'block' : 'none';
     document.getElementById('fin-preview').style.display = 'none';
     document.getElementById('fin-preview').innerHTML = '';
 }
@@ -624,10 +624,10 @@ function confirmarFinOp() {
 
     let resultadoBruto, darfOp=0, escudoUsado=0, darfPagoOp=0, resultadoLiquido, statusNome;
 
-    if (tipo === 'po' || tipo === 'exercida' || tipo === 'liquidada') {
+    if (tipo === 'po' || tipo === 'exercida') {
         resultadoBruto = op.premio * op.quantidade;
         darfOp         = parseFloat((resultadoBruto * 0.15).toFixed(2));
-        statusNome     = tipo === 'po' ? 'Virou pó' : (tipo === 'exercida' ? 'Exercida' : 'Liquidada');
+        statusNome     = tipo === 'po' ? 'Virou pó' : 'Exercida';
 
         // Aplica escudo fiscal
         if (ops.resumo.escudoFiscal >= darfOp) {
@@ -643,12 +643,12 @@ function confirmarFinOp() {
         ops.resumo.darfPago      = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
         ops.resumo.premiosLiquidos = parseFloat((ops.resumo.premiosLiquidos + resultadoLiquido).toFixed(2));
 
-    } else { // rolada
+    } else { // rolada ou liquidada
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         const resultPorAcao = op.premio - recompra;
         resultadoBruto      = parseFloat((resultPorAcao * op.quantidade).toFixed(2));
-        statusNome          = 'Rolada';
+        statusNome          = tipo === 'liquidada' ? 'Liquidada' : 'Rolada';
 
         if (resultadoBruto < 0) {
             // Prejuízo → vai para escudo fiscal
