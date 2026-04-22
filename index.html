@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 1.8</title>
+    <title>TOURSO_vCALL 1.9</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -36,10 +36,10 @@
         .btn-salvar { background: var(--ciano); color: var(--fundo); }
         .btn-cancelar { background: #444; color: var(--branco); }
         /* Pilares */
-        .camada-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+        .camada-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; gap: 6px; }
         .camada-row:first-child { border-bottom: 1px solid #555; padding-bottom: 8px; margin-bottom: 4px; }
-        .camada-label-small { font-size: 0.7em; color: #aaa; }
-        .camada-valor-small { font-size: 0.95em; font-weight: bold; }
+        .camada-label-small { font-size: 0.7em; color: #aaa; flex-shrink: 0; }
+        .camada-valor-small { font-size: 0.82em; font-weight: bold; white-space: nowrap; text-align: right; min-width: 0; }
         .pilar-btns { display: flex; gap: 6px; margin-top: 10px; }
         .pilar-btn-mini { flex: 1; padding: 8px 0; border-radius: 6px; border: none; font-size: 0.68em; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-guardar { background: #444; color: var(--branco); }
@@ -207,16 +207,16 @@
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('troco')">📄</span>
         </div>
         <div class="camada-row">
-            <span class="camada-label-small">💰 Cofre</span>
+            <span class="camada-label-small">🪙 Guardado</span>
             <span class="camada-valor-small" id="troco-cofre" style="color:var(--alta);">R$ 0,00</span>
         </div>
         <div class="camada-row">
-            <span class="camada-label-small">📤 Enviado</span>
+            <span class="camada-label-small">📈 Investido</span>
             <span class="camada-valor-small" id="troco-transferido" style="color:var(--ciano);">R$ 0,00</span>
         </div>
         <div class="pilar-btns">
             <button class="pilar-btn-mini btn-guardar"    onclick="abrirAcao('troco','guardar')">Guardar</button>
-            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('troco','enviar')">Enviar</button>
+            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('troco','enviar')">Investir</button>
         </div>
     </div>
     <div class="pilar-card">
@@ -225,16 +225,16 @@
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('aportes')">📄</span>
         </div>
         <div class="camada-row">
-            <span class="camada-label-small">💰 Cofre</span>
+            <span class="camada-label-small">🪙 Guardado</span>
             <span class="camada-valor-small" id="aportes-cofre" style="color:var(--alta);">R$ 0,00</span>
         </div>
         <div class="camada-row">
-            <span class="camada-label-small">📤 Enviado</span>
+            <span class="camada-label-small">📈 Investido</span>
             <span class="camada-valor-small" id="aportes-transferido" style="color:var(--ciano);">R$ 0,00</span>
         </div>
         <div class="pilar-btns">
             <button class="pilar-btn-mini btn-guardar"    onclick="abrirAcao('aportes','guardar')">Guardar</button>
-            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('aportes','enviar')">Enviar</button>
+            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('aportes','enviar')">Investir</button>
         </div>
     </div>
 </div>
@@ -360,7 +360,7 @@
         <h3 id="modal-acao-titulo">Ação</h3>
         <!-- Saldo disponível — visível apenas no modal Enviar -->
         <div id="modal-acao-saldo" style="display:none; background:rgba(0,188,212,0.1); border:1px solid var(--ciano); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
-            <div style="font-size:0.68em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no cofre</div>
+            <div style="font-size:0.68em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Total guardado</div>
             <div id="modal-acao-saldo-valor" style="font-size:1.4em; font-weight:bold; color:var(--ciano);">R$ 0,00</div>
         </div>
         <div class="modal-campo">
@@ -1000,7 +1000,7 @@ function abrirExtrato(tipo){
     });
     let html=`<div class="extrato-total"><div class="extrato-total-label">Total Guardado</div><div class="extrato-total-valor">${fmt(totalGeral)}</div></div>`;
     for(const g of grupos){
-        html+=`<div class="extrato-mes-titulo"><span>${g.mesAno}</span><span class="extrato-mes-total">Total: ${fmt(g.total)}</span></div>`;
+        html+=`<div class="extrato-mes-titulo"><span>${g.mesAno}</span></div>`;
         for(const e of g.entradas){
             // Ajuste 2: botão X vermelho para deletar lançamento individual
             html+=`<div class="extrato-linha"><span class="extrato-linha-data">${e.data} &nbsp; ${e.hora}</span><span class="extrato-linha-valor">${fmt(e.valor)}</span><button class="btn-del-lancamento" onclick="deletarLancamento(${e._idx})" title="Remover lançamento">✕</button></div>`;
@@ -1032,7 +1032,7 @@ function deletarLancamento(idx){
 // ════════════════════════════════════════════════════════════
 function abrirAcao(tipo,acao){
     _acaoAtiva={tipo,acao};
-    document.getElementById('modal-acao-titulo').innerText=acao==='guardar'?`💰 Guardar em ${NOMES[tipo]}`:`📤 Enviar para Conta Investimento`;
+    document.getElementById('modal-acao-titulo').innerText=acao==='guardar'?`💰 Guardar em ${NOMES[tipo]}`:`📈 Investir de ${NOMES[tipo]}`;
     document.getElementById('modal-acao-input').value='';
     // Ajuste 3: mostrar saldo disponível apenas no modal Enviar
     const saldoBox = document.getElementById('modal-acao-saldo');
@@ -1053,7 +1053,7 @@ function confirmarAcao(){
         dados[tipo].cofre=parseFloat((dados[tipo].cofre+val).toFixed(2));
         registrarLancamento(tipo,val); // Ajuste 1: só registra entradas no extrato
     }
-    else{if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente no cofre.\nDisponível: ${fmt(dados[tipo].cofre)}`);return;}dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));}
+    else{if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente.\nGuardado: ${fmt(dados[tipo].cofre)}`);return;}dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));}
     // registrarLancamento agora é chamado apenas no bloco guardar acima
     fecharAcao();atualizarTela();
 }
