@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.2</title>
+    <title>TOURSO_vCALL 2.4</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -391,7 +391,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.2", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.4", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -797,18 +797,23 @@ function fecharExtratoCiclos() { document.getElementById('modal-ciclos').classLi
 // ════════════════════════════════════════════════════════════
 // Busca cotações (inalterada)
 // ════════════════════════════════════════════════════════════
-async function fetchUrl(url, ms) {
-    const c=new AbortController(); const t=setTimeout(()=>c.abort(),ms);
-    try { const r=await fetch(url,{signal:c.signal}); clearTimeout(t); return r; }
-    catch(e) { clearTimeout(t); throw e; }
+// v2.4: busca ação via planilha Google Sheets — célula C12 (linha 12, índice 11)
+async function buscarPrecoAcao() {
+    try {
+        const ctrl = new AbortController();
+        const t    = setTimeout(() => ctrl.abort(), 10000);
+        const res  = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: ctrl.signal, cache: 'no-store' });
+        clearTimeout(t);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const texto  = await res.text();
+        const linhas = texto.split('\n');
+        if (linhas.length < 12) throw new Error('Planilha sem linha 12');
+        const match = linhas[11].match(/"(\d+),(\d+)"/);
+        if (match) { const v = parseFloat(match[1] + '.' + match[2]); if (!isNaN(v) && v > 0) return v; }
+        throw new Error('Valor inválido em C12');
+    } catch(e) { console.warn('Planilha ação (C12):', e.message); return null; }
 }
-async function buscarPreco(ticker) {
-    const semSA = ticker.replace('.SA','');
-    try { const r=await fetchUrl(`https://brapi.dev/api/quote/${semSA}?token=demo`,7000); const j=await r.json(); const p=j?.results?.[0]?.regularMarketPrice; if(p&&!isNaN(p)) return parseFloat(p.toFixed(2)); } catch(e){}
-    try { const url=`https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker)}`; const r=await fetchUrl(url,7000); const j=await r.json(); const d=JSON.parse(j.contents); const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice; if(p&&!isNaN(p)) return parseFloat(p.toFixed(2)); } catch(e){}
-    try { const url=`https://api.allorigins.win/get?url=${encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/'+ticker)}`; const r=await fetchUrl(url,7000); const j=await r.json(); const d=JSON.parse(j.contents); const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice; if(p&&!isNaN(p)) return parseFloat(p.toFixed(2)); } catch(e){}
-    return null;
-}
+
 const PLANILHA_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 async function buscarPrecoOpcao() {
     try {
@@ -816,8 +821,8 @@ async function buscarPrecoOpcao() {
         const res=await fetch(PLANILHA_URL+'&t='+Date.now(),{signal:c.signal,cache:'no-store'});
         clearTimeout(t); if(!res.ok) throw new Error('HTTP '+res.status);
         const texto=await res.text(); const linhas=texto.split('\n');
-        if(linhas.length<4) throw new Error('Linhas insuficientes');
-        const match=linhas[3].match(/"(\d+),(\d+)"/);
+        if(linhas.length<7) throw new Error('Planilha sem linha 7');
+        const match=linhas[6].match(/"(\d+),(\d+)"/);
         if(match){ const v=parseFloat(match[1]+'.'+match[2]); if(!isNaN(v)&&v>0) return v; }
         throw new Error('Valor não encontrado');
     } catch(e){ console.warn('Planilha opção:',e.message); return null; }
@@ -825,7 +830,7 @@ async function buscarPrecoOpcao() {
 async function buscarCotacao() {
     if(_buscando) return; _buscando=true;
     const cod=dados.setup?.codigoOpcao?.trim();
-    const [pAcao,pOpcao]=await Promise.all([buscarPreco('BBAS3.SA'), cod?buscarPrecoOpcao():Promise.resolve(null)]);
+    const [pAcao,pOpcao]=await Promise.all([buscarPrecoAcao(), cod?buscarPrecoOpcao():Promise.resolve(null)]);
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
     if(cod) cotacaoOpcao=pOpcao;
@@ -1093,7 +1098,14 @@ function abrirCompra(){
     if(q&&p){dados.acoes.push({qtd:parseInt(q),preco:toNum(p)});dados.caixaDisponivel=parseFloat((dados.caixaDisponivel-parseInt(q)*toNum(p)).toFixed(2));atualizarTela();}
 }
 function exportar(){
-    const payload={...dados, opsCall:ops};
+    // v2.3: inclui históricos de extratos e zonas no backup
+    const payload = {
+        ...dados,
+        opsCall:      ops,
+        histTroco:    carregarHistorico('troco'),
+        histAportes:  carregarHistorico('aportes'),
+        zonasConfig:  zonas
+    };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`TOURSO_vCALL_BACKUP_${new Date().toISOString().slice(0,10)}.json`; a.click();
 }
@@ -1102,7 +1114,13 @@ function importar(input){
     r.onload=function(){
         try{
             const payload=JSON.parse(r.result);
-            if(payload.opsCall){ops=payload.opsCall; delete payload.opsCall; salvarOp();}
+            // v2.3: restaura opsCall
+            if(payload.opsCall){ ops=payload.opsCall; delete payload.opsCall; salvarOp(); }
+            // v2.3: restaura históricos de extratos
+            if(payload.histTroco)   { salvarHistorico('troco',   payload.histTroco);   delete payload.histTroco; }
+            if(payload.histAportes) { salvarHistorico('aportes', payload.histAportes); delete payload.histAportes; }
+            // v2.3: restaura zonas de alerta
+            if(payload.zonasConfig) { zonas=payload.zonasConfig; localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas)); delete payload.zonasConfig; }
             dados=payload;
             if(!dados.troco)           dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)         dados.aportes={cofre:0,transferido:0};
