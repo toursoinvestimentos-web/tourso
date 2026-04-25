@@ -1229,8 +1229,8 @@ async function soAcaoAteAparecer() {
     buscandoAcao = true;
     
     let tentativas = 0;
-    const maxTentativas = 2;
-    const tempos = [2000, 4000]; // 2 segundos, depois 4 segundos
+    const maxTentativas = 3;
+    const tempos = [2000, 4000, 6000]; // 2 segundos, 4 segundos,depois 6 segundos
     
     while(cotacaoAcao === null && tentativas < maxTentativas) {
         const res = await fetch(PLANILHA_URL + '&t=' + Date.now());
