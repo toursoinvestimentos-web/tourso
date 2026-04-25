@@ -1220,14 +1220,19 @@ function dispararMeta(metaAtingida) {
     }
 }
 
-    // ════════════════════════════════════════════════════════════
-// FALLBACK: Busca só a ação a cada 10 segundos até ela aparecer
+   // ════════════════════════════════════════════════════════════
+// FALLBACK: Busca só a ação com limite de tentativas (máximo 2)
 // ════════════════════════════════════════════════════════════
 let buscandoAcao = false;
 async function soAcaoAteAparecer() {
     if(buscandoAcao || cotacaoAcao !== null) return;
     buscandoAcao = true;
-    while(cotacaoAcao === null) {
+    
+    let tentativas = 0;
+    const maxTentativas = 2;
+    const tempos = [2000, 4000]; // 2 segundos, depois 4 segundos
+    
+    while(cotacaoAcao === null && tentativas < maxTentativas) {
         const res = await fetch(PLANILHA_URL + '&t=' + Date.now());
         const linhas = (await res.text()).split('\n');
         const match = linhas[11]?.match(/"(\d+),(\d+)"/);
@@ -1237,7 +1242,10 @@ async function soAcaoAteAparecer() {
             document.getElementById('status-bolinha').style.background = '#00e676';
             atualizarTela();
         }
-        await new Promise(r => setTimeout(r, 10000));
+        tentativas++;
+        if(cotacaoAcao === null && tentativas < maxTentativas) {
+            await new Promise(r => setTimeout(r, tempos[tentativas - 1]));
+        }
     }
     buscandoAcao = false;
 }
