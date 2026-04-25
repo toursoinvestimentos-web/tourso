@@ -797,40 +797,31 @@ function fecharExtratoCiclos() { document.getElementById('modal-ciclos').classLi
 // ════════════════════════════════════════════════════════════
 // Busca cotações (inalterada)
 // ════════════════════════════════════════════════════════════
-// v2.4: busca ação via planilha Google Sheets — célula C12 (linha 12, índice 11)
-async function buscarPrecoAcao() {
+// v2.4 atualizado: uma única requisição à planilha extrai ação (C12) e opção (C7) juntos
+// Antes eram duas funções separadas fazendo dois downloads do mesmo arquivo — corrigido aqui
+const PLANILHA_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
+async function buscarPlanilha() {
     try {
         const ctrl = new AbortController();
         const t    = setTimeout(() => ctrl.abort(), 10000);
         const res  = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: ctrl.signal, cache: 'no-store' });
         clearTimeout(t);
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const texto  = await res.text();
-        const linhas = texto.split('\n');
-        if (linhas.length < 12) throw new Error('Planilha sem linha 12');
-        const match = linhas[11].match(/"(\d+),(\d+)"/);
-        if (match) { const v = parseFloat(match[1] + '.' + match[2]); if (!isNaN(v) && v > 0) return v; }
-        throw new Error('Valor inválido em C12');
-    } catch(e) { console.warn('Planilha ação (C12):', e.message); return null; }
+        const linhas = (await res.text()).split('\n');
+        const extrair = (l) => { if(!l) return null; const m=l.match(/\"(\d+),(\d+)\"/); if(m){const v=parseFloat(m[1]+'.'+m[2]); return(!isNaN(v)&&v>0)?v:null;} return null; };
+        return {
+            acao:  linhas.length >= 12 ? extrair(linhas[11]) : null,  // célula C12 — preço da ação
+            opcao: linhas.length >= 7  ? extrair(linhas[6])  : null   // célula C7  — preço da opção
+        };
+    } catch(e) { console.warn('Planilha:', e.message); return { acao: null, opcao: null }; }
 }
 
-const PLANILHA_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
-async function buscarPrecoOpcao() {
-    try {
-        const c=new AbortController(); const t=setTimeout(()=>c.abort(),10000);
-        const res=await fetch(PLANILHA_URL+'&t='+Date.now(),{signal:c.signal,cache:'no-store'});
-        clearTimeout(t); if(!res.ok) throw new Error('HTTP '+res.status);
-        const texto=await res.text(); const linhas=texto.split('\n');
-        if(linhas.length<7) throw new Error('Planilha sem linha 7');
-        const match=linhas[6].match(/"(\d+),(\d+)"/);
-        if(match){ const v=parseFloat(match[1]+'.'+match[2]); if(!isNaN(v)&&v>0) return v; }
-        throw new Error('Valor não encontrado');
-    } catch(e){ console.warn('Planilha opção:',e.message); return null; }
-}
 async function buscarCotacao() {
     if(_buscando) return; _buscando=true;
     const cod=dados.setup?.codigoOpcao?.trim();
-    const [pAcao,pOpcao]=await Promise.all([buscarPrecoAcao(), cod?buscarPrecoOpcao():Promise.resolve(null)]);
+    const planilha = await buscarPlanilha();
+    const pAcao = planilha.acao;
+    const pOpcao = cod ? planilha.opcao : null;
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
     if(cod) cotacaoOpcao=pOpcao;
