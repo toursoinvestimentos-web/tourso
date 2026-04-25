@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.4</title>
+    <title>TOURSO_vCALL 2.5</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -391,7 +391,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.4", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.5", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -824,7 +824,7 @@ async function buscarCotacao() {
     const pOpcao = cod ? planilha.opcao : null;
 
 // FALLBACK: se a ação não veio, busca só ela a cada 10s até aparecer
-if(pAcao === null && cod) soAcaoAteAparecer();
+if(pAcao === null) soAcaoAteAparecer(); // v2.5: ativa mesmo sem operação aberta
     
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
@@ -1224,30 +1224,45 @@ function dispararMeta(metaAtingida) {
 // FALLBACK: Busca só a ação com limite de tentativas (máximo 2)
 // ════════════════════════════════════════════════════════════
 let buscandoAcao = false;
+// v2.5: fallback da ação — tenta 3x com espera crescente, tem try/catch e timeout
 async function soAcaoAteAparecer() {
     if(buscandoAcao || cotacaoAcao !== null) return;
     buscandoAcao = true;
-    
-    let tentativas = 0;
+
     const maxTentativas = 3;
-    const tempos = [2000, 4000, 6000]; // 2 segundos, 4 segundos,depois 6 segundos
-    
-    while(cotacaoAcao === null && tentativas < maxTentativas) {
-        const res = await fetch(PLANILHA_URL + '&t=' + Date.now());
-        const linhas = (await res.text()).split('\n');
-        const match = linhas[11]?.match(/"(\d+),(\d+)"/);
-        if(match) {
-            cotacaoAcao = parseFloat(match[1] + '.' + match[2]);
-            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
-            document.getElementById('status-bolinha').style.background = '#00e676';
-            atualizarTela();
+    const tempos = [2000, 4000, 6000]; // espera crescente entre tentativas
+
+    for(let tentativa = 0; tentativa < maxTentativas; tentativa++) {
+        if(cotacaoAcao !== null) break; // já chegou pelo ciclo normal
+        try {
+            const ctrl = new AbortController();
+            const t    = setTimeout(() => ctrl.abort(), 10000); // timeout de 10s
+            const res  = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
+                signal: ctrl.signal, cache: 'no-store'
+            });
+            clearTimeout(t);
+            if(!res.ok) throw new Error('HTTP ' + res.status);
+            const linhas = (await res.text()).split('\n');
+            const match  = linhas[11]?.match(/\"(\d+),(\d+)\"/);
+            if(match) {
+                const v = parseFloat(match[1] + '.' + match[2]);
+                if(!isNaN(v) && v > 0) {
+                    cotacaoAcao = v;
+                    document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
+                    document.getElementById('status-bolinha').style.background = '#00e676';
+                    atualizarTela();
+                    break; // sucesso — sai do loop
+                }
+            }
+        } catch(e) {
+            console.warn('Fallback ação tentativa ' + (tentativa+1) + ':', e.message);
         }
-        tentativas++;
-        if(cotacaoAcao === null && tentativas < maxTentativas) {
-            await new Promise(r => setTimeout(r, tempos[tentativas - 1]));
+        // Aguarda antes da próxima tentativa (não aguarda após a última)
+        if(tentativa < maxTentativas - 1 && cotacaoAcao === null) {
+            await new Promise(r => setTimeout(r, tempos[tentativa]));
         }
     }
-    buscandoAcao = false;
+    buscandoAcao = false; // sempre libera, mesmo se falhar
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1268,12 +1283,12 @@ async function tornarPermanente() {
 
     
 // ════════════════════════════════════════════════════════════
-// Init               Atualiza a cada 15 minutos (900000 ms)
+// Init               Atualiza a cada 5 minutos (300000 ms)
 // ════════════════════════════════════════════════════════════
 pedirPermissaoNotificacao(); // pede permissão logo ao abrir
 atualizarTela();
 buscarCotacao();
-setInterval(buscarCotacao, 900000);
+setInterval(buscarCotacao, 300000); // v2.5: volta para 5 min
 tornarPermanente();
 </script>
 </body>
