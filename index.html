@@ -1249,6 +1249,23 @@ async function soAcaoAteAparecer() {
     }
     buscandoAcao = false;
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// TORNA OS DADOS PERMANENTES (não são apagados na limpeza de cache)
+// ═══════════════════════════════════════════════════════════════════════
+async function tornarPermanente() {
+    if ('storage' in navigator && 'persist' in navigator.storage) {
+        const persistido = await navigator.storage.persisted();
+        if (!persistido) {
+            const permitiu = await navigator.storage.persist();
+            if (permitiu) console.log('✅ Dados agora são PERMANENTES');
+            else console.log('⚠️ Usuário não permitiu');
+        } else {
+            console.log('✅ Dados já são permanentes');
+        }
+    }
+}
+
     
 // ════════════════════════════════════════════════════════════
 // Init               Atualiza a cada 15 minutos (900000 ms)
@@ -1257,6 +1274,7 @@ pedirPermissaoNotificacao(); // pede permissão logo ao abrir
 atualizarTela();
 buscarCotacao();
 setInterval(buscarCotacao, 900000);
+tornarPermanente();
 </script>
 </body>
 </html>
