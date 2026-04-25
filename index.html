@@ -822,6 +822,10 @@ async function buscarCotacao() {
     const planilha = await buscarPlanilha();
     const pAcao = planilha.acao;
     const pOpcao = cod ? planilha.opcao : null;
+
+// FALLBACK: se a ação não veio, busca só ela a cada 10s até aparecer
+if(pAcao === null && cod) soAcaoAteAparecer();
+    
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
     if(cod) cotacaoOpcao=pOpcao;
@@ -1216,6 +1220,27 @@ function dispararMeta(metaAtingida) {
     }
 }
 
+    // ════════════════════════════════════════════════════════════
+// FALLBACK: Busca só a ação a cada 10 segundos até ela aparecer
+// ════════════════════════════════════════════════════════════
+let buscandoAcao = false;
+async function soAcaoAteAparecer() {
+    if(buscandoAcao || cotacaoAcao !== null) return;
+    buscandoAcao = true;
+    while(cotacaoAcao === null) {
+        const res = await fetch(PLANILHA_URL + '&t=' + Date.now());
+        const linhas = (await res.text()).split('\n');
+        const match = linhas[11]?.match(/"(\d+),(\d+)"/);
+        if(match) {
+            cotacaoAcao = parseFloat(match[1] + '.' + match[2]);
+            document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
+            document.getElementById('status-bolinha').style.background = '#00e676';
+            atualizarTela();
+        }
+        await new Promise(r => setTimeout(r, 10000));
+    }
+    buscandoAcao = false;
+}
     
 // ════════════════════════════════════════════════════════════
 // Init               Atualiza a cada 15 minutos (900000 ms)
