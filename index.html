@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.5</title>
+    <title>TOURSO_vCALL 2.6</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -143,7 +143,7 @@
             <span id="status-bolinha" class="status-dot" style="background:#f1c40f;"></span>
         </div>
     </div>
-    <div id="total-acoes-valor" class="valor-patrimonio">R$ 0,00</div>
+    <div id="total-acoes-valor" class="valor-patrimonio" style="font-size:1.6em;">R$ 0,00</div>
     <div id="rent-tag" style="font-weight:bold; font-size:0.9em; color:var(--alta);">0,00%</div>
     <div style="display:flex; justify-content:space-between; font-size:0.9em; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
         <span>Ações: <b id="qtd-total">0</b></span>
@@ -193,8 +193,12 @@
 <div class="card" style="border-left-color:var(--alta);">
     <div class="pilar-label">Conta Investimento</div>
     <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
+    <div style="border-top:1px dashed #444; margin:8px 0; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.75em; color:#aaa;">🔒 Reserva B3</span>
+        <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+    </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-        <div id="pode-comprar" style="color:var(--alta); font-size:0.85em; font-weight:bold;">+0 ações possíveis</div>
+        <div id="pode-comprar" style="color:var(--alta); font-size:0.85em; font-weight:bold;">Pode comprar +0 ações BBAS3</div>
         <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
 </div>
@@ -250,7 +254,7 @@
 <!-- ══ v1.4: Modal Configuração de Zonas ══ -->
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
-        <h3>⚠️ Zonas de Alerta do Strike</h3>
+        <h3>⚠️ Zonas de Alerta &amp; Configurações</h3>
         <div class="modal-campo">
             <label>Zona de Monitoramento (%)</label>
             <input type="number" inputmode="decimal" id="zona-monitor" step="0.1" min="0.1" max="10" placeholder="Ex: 1.0">
@@ -260,6 +264,16 @@
             <label>Zona de Ação (%)</label>
             <input type="number" inputmode="decimal" id="zona-acao" step="0.1" min="0.1" max="10" placeholder="Ex: 0.5">
             <small>Alerta crítico — preparar rolagem imediatamente.</small>
+        </div>
+        <div class="modal-campo">
+            <label>Meta de Saída da Operação (%)</label>
+            <input type="number" inputmode="numeric" id="zona-meta-saida" placeholder="Ex: 70" min="1" max="100" value="70">
+            <small id="zona-meta-hint" style="color:var(--ciano);"></small>
+        </div>
+        <div class="modal-campo">
+            <label>Reserva B3 por Lote (R$)</label>
+            <input type="number" inputmode="decimal" id="zona-reserva-b3" step="1" min="0" placeholder="Ex: 50">
+            <small>Valor reservado a cada 100 ações em carteira (1 lote = R$ X).</small>
         </div>
         <div class="modal-btns">
             <button class="btn-cancelar" onclick="fecharConfigZonas()">Cancelar</button>
@@ -302,11 +316,6 @@
             <label>Código da Opção</label>
             <input type="text" inputmode="text" id="nop-codigo" placeholder="Ex: BBASB270" style="text-transform:uppercase">
             <small>Aparece no topo como "Opção Ativa" e busca a cotação.</small>
-        </div>
-        <div class="modal-campo">
-            <label>Meta de saída da operação (%)</label>
-            <input type="number" inputmode="numeric" id="nop-meta" placeholder="Ex: 85" min="1" max="100" value="85">
-            <small id="nop-meta-hint" style="color:var(--ciano);"></small>
         </div>
         <div class="modal-btns">
             <button class="btn-cancelar" onclick="fecharNovaOp()">Cancelar</button>
@@ -355,6 +364,50 @@
     </div>
 </div>
 
+<!-- ══ v2.6: Modal Editar Ciclo ══ -->
+<div class="modal-overlay" id="modal-edit-ciclo">
+    <div class="modal-box">
+        <h3>✏️ Editar Ciclo</h3>
+        <div class="modal-campo">
+            <label>Data de Abertura</label>
+            <input type="date" id="edit-ciclo-dataab">
+        </div>
+        <div class="modal-campo">
+            <label>Data de Fechamento</label>
+            <input type="date" id="edit-ciclo-datafech">
+        </div>
+        <div class="modal-campo">
+            <label>Preço de Entrada da Ação (R$)</label>
+            <input type="text" inputmode="decimal" id="edit-ciclo-preco" placeholder="Ex: 24,50">
+        </div>
+        <div class="modal-campo">
+            <label>Strike (R$)</label>
+            <input type="text" inputmode="decimal" id="edit-ciclo-strike" placeholder="Ex: 27,00">
+        </div>
+        <div class="modal-campo">
+            <label>Quantidade de Ações</label>
+            <input type="number" inputmode="numeric" id="edit-ciclo-qtd">
+        </div>
+        <div class="modal-campo">
+            <label>Prêmio por Ação (R$)</label>
+            <input type="text" inputmode="decimal" id="edit-ciclo-premio" placeholder="Ex: 0,48">
+        </div>
+        <div class="modal-campo">
+            <label>Status</label>
+            <select id="edit-ciclo-status">
+                <option value="Virou pó">Virou pó ✅</option>
+                <option value="Exercida">Exercida 🔄</option>
+                <option value="Rolada">Rolada ↩️</option>
+                <option value="Liquidada">Liquidada 💰</option>
+            </select>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharEditarCiclo()">Cancelar</button>
+            <button class="btn-salvar"   onclick="confirmarEditarCiclo()">Salvar</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Ação Pilar -->
 <div class="modal-overlay" id="modal-acao">
     <div class="modal-box">
@@ -391,7 +444,7 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.5", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.6", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -408,14 +461,17 @@ function instalarApp() { if(!deferredPrompt) return; deferredPrompt.prompt(); de
 // ════════════════════════════════════════════════════════════
 const CHAVE     = 'dados_tourso_v3';
 const CHAVE_OP   = 'dados_call_ops';   // operações de CALL
-const CHAVE_ZONAS= 'dados_zonas_v14';  // v1.4: zonas de alerta
+const CHAVE_ZONAS= 'dados_zonas_v26';  // v2.6: zonas + meta saída + reserva B3
 const HIST_KEYS  = { troco:'hist_troco', aportes:'hist_aportes' };
 
 // Zonas de alerta configuráveis (em %)
 let zonas = (() => {
-    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5 }; }
-    catch(e) { return { monitor: 1.0, acao: 0.5 }; }
+    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
+    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
 })();
+// Compatibilidade: garante campos novos mesmo em dado antigo
+if (!zonas.metaSaida)       zonas.metaSaida = 70;
+if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
@@ -460,20 +516,44 @@ function toNum(v)  { return v ? parseFloat(String(v).replace(',','.')) : 0; }
 function salvar()  { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 function salvarOp(){ localStorage.setItem(CHAVE_OP, JSON.stringify(ops)); }
 
-// ── v1.4: Configuração de Zonas ──
+// ── v2.6: Configuração de Zonas ──
 function abrirConfigZonas() {
     document.getElementById('zona-monitor').value = zonas.monitor;
     document.getElementById('zona-acao').value    = zonas.acao;
+    document.getElementById('zona-meta-saida').value = zonas.metaSaida || 70;
+    document.getElementById('zona-reserva-b3').value = zonas.reservaB3PorLote || 50;
+    atualizarHintMetaZona();
     document.getElementById('modal-zonas').classList.add('ativo');
 }
 function fecharConfigZonas() { document.getElementById('modal-zonas').classList.remove('ativo'); }
+function atualizarHintMetaZona() {
+    const meta = parseInt(document.getElementById('zona-meta-saida').value) || 0;
+    const prem = dados.setup?.premioRecebido || 0;
+    const hint = document.getElementById('zona-meta-hint');
+    if (prem && meta) {
+        const alvo = parseFloat((prem * (1 - meta / 100)).toFixed(2));
+        hint.innerText = `Sair quando opção chegar em R$ ${alvo.toFixed(2).replace('.',',')} (${meta}% de queda)`;
+    } else {
+        hint.innerText = meta ? `Meta: ${meta}% de queda do prêmio` : '';
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const msi = document.getElementById('zona-meta-saida');
+    if (msi) msi.addEventListener('input', atualizarHintMetaZona);
+});
 function salvarConfigZonas() {
-    const m = parseFloat(document.getElementById('zona-monitor').value);
-    const a = parseFloat(document.getElementById('zona-acao').value);
+    const m  = parseFloat(document.getElementById('zona-monitor').value);
+    const a  = parseFloat(document.getElementById('zona-acao').value);
+    const ms = parseInt(document.getElementById('zona-meta-saida').value);
+    const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
     if (isNaN(m) || isNaN(a) || m <= 0 || a <= 0) { alert('Informe valores válidos maiores que zero.'); return; }
     if (a >= m) { alert('A Zona de Ação deve ser menor que a Zona de Monitoramento.'); return; }
-    zonas = { monitor: m, acao: a };
+    if (isNaN(ms) || ms <= 0 || ms > 100) { alert('Meta de Saída deve ser entre 1 e 100%.'); return; }
+    if (isNaN(rb) || rb < 0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
+    zonas = { monitor: m, acao: a, metaSaida: ms, reservaB3PorLote: rb };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
+    dados.setup.metaSaida = ms; // sincroniza com setup para o monitor
+    salvar();
     fecharConfigZonas();
     atualizarTela();
 }
@@ -511,9 +591,7 @@ function abrirNovaOp() {
     document.getElementById('nop-premio').value = '';
     document.getElementById('nop-venc').value   = '';
     document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
-    document.getElementById('nop-meta').value   = dados.setup.metaSaida   || 85;
     document.getElementById('nop-hint').innerText      = '';
-    document.getElementById('nop-meta-hint').innerText = '';
     document.getElementById('modal-nova-op').classList.add('ativo');
 }
 function fecharNovaOp() { document.getElementById('modal-nova-op').classList.remove('ativo'); }
@@ -523,17 +601,7 @@ function fecharNovaOp() { document.getElementById('modal-nova-op').classList.rem
     const qtd  = parseInt(document.getElementById('nop-qtd').value) || 0;
     const prem = toNum(document.getElementById('nop-premio').value);
     document.getElementById('nop-hint').innerText = (qtd && prem) ? `Total: ${fmt(qtd*prem)} (${qtd} × ${fmt(prem)})` : '';
-    atualizarHintMeta();
 }));
-document.getElementById('nop-meta').addEventListener('input', atualizarHintMeta);
-function atualizarHintMeta() {
-    const prem = toNum(document.getElementById('nop-premio').value);
-    const meta = parseInt(document.getElementById('nop-meta').value) || 0;
-    if (prem && meta) {
-        const alvo = parseFloat((prem*(1-meta/100)).toFixed(2));
-        document.getElementById('nop-meta-hint').innerText = `Sair quando opção chegar em ${fmt(alvo)} (${meta}% de queda)`;
-    } else { document.getElementById('nop-meta-hint').innerText = ''; }
-}
 
 function confirmarNovaOp() {
     const dataAb = document.getElementById('nop-data').value;
@@ -543,7 +611,7 @@ function confirmarNovaOp() {
     const premio = toNum(document.getElementById('nop-premio').value);
     const venc   = document.getElementById('nop-venc').value;
     const codigo = document.getElementById('nop-codigo').value.toUpperCase().trim();
-    const meta   = parseInt(document.getElementById('nop-meta').value) || 85;
+    const meta   = zonas.metaSaida || 70;  // v2.6: vem das configurações globais
 
     if (!dataAb || !preco || !strike || !qtd || !premio || !venc || !codigo) {
         alert('Preencha todos os campos antes de abrir a operação.'); return;
@@ -744,7 +812,7 @@ function atualizarCardCall() {
 }
 
 // ════════════════════════════════════════════════════════════
-// Extrato de Ciclos
+// Extrato de Ciclos — v2.6: detalhado + editável
 // ════════════════════════════════════════════════════════════
 function abrirExtratoCiclos() {
     const hist = ops.historico;
@@ -755,37 +823,44 @@ function abrirExtratoCiclos() {
         return;
     }
     let html = '';
-    for (const c of hist) {
+    for (let i = 0; i < hist.length; i++) {
+        const c = hist[i];
         const corStatus = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
         const bgStatus  = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
 
+        // DARF detalhado
         let darfLinha = '';
+        if (c.darf > 0) {
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF gerado (15%)</span><span class="ciclo-valor" style="color:#aaa;">- ${fmt(c.darf)}</span></div>`;
+        }
+        if (c.escudoUsado > 0) {
+            const escudoRestante = ops.resumo.escudoFiscal;
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">🛡️ Escudo usado</span><span class="ciclo-valor" style="color:var(--alta);">+ ${fmt(c.escudoUsado)}</span></div>`;
+        }
         if (c.darfPago > 0) {
-            darfLinha = `<div class="ciclo-linha"><span class="ciclo-label">Venc. DARF</span><span class="ciclo-valor" style="color:var(--queda);">${c.vencDarf}</span></div>`;
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--queda);">- ${fmt(c.darfPago)}</span></div>`;
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">Venc. DARF</span><span class="ciclo-valor" style="color:var(--queda);">${c.vencDarf}</span></div>`;
         } else if (c.darf > 0) {
-            darfLinha = `<div class="ciclo-linha"><span class="ciclo-label">DARF</span><span class="ciclo-valor" style="color:var(--alta);">Coberto pelo escudo</span></div>`;
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--alta);">R$ 0,00 (coberto)</span></div>`;
         } else {
-            darfLinha = `<div class="ciclo-linha"><span class="ciclo-label">DARF</span><span class="ciclo-valor" style="color:#aaa;">Não gerou DARF</span></div>`;
+            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF</span><span class="ciclo-valor" style="color:#aaa;">Não gerou DARF</span></div>`;
         }
 
         html += `
         <div class="ciclo-box">
-            <div class="ciclo-titulo">Ciclo ${formatarData(c.dataAbertura)} → ${formatarData(c.dataFechamento)}</div>
-            <div class="ciclo-linha">
-                <span class="ciclo-label">Prêmio</span>
-                <span class="ciclo-valor">${fmt(c.premioPorAcao)}/ação × ${c.quantidade}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div class="ciclo-titulo" style="margin-bottom:0;">Ciclo ${formatarData(c.dataAbertura)} → ${formatarData(c.dataFechamento)}</div>
+                <button onclick="abrirEditarCiclo(${i})" style="background:none;border:1px solid #555;color:#aaa;border-radius:5px;padding:3px 8px;font-size:0.65em;cursor:pointer;">✏️ Editar</button>
             </div>
-            <div class="ciclo-linha">
-                <span class="ciclo-label">Resultado bruto</span>
-                <span class="ciclo-valor">${fmt(c.resultadoBruto)}</span>
-            </div>
-            ${c.escudoUsado > 0 ? `<div class="ciclo-linha"><span class="ciclo-label">Escudo usado</span><span class="ciclo-valor" style="color:var(--alta);">- ${fmt(c.escudoUsado)}</span></div>` : ''}
-            ${c.darfPago > 0 ? `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--queda);">- ${fmt(c.darfPago)}</span></div>` : ''}
-            <div class="ciclo-linha">
-                <span class="ciclo-label">Resultado líquido</span>
-                <span class="ciclo-valor" style="color:${c.resultadoLiquido>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoLiquido)}</span>
-            </div>
+            <div class="ciclo-linha"><span class="ciclo-label">Entrada ação</span><span class="ciclo-valor">${fmt(c.precoAcao || 0)}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Strike</span><span class="ciclo-valor">${fmt(c.strike || 0)}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Prêmio</span><span class="ciclo-valor">${fmt(c.premioPorAcao)}/ação × ${c.quantidade}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Resultado bruto</span><span class="ciclo-valor" style="color:${c.resultadoBruto>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoBruto)}</span></div>
             ${darfLinha}
+            <div class="ciclo-linha" style="border-top:1px solid #444;margin-top:6px;padding-top:6px;">
+                <span class="ciclo-label" style="font-weight:bold;color:var(--branco);">Resultado líquido</span>
+                <span class="ciclo-valor" style="font-size:1em;color:${c.resultadoLiquido>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoLiquido)}</span>
+            </div>
             <span class="ciclo-status" style="background:${bgStatus}; color:${corStatus};">${c.status}</span>
         </div>`;
     }
@@ -793,6 +868,38 @@ function abrirExtratoCiclos() {
     document.getElementById('modal-ciclos').classList.add('ativo');
 }
 function fecharExtratoCiclos() { document.getElementById('modal-ciclos').classList.remove('ativo'); }
+
+// ── v2.6: Editar ciclo ──
+let _editandoCicloIdx = -1;
+function abrirEditarCiclo(idx) {
+    const c = ops.historico[idx];
+    if (!c) return;
+    _editandoCicloIdx = idx;
+    document.getElementById('edit-ciclo-dataab').value    = c.dataAbertura || '';
+    document.getElementById('edit-ciclo-datafech').value  = c.dataFechamento || '';
+    document.getElementById('edit-ciclo-preco').value     = String(c.precoAcao || '').replace('.',',');
+    document.getElementById('edit-ciclo-strike').value    = String(c.strike || '').replace('.',',');
+    document.getElementById('edit-ciclo-qtd').value       = c.quantidade || '';
+    document.getElementById('edit-ciclo-premio').value    = String(c.premioPorAcao || '').replace('.',',');
+    document.getElementById('edit-ciclo-status').value    = c.status || 'Virou pó';
+    document.getElementById('modal-edit-ciclo').classList.add('ativo');
+}
+function fecharEditarCiclo() { document.getElementById('modal-edit-ciclo').classList.remove('ativo'); }
+function confirmarEditarCiclo() {
+    const idx = _editandoCicloIdx;
+    if (idx < 0 || idx >= ops.historico.length) return;
+    const c = ops.historico[idx];
+    c.dataAbertura   = document.getElementById('edit-ciclo-dataab').value;
+    c.dataFechamento = document.getElementById('edit-ciclo-datafech').value;
+    c.precoAcao      = toNum(document.getElementById('edit-ciclo-preco').value);
+    c.strike         = toNum(document.getElementById('edit-ciclo-strike').value);
+    c.quantidade     = parseInt(document.getElementById('edit-ciclo-qtd').value) || c.quantidade;
+    c.premioPorAcao  = toNum(document.getElementById('edit-ciclo-premio').value);
+    c.status         = document.getElementById('edit-ciclo-status').value;
+    salvarOp();
+    fecharEditarCiclo();
+    abrirExtratoCiclos(); // re-renderiza
+}
 
 // ════════════════════════════════════════════════════════════
 // Busca cotações (inalterada)
@@ -839,28 +946,26 @@ function atualizarMonitor() {
     const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
     document.getElementById('header-opcao').innerText=s.codigoOpcao?s.codigoOpcao.toUpperCase():'— sem setup —';
     if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
-    const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0, meta=s.metaSaida||85;
+    const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0;
     let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
     const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
     const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
     const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
-    const range=strike-entrada, rawPos=range>0?(preco-entrada)/range:0, barPct=(Math.min(Math.max(rawPos,0),1)*100).toFixed(1);
-
-    // v1.7: Zonas baseadas em entrada (PM), Strike e Gap simétrico
-    // 'entrada' já declarado acima como s.precoEntrada
-    const gap      = entrada > 0 ? (strike - entrada) : 0; // R$ PM→Strike
-    const precoAzul = entrada > 0 ? (entrada - gap) : -Infinity; // espelho simétrico
+    // v2.6: Zonas baseadas em entrada (PM), Strike e Gap simétrico
+    const gap       = entrada > 0 ? (strike - entrada) : 0;
+    const precoAzul = entrada > 0 ? (entrada - gap)   : -Infinity;
 
     // Preços-limite das zonas configuráveis
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
 
-    // Distância % até o strike em tempo real: ((Strike/Preço)-1)*100
+    // Distância % até o strike em tempo real
     const distStrikePct = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
-    const distStrikeStr = distStrikePct.toFixed(2).replace('.', ',') + '% do Strike';
+    // v2.6: para ITM mostramos % acima
+    const acimaPct      = preco > 0 ? (((preco / strike) - 1) * 100) : 0;
 
-    let sColor, sLinha1, sLinha2, isGuerra = false;
-    let entrandoZonaAlerta = false; // controla notificação
+    let sColor, sLinha1, sLinha2, isGuerra = false, zonaAtiva = 0;
+    let entrandoZonaAlerta = false;
 
     // v1.7 Bug1: sem cotação → não entra nas zonas
     if (preco === null || preco === undefined || preco <= 0) {
@@ -873,88 +978,126 @@ function atualizarMonitor() {
         return;
     }
 
+    // ── v2.6: 6 zonas com frases exatas do protocolo ──
+    const distStr   = distStrikePct.toFixed(1).replace('.',',') + '%';
+    const acimaStr  = acimaPct.toFixed(1).replace('.',',') + '%';
+
     if (preco >= strike) {
-        // ITM — Vermelho Escuro — Estado de Guerra
-        isGuerra = true;
-        entrandoZonaAlerta = true; // v1.7 Bug2: ITM também notifica
-        sColor  = '#8b0000';
-        sLinha1 = '🚨 ITM — ROLAGEM OBRIGATÓRIA';
-        sLinha2 = 'VALOR INTRÍNSECO SUBINDO';
+        zonaAtiva = 6; isGuerra = true; entrandoZonaAlerta = true;
+        sColor  = '#c0392b';
+        sLinha1 = `ITM — ${acimaStr} acima do Strike`;
+        sLinha2 = 'Dentro do dinheiro. Prêmio e dias definem urgência.';
     } else if (preco >= zonaAcaoPrice) {
-        // Zona Ação — Vermelho Vivo — Estado de Guerra
-        isGuerra = true;
-        entrandoZonaAlerta = true;
-        sColor  = 'var(--queda)';
-        sLinha1 = '🛑 ROLAGEM AGORA';
-        sLinha2 = 'PREÇO NO LIMITE DO STRIKE';
+        zonaAtiva = 5; isGuerra = true; entrandoZonaAlerta = true;
+        sColor  = '#e05252';
+        sLinha1 = `ATM · Risco de exercício — ${distStr} do Strike`;
+        sLinha2 = 'Zona crítica. Decisão depende do prêmio e dos dias.';
     } else if (preco >= zonaMonitorPrice) {
-        // Zona Monitor — Laranja
-        entrandoZonaAlerta = true;
+        zonaAtiva = 4; entrandoZonaAlerta = true;
         sColor  = '#ff9900';
-        sLinha1 = '📢 PREPARAR ROLAGEM';
-        sLinha2 = 'Distância: ' + distStrikeStr;
+        sLinha1 = `ATM · Preparar rolagem — ${distStr} do Strike`;
+        sLinha2 = 'Zona de alerta. Definir plano de saída.';
     } else if (entrada > 0 && preco >= entrada) {
-        // Entre entrada e Zona Monitor — Amarelo
+        zonaAtiva = 3;
         sColor  = '#f1c40f';
-        sLinha1 = '⚠️ ATENÇÃO: ZONA DE ROLAGEM';
-        sLinha2 = 'Aproximação: ' + distStrikeStr;
+        sLinha1 = `Atenção — ${distStr} do Strike`;
+        sLinha2 = 'Acima do PM. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
-        // Entre precoAzul e entrada — Verde (OTM seguro)
-        sColor  = 'var(--alta)';
-        sLinha1 = '✅ OTM — PRÊMIO PROTEGIDO';
-        sLinha2 = 'Operação em área segura';
+        zonaAtiva = 2;
+        sColor  = '#00e676';
+        sLinha1 = `OTM — ${distStr} do Strike`;
+        sLinha2 = 'Abaixo do PM. Posição confortável, sem ação.';
     } else {
-        // Abaixo de (PM - gap) — Azul Vivo — Rumo ao Pó (simetria máxima)
+        zonaAtiva = 1;
         sColor  = '#00bcd4';
-        sLinha1 = '🌀 RUMO AO PÓ';
-        sLinha2 = 'SEGURANÇA MÁXIMA';
+        sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
+        sLinha2 = 'Segurança máxima. Prêmio caminhando para zero.';
     }
 
-    // v1.6: Dispara notificação/badge quando entra na zona de alerta
     dispararAlerta(entrandoZonaAlerta, isGuerra);
-
-    // v1.5: ativa/desativa Estado de Guerra (bordas piscantes em todos os cards)
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-    const secaoStrike=`<div class="monitor-sep">── Monitor de Strike ──</div><div class="barra-container"><div class="barra-fill" style="width:${barPct}%;background:${sColor};"></div><div class="barra-marker" style="left:${barPct}%;background:${sColor};"></div></div><div style="display:flex;justify-content:space-between;font-size:0.82em;font-weight:bold;margin:8px 0 10px;"><span style="color:#ddd;">R$ ${entrada.toFixed(2).replace('.',',')}</span><span style="color:#ddd;">R$ ${strike.toFixed(2).replace('.',',')}</span></div><div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
+    // ── v2.6: Barra com 6 segmentos independentes ──
+    // Cada segmento tem opacity 0.18 (apagado) exceto o ativo (0.85)
+    // As 6 zonas são exibidas como segmentos de largura igual (proporcionais pode ser implementado;
+    // usamos larguras iguais pois os limites das zonas do usuário são configuráveis)
+    const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
+    let segHtml = '';
+    for (let i = 0; i < 6; i++) {
+        const ativo = (i + 1 === zonaAtiva);
+        const op    = ativo ? '1' : '0.18';
+        // bolinha marcadora aparece apenas no segmento ativo, centralizada
+        const bolinha = ativo
+            ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
+            : '';
+        segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+    }
+    const entradaLbl = `ENT R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+    const strikeLbl  = `STK R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+    const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
+        + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
+        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
+
+    // ── v2.6: Monitor de Prêmio com 5 faixas de cor corretas ──
     let secaoPremio='';
     if(prem>0){
+        const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
         let desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
         let pColor,pLinha1,pLinha2,pBarW=0;
         const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
-        if(desv===null){pColor='#555';pBarW=0;pLinha1='Buscando cotação da opção…';pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;}
-        else if(desv<0){pColor='var(--queda)';pBarW=0;pLinha1='🔺 Risco — Opção valorizando';pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)}`;}
-        else if(desv>=meta){pColor='var(--alta)';pBarW=100;pLinha1='💰 Meta atingida — Encerrar posição';pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;}
-        else{pColor='#f1c40f';pBarW=(desv/meta)*100;const faltam=(meta-desv).toFixed(2).replace('.',',');pLinha1=`⏳ Lucro: ${desvStr} (Faltam ${faltam}% para ${meta}%)`;pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;}
+        if(desv===null){
+            pColor='#555';pBarW=0;
+            pLinha1='Buscando cotação da opção…';
+            pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
+        } else if(desv<0){
+            pColor='#e05252';pBarW=0;
+            pLinha1='🔺 Risco — Opção valorizando';
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)}`;
+        } else if(desv>=meta){
+            pColor='#00bcd4';pBarW=100;   // azul = melhor cenário (meta atingida)
+            pLinha1='💰 META ATINGIDA — Encerrar posição';
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=70){
+            pColor='#00e676';pBarW=(desv/meta)*100; // verde: zona de saída antecipada
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=60){
+            pColor='#f1c40f';pBarW=(desv/meta)*100; // amarelo: 60–69%
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else {
+            pColor='#777';pBarW=(desv/meta)*100; // cinza: 0–59%
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        }
         secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;"><div style="height:100%;border-radius:8px;background:${pColor};width:${pBarW.toFixed(1)}%;transition:width 0.6s;"></div></div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div><div class="obs-box" style="border-left:3px solid ${pColor};"><div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
     }
 
-    // v1.5: Decisão Estratégica — 5 prioridades
+    // ── Decisão Estratégica ──
     let secaoDecisao='';
     if(prem>0){
+        const metaD = zonas.metaSaida || dados.setup.metaSaida || 70;
         const desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
-        const desvStr=desv!==null?desv.toFixed(0):'—';
         let dColor, dTexto, dClasse='';
 
-        if(desv!==null&&desv>=meta){
-            // P1: Meta de lucro atingida — Azul piscante
+        if(desv!==null&&desv>=metaD){
             dColor='#00bcd4'; dClasse='piscante-azul';
             dTexto='💰 META ATINGIDA: ENCERRAR';
         } else if(isGuerra){
-            // P2: Estado de Guerra — Vermelho piscante
             dColor='var(--queda)'; dClasse='piscante-vermelho';
             dTexto='🛑 ROLAGEM OBRIGATÓRIA AGORA!';
         } else if(entrada>0 && preco>=zonaMonitorPrice){
-            // P3: Zona Monitor — Vermelho fixo
             dColor='var(--queda)';
             dTexto='📢 PREPARAR ROLAGEM';
         } else if(entrada>0 && preco>=entrada){
-            // P4: Entre PM e Zona Monitor — Amarelo fixo
             dColor='#f1c40f';
             dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
         } else {
-            // P5: Estável (abaixo do PM) — Verde fixo
             dColor='var(--alta)';
             dTexto='✅ OTM: AGUARDAR DESVALORIZAÇÃO';
         }
@@ -962,8 +1105,9 @@ function atualizarMonitor() {
     }
     // v1.8: Notificação de meta de prêmio
     if (prem > 0 && cotacaoOpcao !== null) {
+        const metaN = zonas.metaSaida || dados.setup.metaSaida || 70;
         const desvMeta = ((prem - cotacaoOpcao) / prem) * 100;
-        dispararMeta(desvMeta >= meta);
+        dispararMeta(desvMeta >= metaN);
     } else {
         dispararMeta(false);
     }
@@ -1003,8 +1147,8 @@ function abrirExtrato(tipo){
     for(const g of grupos){
         html+=`<div class="extrato-mes-titulo"><span>${g.mesAno}</span></div>`;
         for(const e of g.entradas){
-            // Ajuste 2: botão X vermelho para deletar lançamento individual
-            html+=`<div class="extrato-linha"><span class="extrato-linha-data">${e.data} &nbsp; ${e.hora}</span><span class="extrato-linha-valor">${fmt(e.valor)}</span><button class="btn-del-lancamento" onclick="deletarLancamento(${e._idx})" title="Remover lançamento">✕</button></div>`;
+            // Ajuste 2: botão X vermelho + botão editar para cada lançamento
+            html+=`<div class="extrato-linha"><span class="extrato-linha-data">${e.data} &nbsp; ${e.hora}</span><span class="extrato-linha-valor">${fmt(e.valor)}</span><div style="display:flex;gap:4px;"><button onclick="editarLancamento(${e._idx})" style="background:none;border:none;color:#aaa;font-size:0.85em;cursor:pointer;padding:0 4px;">✏️</button><button class="btn-del-lancamento" onclick="deletarLancamento(${e._idx})" title="Remover lançamento">✕</button></div></div>`;
         }
     }
     corpo.innerHTML=html;
@@ -1025,6 +1169,26 @@ function deletarLancamento(idx){
     salvar();
     atualizarTela();
     // Re-renderiza o extrato sem fechar o modal
+    abrirExtrato(tipo);
+}
+
+// v2.6: editar lançamento individual do extrato
+let _editandoLancIdx = -1;
+function editarLancamento(idx) {
+    const tipo = _extratoTipo;
+    const lista = carregarHistorico(tipo);
+    if (idx < 0 || idx >= lista.length) return;
+    _editandoLancIdx = idx;
+    const novoValStr = prompt(`Editar valor do lançamento (atual: R$ ${lista[idx].valor.toFixed(2).replace('.',',')}):`);
+    if (novoValStr === null) return;
+    const novoVal = toNum(novoValStr);
+    if (isNaN(novoVal) || novoVal <= 0) { alert('Valor inválido.'); return; }
+    const diff = novoVal - lista[idx].valor;
+    lista[idx].valor = parseFloat(novoVal.toFixed(2));
+    salvarHistorico(tipo, lista);
+    dados[tipo].cofre = parseFloat(Math.max(0, dados[tipo].cofre + diff).toFixed(2));
+    salvar();
+    atualizarTela();
     abrirExtrato(tipo);
 }
 
@@ -1074,8 +1238,18 @@ function atualizarTela(){
     document.getElementById('rent-tag').innerText=fmtP(rent);
     document.getElementById('rent-tag').style.color=rent>=0?'var(--alta)':'var(--queda)';
     document.getElementById('saldo-caixa').innerText=fmt(dados.caixaDisponivel);
+
+    // v2.6: Reserva B3 — R$ por lote (100 ações)
+    const reservaB3PorLote = zonas.reservaB3PorLote || 0;
+    const lotes = Math.floor(q / 100);
+    const reservaB3Total = parseFloat((lotes * reservaB3PorLote).toFixed(2));
+    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(reservaB3Total)}`;
+
+    // v2.6: pode-comprar descontando a reserva B3
     const ctp=(cotacaoAcao!==null&&cotacaoAcao>0)?cotacaoAcao:1;
-    document.getElementById('pode-comprar').innerText=`Pode comprar +${Math.floor(dados.caixaDisponivel/ctp)} ações BBAS3`;
+    const saldoDisponivel = Math.max(0, dados.caixaDisponivel - reservaB3Total);
+    document.getElementById('pode-comprar').innerText=`Pode comprar +${Math.floor(saldoDisponivel/ctp)} ações BBAS3`;
+
     document.getElementById('troco-cofre').innerText=fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText=fmt(dados.troco.transferido);
     document.getElementById('aportes-cofre').innerText=fmt(dados.aportes.cofre);
@@ -1093,7 +1267,7 @@ function abrirCompra(){
     if(q&&p){dados.acoes.push({qtd:parseInt(q),preco:toNum(p)});dados.caixaDisponivel=parseFloat((dados.caixaDisponivel-parseInt(q)*toNum(p)).toFixed(2));atualizarTela();}
 }
 function exportar(){
-    // v2.3: inclui históricos de extratos e zonas no backup
+    // v2.6: inclui históricos de extratos e zonas no backup
     const payload = {
         ...dados,
         opsCall:      ops,
@@ -1115,7 +1289,13 @@ function importar(input){
             if(payload.histTroco)   { salvarHistorico('troco',   payload.histTroco);   delete payload.histTroco; }
             if(payload.histAportes) { salvarHistorico('aportes', payload.histAportes); delete payload.histAportes; }
             // v2.3: restaura zonas de alerta
-            if(payload.zonasConfig) { zonas=payload.zonasConfig; localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas)); delete payload.zonasConfig; }
+            if(payload.zonasConfig) {
+                zonas=payload.zonasConfig;
+                if (!zonas.metaSaida)       zonas.metaSaida = 70;
+                if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
+                localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
+                delete payload.zonasConfig;
+            }
             dados=payload;
             if(!dados.troco)           dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)         dados.aportes={cofre:0,transferido:0};
