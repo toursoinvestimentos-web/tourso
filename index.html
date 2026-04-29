@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.8</title>
+    <title>TOURSO_vCALL 2.7</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -54,16 +54,13 @@
         @keyframes piscarAmarelo { 0%,100%{opacity:1} 50%{opacity:0.35} }
         @keyframes piscarVermelho { 0%,100%{opacity:1} 50%{opacity:0.2} }
         @keyframes piscarAzul    { 0%,100%{opacity:1} 50%{opacity:0.25} }
-        /* v2.8: animação piscante para meta positiva (verde/ciano) */
-        @keyframes piscarMeta    { 0%,100%{opacity:1} 50%{opacity:0.25} }
         .piscante-amarelo { animation: piscarAmarelo 1.1s infinite; }
         .piscante-vermelho { animation: piscarVermelho 0.45s infinite; }
         .piscante-azul     { animation: piscarAzul    1.0s infinite; }
-        .piscante-meta     { animation: piscarMeta    1.0s infinite; }
         .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 8px 0 4px; position: relative; overflow: visible; }
         .barra-fill { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
         .barra-marker { position: absolute; top: -2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--branco); transition: left 0.6s, background 0.5s; transform: translateX(-50%); }
-        .monitor-sep { font-size: 0.70em; color: #aaa; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
+        .monitor-sep { font-size: 0.63em; color: #aaa; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
         .obs-box { border-radius: 8px; padding: 10px 12px; background: rgba(0,0,0,0.25); }
         /* Banner */
         #banner-install { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--ciano); color: var(--fundo); padding: 14px 20px; z-index: 200; align-items: center; justify-content: space-between; font-weight: bold; font-size: 0.9em; }
@@ -101,7 +98,7 @@
         .ciclo-status { display: inline-block; margin-top: 6px; font-size: 0.72em; font-weight: bold; padding: 3px 10px; border-radius: 20px; }
         /* Preview da rolagem */
         .preview-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.82em; border-left: 3px solid #f1c40f; display: none; }
-        /* Modal de Confirmação Zerar */
+        /* ══ v2.7: Modal de Confirmação Zerar ══ */
         .modal-box-alerta { border-top-color: var(--queda) !important; }
         .modal-box-alerta h3 { color: var(--queda) !important; }
     </style>
@@ -155,7 +152,7 @@
     </div>
 </div>
 
-<!-- Operações de CALL -->
+<!-- ══ Operações de CALL ══ -->
 <div class="card" style="border-left-color:#7c4dff;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div class="pilar-label">Operações de CALL</div>
@@ -163,6 +160,7 @@
     </div>
     <div class="call-grid">
         <div class="call-item">
+            <!-- v2.7: renomeado de "Prêmios líquidos" para "Resultado líquido" -->
             <div class="call-item-label">Resultado líquido</div>
             <div class="call-item-val" id="call-resultado-liq">R$ 0,00</div>
         </div>
@@ -250,11 +248,12 @@
 <div class="area-botoes-inferior">
     <button onclick="exportar()" class="btn-discreto">Salvar Backup</button>
     <button onclick="document.getElementById('input-file').click()" class="btn-discreto">Ler Backup</button>
+    <!-- v2.7: chama confirmarZerar() em vez de limparTudo() diretamente -->
     <button onclick="confirmarZerar()" class="btn-discreto">Zerar Tudo</button>
     <input type="file" id="input-file" style="display:none" onchange="importar(this)">
 </div>
 
-<!-- Modal Confirmação Zerar Tudo -->
+<!-- ══ v2.7: Modal Confirmação Zerar Tudo ══ -->
 <div class="modal-overlay" id="modal-zerar">
     <div class="modal-box modal-box-alerta">
         <h3>⚠️ Zerar Tudo</h3>
@@ -273,7 +272,7 @@
     </div>
 </div>
 
-<!-- Modal Configuração de Zonas -->
+<!-- ══ Modal Configuração de Zonas ══ -->
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
         <h3>⚠️ Zonas de Alerta &amp; Configurações</h3>
@@ -287,10 +286,9 @@
             <input type="number" inputmode="decimal" id="zona-acao" step="0.1" min="0.1" max="10" placeholder="Ex: 0.5">
             <small>Alerta crítico — preparar rolagem imediatamente.</small>
         </div>
-        <!-- v2.8: Meta de Saída movida para cá (removida do modal nova operação) -->
         <div class="modal-campo">
             <label>Meta de Saída da Operação (%)</label>
-            <input type="number" inputmode="numeric" id="zona-meta-saida" placeholder="Ex: 70" min="1" max="100" value="70">
+            <input type="number" inputmode="numeric" id="zona-meta-saida" placeholder="Ex: 65" min="1" max="100" value="65">
             <small id="zona-meta-hint" style="color:var(--ciano);"></small>
         </div>
         <div class="modal-campo">
@@ -305,7 +303,7 @@
     </div>
 </div>
 
-<!-- Modal Nova Operação -->
+<!-- ══ Modal Nova Operação ══ -->
 <div class="modal-overlay" id="modal-nova-op">
     <div class="modal-box">
         <h3>📈 Nova Operação de CALL</h3>
@@ -347,7 +345,7 @@
     </div>
 </div>
 
-<!-- Modal Finalizar Operação -->
+<!-- ══ Modal Finalizar Operação ══ -->
 <div class="modal-overlay" id="modal-fin-op">
     <div class="modal-box">
         <h3>🏁 Finalizar Operação</h3>
@@ -376,7 +374,7 @@
     </div>
 </div>
 
-<!-- Modal Extrato de Ciclos -->
+<!-- ══ Modal Extrato de Ciclos ══ -->
 <div class="modal-overlay" id="modal-ciclos">
     <div class="modal-box">
         <h3>📊 Histórico de Ciclos</h3>
@@ -385,7 +383,7 @@
     </div>
 </div>
 
-<!-- Modal Editar Ciclo -->
+<!-- ══ Modal Editar Ciclo ══ -->
 <div class="modal-overlay" id="modal-edit-ciclo">
     <div class="modal-box">
         <h3>✏️ Editar Ciclo</h3>
@@ -464,7 +462,8 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.8", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    // v2.7: título atualizado no manifest
+    const mf = { name:"TOURSO_vCALL 2.7", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -494,11 +493,12 @@ if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 const BASE = {
     acoes:[], caixaDisponivel:0,
     troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
-    setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0 }
+    setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0, metaSaida:85 }
 };
 
 const BASE_OP = {
     operacaoAtual: null,
+    // v2.7: renomeado internamente para resultadoLiquido (era premiosLiquidos)
     resumo: { resultadoLiquido:0, totalOps:0, darfPago:0, escudoFiscal:0, somaOtm:0 },
     historico: []
 };
@@ -510,16 +510,15 @@ let dados = (() => {
     if (v2) { const o=JSON.parse(v2); return {acoes:o.acoes||[],caixaDisponivel:o.caixaDisponivel||0,troco:{cofre:o.caixa?.troco||0,transferido:0},aportes:{cofre:o.caixa?.aportes||0,transferido:0},setup:{...BASE.setup}}; }
     return JSON.parse(JSON.stringify(BASE));
 })();
-if (!dados.setup)    dados.setup   = {...BASE.setup};
-if (!dados.troco)    dados.troco   = {cofre:0,transferido:0};
-if (!dados.aportes)  dados.aportes = {cofre:0,transferido:0};
-// v2.8: metaSaida não fica mais no setup, fica só em zonas
-if (dados.setup.metaSaida) delete dados.setup.metaSaida;
+if (!dados.setup)           dados.setup   = {...BASE.setup};
+if (!dados.troco)           dados.troco   = {cofre:0,transferido:0};
+if (!dados.aportes)         dados.aportes = {cofre:0,transferido:0};
+if (!dados.setup.metaSaida) dados.setup.metaSaida = 85;
 
 let ops = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_OP)) || JSON.parse(JSON.stringify(BASE_OP)); } catch(e){ return JSON.parse(JSON.stringify(BASE_OP)); } })();
-if (!ops.resumo)    ops.resumo    = {...BASE_OP.resumo};
+if (!ops.resumo) ops.resumo = {...BASE_OP.resumo};
 if (!ops.historico) ops.historico = [];
-// migra campo antigo premiosLiquidos → resultadoLiquido
+// v2.7: compatibilidade — migra campo antigo premiosLiquidos → resultadoLiquido
 if (ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === undefined) {
     ops.resumo.resultadoLiquido = ops.resumo.premiosLiquidos;
     delete ops.resumo.premiosLiquidos;
@@ -541,10 +540,14 @@ function salvar()  { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 function salvarOp(){ localStorage.setItem(CHAVE_OP, JSON.stringify(ops)); }
 
 // ════════════════════════════════════════════════════════════
-// Zerar Tudo
+// v2.7: Zerar Tudo com confirmação via modal
 // ════════════════════════════════════════════════════════════
-function confirmarZerar() { document.getElementById('modal-zerar').classList.add('ativo'); }
-function fecharZerar()    { document.getElementById('modal-zerar').classList.remove('ativo'); }
+function confirmarZerar() {
+    document.getElementById('modal-zerar').classList.add('ativo');
+}
+function fecharZerar() {
+    document.getElementById('modal-zerar').classList.remove('ativo');
+}
 function limparTudo() {
     fecharZerar();
     localStorage.removeItem(CHAVE);
@@ -556,8 +559,8 @@ function limparTudo() {
 
 // ── Configuração de Zonas ──
 function abrirConfigZonas() {
-    document.getElementById('zona-monitor').value    = zonas.monitor;
-    document.getElementById('zona-acao').value       = zonas.acao;
+    document.getElementById('zona-monitor').value = zonas.monitor;
+    document.getElementById('zona-acao').value    = zonas.acao;
     document.getElementById('zona-meta-saida').value = zonas.metaSaida || 70;
     document.getElementById('zona-reserva-b3').value = zonas.reservaB3PorLote || 50;
     atualizarHintMetaZona();
@@ -590,6 +593,8 @@ function salvarConfigZonas() {
     if (isNaN(rb) || rb < 0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
     zonas = { monitor: m, acao: a, metaSaida: ms, reservaB3PorLote: rb };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
+    dados.setup.metaSaida = ms;
+    salvar();
     fecharConfigZonas();
     atualizarTela();
 }
@@ -632,7 +637,6 @@ function confirmarNovaOp() {
     const premio = toNum(document.getElementById('nop-premio').value);
     const venc   = document.getElementById('nop-venc').value;
     const codigo = document.getElementById('nop-codigo').value.toUpperCase().trim();
-    // v2.8: meta vem de zonas, não do setup
     const meta   = zonas.metaSaida || 70;
 
     if (!dataAb || !preco || !strike || !qtd || !premio || !venc || !codigo) {
@@ -648,6 +652,7 @@ function confirmarNovaOp() {
     dados.setup.premioRecebido = premio;
     dados.setup.vencimento     = venc;
     dados.setup.codigoOpcao    = codigo;
+    dados.setup.metaSaida      = meta;
     cotacaoOpcao = null;
 
     fecharNovaOp(); salvarOp(); salvar(); atualizarTela(); buscarCotacao();
@@ -717,6 +722,7 @@ function confirmarFinOp() {
         }
         resultadoLiquido = parseFloat((resultadoBruto - darfPagoOp).toFixed(2));
         ops.resumo.darfPago         = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
+        // v2.7: usa resultadoLiquido (acumula positivos e negativos)
         ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
 
     } else {
@@ -729,6 +735,7 @@ function confirmarFinOp() {
         if (resultadoBruto < 0) {
             ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal + Math.abs(resultadoBruto)).toFixed(2));
             resultadoLiquido = resultadoBruto;
+            // v2.7: prejuízo também soma no resultado líquido (valor negativo)
             ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
         } else {
             darfOp = parseFloat((resultadoBruto * 0.15).toFixed(2));
@@ -777,16 +784,18 @@ function gerarVencDarf(dataFech) {
 }
 
 // ════════════════════════════════════════════════════════════
-// Card de Operações de CALL
+// v2.7: Card de Operações de CALL — usa resultadoLiquido
 // ════════════════════════════════════════════════════════════
 function atualizarCardCall() {
     const r = ops.resumo;
     const resLiq = r.resultadoLiquido || 0;
     const el = document.getElementById('call-resultado-liq');
     el.innerText = fmt(resLiq);
+    // Colore positivo/negativo
     el.style.color = resLiq >= 0 ? 'var(--branco)' : 'var(--queda)';
 
     document.getElementById('call-total-op').innerText  = r.totalOps;
+    // Média por operação baseada no resultado líquido real
     document.getElementById('call-media-op').innerText  = r.totalOps > 0 ? fmt(resLiq / r.totalOps) : 'R$ 0,00';
     document.getElementById('call-media-otm').innerText = r.totalOps > 0 ? fmtP(r.somaOtm / r.totalOps) : '—';
     document.getElementById('call-darf').innerText      = fmt(r.darfPago);
@@ -925,74 +934,55 @@ async function buscarCotacao() {
 }
 
 // ════════════════════════════════════════════════════════════
-// ▌▌▌ v2.8 — MONITOR (strike + prêmio + decisão) ▌▌▌
+// Monitor — v2.7 com lógica de zonas corrigida
 // ════════════════════════════════════════════════════════════
 function atualizarMonitor() {
-    const s   = dados.setup;
-    const el  = document.getElementById('monitor-conteudo');
-    const card= document.getElementById('card-monitor');
-    document.getElementById('header-opcao').innerText = s.codigoOpcao ? s.codigoOpcao.toUpperCase() : '— sem setup —';
+    const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
+    document.getElementById('header-opcao').innerText=s.codigoOpcao?s.codigoOpcao.toUpperCase():'— sem setup —';
+    if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
 
-    if (!s.codigoOpcao || !s.precoEntrada || !s.strike) {
-        el.innerHTML = `<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`;
-        card.style.borderLeftColor = '#444';
-        return;
-    }
+    const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0;
+    let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
+    const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
+    const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
+    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
 
-    const preco   = cotacaoAcao;
-    const strike  = s.strike;
-    const entrada = s.precoEntrada;
-    const prem    = s.premioRecebido;
-    const qtd     = s.qtdAcoes || 0;
-    const meta    = zonas.metaSaida || 70;
-
-    // Dias para vencer
-    let dias = null;
-    if (s.vencimento) dias = Math.ceil((new Date(s.vencimento+'T12:00:00') - new Date()) / 86400000);
-    const diasTxt = dias !== null ? (dias > 0 ? `⏱️ ${dias} dias para vencer` : '⚠️ VENCIDA') : '';
-
-    const valorAcao  = (preco !== null && preco !== undefined) ? fmt(preco) : '—';
-    const valorOpcao = (cotacaoOpcao !== null) ? fmt(cotacaoOpcao) : '—';
-
-    const secaoTopo =
-        `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;">
-                <div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div>
-                <div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;">
-                <div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div>
-                <div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div>
-            </div>
-        </div>
-        ${diasTxt ? `<div style="text-align:center;font-size:0.9em;color:#aaa;margin-top:10px;">${diasTxt}</div>` : ''}`;
-
-    // ── Zonas de preço ──
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
-    const gap       = entrada > 0 ? (strike - entrada) : 0;
-    const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
+    const distStrikePct    = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
+    const acimaPct         = preco > 0 ? (((preco / strike) - 1) * 100) : 0;
 
-    let zonaAtiva = 0, isGuerra = false, entrandoZonaAlerta = false;
-    let sColor, sLinha1, sLinha2;
+    let sColor, sLinha1, sLinha2, isGuerra = false, zonaAtiva = 0;
+    let entrandoZonaAlerta = false;
 
-    // ─────────────────────────────────────────────────────────
-    // v2.8 — MONITOR DE STRIKE
-    // ─────────────────────────────────────────────────────────
     if (preco === null || preco === undefined || preco <= 0) {
         document.body.classList.remove('guerra');
         card.style.borderLeftColor = '#444';
-        el.innerHTML = secaoTopo + '<div class="monitor-sep">── MONITOR DE STRIKE ──</div>'
+        el.innerHTML = secaoTopo + '<div class="monitor-sep">── Monitor de Strike ──</div>'
             + '<div class="obs-box" style="border-left:3px solid #555; text-align:center;">'
             + '<div style="font-size:0.85em; color:#555;">⏳ Aguardando cotação da BBAS3…</div></div>';
         dispararAlerta(false, false);
         return;
     }
 
-    const distStrikePct = ((strike / preco) - 1) * 100;  // % que falta para o strike
-    const acimaPct      = ((preco / strike) - 1) * 100;  // % acima do strike (ITM)
     const distStr  = distStrikePct.toFixed(1).replace('.',',') + '%';
     const acimaStr = acimaPct.toFixed(1).replace('.',',') + '%';
+
+    // ════════════════════════════════════════════════════════
+    // v2.7: Lógica de zonas corrigida
+    //
+    // Zona 1 — Rumo ao pó:   preco <= precoAzul (abaixo do espelho do gap)
+    // Zona 2 — OTM confortável: precoAzul < preco < entrada (abaixo do PM)
+    // Zona 3 — Atenção:      entrada <= preco < zonaMonitorPrice  (acima PM, ainda longe do alerta)
+    // Zona 4 — Preparar rolagem: zonaMonitorPrice <= preco < zonaAcaoPrice
+    // Zona 5 — ATM crítico:  zonaAcaoPrice <= preco < strike
+    // Zona 6 — ITM:          preco >= strike
+    //
+    // CORREÇÃO: Zona 3 só ativa quando preco >= entrada (realmente acima do PM)
+    // E a mensagem "Acima do PM, monitorar mais frequência" é exibida corretamente
+    // ════════════════════════════════════════════════════════
+    const gap       = entrada > 0 ? (strike - entrada) : 0;
+    const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
 
     if (preco >= strike) {
         zonaAtiva = 6; isGuerra = true; entrandoZonaAlerta = true;
@@ -1010,16 +1000,20 @@ function atualizarMonitor() {
         sLinha1 = `ATM · Preparar rolagem — ${distStr} do Strike`;
         sLinha2 = 'Zona de alerta. Definir plano de saída.';
     } else if (entrada > 0 && preco >= entrada) {
+        // v2.7 CORREÇÃO: Zona 3 — preço está entre o PM e a zona de monitoramento
+        // Significa que está ACIMA do PM mas ainda longe da zona de alerta → monitorar mais
         zonaAtiva = 3;
         sColor  = '#f1c40f';
         sLinha1 = `Atenção — ${distStr} do Strike`;
         sLinha2 = 'Acima do PM. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
+        // Zona 2 — preço abaixo do PM mas ainda não no patamar de segurança máxima
         zonaAtiva = 2;
         sColor  = '#00e676';
         sLinha1 = `OTM — ${distStr} do Strike`;
         sLinha2 = 'Abaixo do PM. Posição confortável, sem ação.';
     } else {
+        // Zona 1 — muito abaixo, opção caminhando para virar pó
         zonaAtiva = 1;
         sColor  = '#00bcd4';
         sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
@@ -1030,149 +1024,111 @@ function atualizarMonitor() {
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-    // ── v2.8: Barra de 6 segmentos proporcionais ──
-    // Cores dos segmentos (Zona 1 a 6)
     const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
-
-    // Larguras proporcionais: zonas 1 e 2 dividem 50%, zona 3 tem ~20%,
-    // zona 4 tem zona.monitor%, zona 5 tem (zona.monitor - zona.acao)%,
-    // zona 6 tem ~10% (ITM representativo)
-    // Usamos larguras fixas mas visualmente proporcionais ao risco
-    const segWidths = [20, 20, 20, 15, 15, 10]; // soma = 100
-
     let segHtml = '';
     for (let i = 0; i < 6; i++) {
         const ativo = (i + 1 === zonaAtiva);
-        const op    = ativo ? '0.85' : '0.18';
-        const cor   = segCores[i];
-        const w     = segWidths[i];
-        const radius = i === 0 ? '8px 0 0 8px' : i === 5 ? '0 8px 8px 0' : '0';
+        const op    = ativo ? '1' : '0.18';
         const bolinha = ativo
-            ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${cor};border:2px solid #fff;box-shadow:0 0 6px ${cor};z-index:2;"></div>`
+            ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
             : '';
-        segHtml += `<div style="width:${w}%;height:100%;background:${cor};opacity:${op};border-radius:${radius};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+        segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+    }
+    const entradaLbl = `ENT R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+    const strikeLbl  = `STK R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+    const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
+        + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
+        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
+
+    // ════════════════════════════════════════════════════════
+    // v2.7: Monitor de Prêmio — barra com cor correta em todos os cenários
+    // incluindo quando a opção está valorizada (desv < 0) → barra vermelha
+    // ════════════════════════════════════════════════════════
+    let secaoPremio='';
+    if(prem>0){
+        const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
+        let desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
+        let pColor,pLinha1,pLinha2,pBarW=0;
+        const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
+
+        if(desv===null){
+            pColor='#555'; pBarW=0;
+            pLinha1='Buscando cotação da opção…';
+            pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
+        } else if(desv<0){
+            // v2.7 CORREÇÃO: opção valorizando → barra vermelha com largura proporcional ao risco
+            // quanto mais negativo, mais cheia a barra (vermelho = risco crescente)
+            const risco = Math.min(Math.abs(desv) / 30 * 100, 100); // 30% de valorização = barra cheia
+            pColor='#e05252'; pBarW=risco;
+            pLinha1='🔺 Risco — Opção valorizando';
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
+        } else if(desv>=meta){
+            pColor='#00bcd4'; pBarW=100;
+            pLinha1='💰 META ATINGIDA — Encerrar posição';
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=70){
+            pColor='#00e676'; pBarW=(desv/meta)*100;
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=60){
+            pColor='#f1c40f'; pBarW=(desv/meta)*100;
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else {
+            pColor='#777'; pBarW=(desv/meta)*100;
+            const faltam=(meta-desv).toFixed(1).replace('.',',');
+            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        }
+        secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
+            +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
+            +`<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
+            +`<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>`
+            +`</div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div>`
+            +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
+            +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
+            +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
     }
 
-    // ── v2.8: Rótulos compactos abaixo da barra (uma linha só) ──
-    const entradaFmt = entrada > 0 ? `R$\u00a0${entrada.toFixed(2).replace('.',',')}` : '—';
-    const strikeFmt  = `R$\u00a0${strike.toFixed(2).replace('.',',')}`;
-    const rotulosLinha = `<div style="display:flex;justify-content:space-between;font-size:9px;color:#666;margin-top:3px;margin-bottom:8px;letter-spacing:0.01em;">
-        <span>Entrada: ${entradaFmt}</span><span>Strike: ${strikeFmt}</span>
-    </div>`;
+    // ── Decisão Estratégica ──
+    let secaoDecisao='';
+    if(prem>0){
+        const metaD = zonas.metaSaida || dados.setup.metaSaida || 70;
+        const desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
+        let dColor, dTexto, dClasse='';
 
-    const secaoStrike =
-        `<div class="monitor-sep">── MONITOR DE STRIKE ──</div>
-        <div style="display:flex;height:14px;border-radius:8px;overflow:visible;margin:8px 0 0;">${segHtml}</div>
-        ${rotulosLinha}
-        <div class="obs-box" style="border-left:3px solid ${sColor};">
-            <div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div>
-            <div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div>
-        </div>`;
-
-    // ─────────────────────────────────────────────────────────
-    // v2.8 — MONITOR DE PRÊMIO
-    // Nova escala de cores (invertida verde/azul):
-    // < 0%        → #e05252 vermelho
-    // 0% a 59%    → #777 cinza
-    // 60% a 69%   → #f1c40f amarelo
-    // 70% até META → #00e676 verde (zona de saída antecipada)
-    // >= META%    → #00bcd4 azul/ciano (melhor estado)
-    // ─────────────────────────────────────────────────────────
-    let secaoPremio = '';
-    if (prem > 0) {
-        let desv = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
-        let pColor, pLinha1, pLinha2, pBarW = 0;
-        const desvStr = desv !== null ? desv.toFixed(2).replace('.',',') + '%' : '—';
-
-        if (desv === null) {
-            pColor = '#555'; pBarW = 0;
-            pLinha1 = 'Buscando cotação da opção…';
-            pLinha2 = `Prêmio recebido: ${fmt(prem)}/ação`;
-        } else if (desv < 0) {
-            // Opção valorizando — risco crescente
-            const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
-            pColor = '#e05252'; pBarW = risco;
-            pLinha1 = '🔺 Risco — Opção valorizando';
-            pLinha2 = `Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
-        } else if (desv >= meta) {
-            // v2.8: META → azul/ciano (melhor estado)
-            pColor = '#00bcd4'; pBarW = 100;
-            pLinha1 = '💰 META ATINGIDA — Encerrar posição';
-            pLinha2 = `💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`;
-        } else if (desv >= 70) {
-            // v2.8: 70-META → verde (zona de saída antecipada)
-            pColor = '#00e676'; pBarW = (desv / meta) * 100;
-            const faltam = (meta - desv).toFixed(1).replace('.',',');
-            pLinha1 = `✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2 = `💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`;
-        } else if (desv >= 60) {
-            // v2.8: 60-69% → amarelo
-            pColor = '#f1c40f'; pBarW = (desv / meta) * 100;
-            const faltam = (meta - desv).toFixed(1).replace('.',',');
-            pLinha1 = `⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2 = `💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`;
+        if(desv!==null&&desv>=metaD){
+            dColor='#00bcd4'; dClasse='piscante-azul';
+            dTexto='💰 META ATINGIDA: ENCERRAR';
+        } else if(isGuerra){
+            dColor='var(--queda)'; dClasse='piscante-vermelho';
+            dTexto='🛑 ROLAGEM OBRIGATÓRIA AGORA!';
+        } else if(entrada>0 && preco>=zonaMonitorPrice){
+            dColor='var(--queda)';
+            dTexto='📢 PREPARAR ROLAGEM';
+        } else if(entrada>0 && preco>=entrada){
+            // v2.7: corrigido — só exibe este alerta quando preço realmente >= PM
+            dColor='#f1c40f';
+            dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
         } else {
-            // v2.8: 0-59% → cinza
-            pColor = '#777'; pBarW = (desv / meta) * 100;
-            const faltam = (meta - desv).toFixed(1).replace('.',',');
-            pLinha1 = `⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2 = `💰 Se fechar: ${fmt((prem - cotacaoOpcao) * qtd)}`;
+            dColor='var(--alta)';
+            dTexto='✅ OTM: AGUARDAR DESVALORIZAÇÃO';
         }
-
-        secaoPremio =
-            `<div class="monitor-sep">── MONITOR DE PRÊMIO ──</div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                <div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">
-                    <div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>
-                </div>
-                <span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span>
-            </div>
-            <div class="obs-box" style="border-left:3px solid ${pColor};">
-                <div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>
-                <div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div>
-            </div>`;
+        secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div></div>`;
     }
 
-    // ─────────────────────────────────────────────────────────
-    // v2.8 — DECISÃO ESTRATÉGICA
-    // Piscar quando meta atingida → classe piscante-meta (verde/ciano)
-    // ─────────────────────────────────────────────────────────
-    let secaoDecisao = '';
-    if (prem > 0) {
-        const desv = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
-        let dColor, dTexto, dClasse = '';
-        let metaAtingida = desv !== null && desv >= meta;
-
-        if (metaAtingida) {
-            // v2.8: piscar em azul/verde quando meta atingida
-            dColor = '#00bcd4'; dClasse = 'piscante-meta';
-            dTexto = '💰 META ATINGIDA: ENCERRAR';
-        } else if (isGuerra) {
-            dColor = 'var(--queda)'; dClasse = 'piscante-vermelho';
-            dTexto = '🛑 ROLAGEM OBRIGATÓRIA AGORA!';
-        } else if (entrada > 0 && preco >= zonaMonitorPrice) {
-            dColor = 'var(--queda)';
-            dTexto = '📢 PREPARAR ROLAGEM';
-        } else if (entrada > 0 && preco >= entrada) {
-            dColor = '#f1c40f';
-            dTexto = '⚠️ ALERTA: MONITORANDO STRIKE';
-        } else {
-            dColor = 'var(--alta)';
-            dTexto = '✅ OTM: AGUARDAR DESVALORIZAÇÃO';
-        }
-
-        secaoDecisao =
-            `<div class="monitor-sep">── DECISÃO ESTRATÉGICA ──</div>
-            <div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;">
-                <div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div>
-            </div>`;
-
-        dispararMeta(metaAtingida);
+    if (prem > 0 && cotacaoOpcao !== null) {
+        const metaN = zonas.metaSaida || dados.setup.metaSaida || 70;
+        const desvMeta = ((prem - cotacaoOpcao) / prem) * 100;
+        dispararMeta(desvMeta >= metaN);
     } else {
         dispararMeta(false);
     }
 
-    el.innerHTML = secaoTopo + secaoStrike + secaoPremio + secaoDecisao;
+    el.innerHTML=secaoTopo+secaoStrike+secaoPremio+secaoDecisao;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1332,7 +1288,8 @@ function importar(input){
         try{
             const payload=JSON.parse(r.result);
             if(payload.opsCall){
-                ops=payload.opsCall;
+                ops=payload.opsCall; 
+                // v2.7: migra premiosLiquidos → resultadoLiquido ao restaurar backup antigo
                 if(ops.resumo && ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === undefined){
                     ops.resumo.resultadoLiquido = ops.resumo.premiosLiquidos;
                     delete ops.resumo.premiosLiquidos;
@@ -1350,11 +1307,10 @@ function importar(input){
                 delete payload.zonasConfig;
             }
             dados=payload;
-            if(!dados.troco)   dados.troco={cofre:0,transferido:0};
-            if(!dados.aportes) dados.aportes={cofre:0,transferido:0};
-            if(!dados.setup)   dados.setup={...BASE.setup};
-            // v2.8: remove metaSaida do setup ao importar backup antigo
-            if(dados.setup.metaSaida) delete dados.setup.metaSaida;
+            if(!dados.troco)           dados.troco={cofre:0,transferido:0};
+            if(!dados.aportes)         dados.aportes={cofre:0,transferido:0};
+            if(!dados.setup)           dados.setup={...BASE.setup};
+            if(!dados.setup.metaSaida) dados.setup.metaSaida=85;
             cotacaoOpcao=null; atualizarTela(); alert("Backup restaurado com sucesso, TOURSO!");
         }catch(e){alert("Erro ao ler o arquivo de backup.");}
     };
@@ -1364,8 +1320,8 @@ function importar(input){
 // ════════════════════════════════════════════════════════════
 // Notificações e Badge
 // ════════════════════════════════════════════════════════════
-let _alertaAtivo = false;
-let _metaAtiva   = false;
+let _alertaAtivo  = false;
+let _metaAtiva    = false;
 
 async function pedirPermissaoNotificacao() {
     if (!('Notification' in window)) return;
@@ -1380,8 +1336,8 @@ function dispararAlerta(emZonaAlerta, emGuerra) {
     if (emZonaAlerta && !_alertaAtivo) {
         _alertaAtivo = true;
         if (Notification.permission === 'granted') {
-            const titulo = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
-            const corpo  = emGuerra ? 'Preço atingiu o Strike. Rolar posição imediatamente!' : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
+            const titulo  = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
+            const corpo   = emGuerra ? 'Preço atingiu o Strike. Rolar posição imediatamente!' : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.showNotification(titulo, { body:corpo, icon:'icon-192.png', badge:'icon-192.png', vibrate:[300,100,300], tag:'tourso-alerta', renotify:true });
@@ -1446,7 +1402,7 @@ async function soAcaoAteAparecer() {
 async function tornarPermanente() {
     if ('storage' in navigator && 'persist' in navigator.storage) {
         const persistido = await navigator.storage.persisted();
-        if (!persistido) { await navigator.storage.persist(); }
+        if (!persistido) { const permitiu = await navigator.storage.persist(); }
     }
 }
 
