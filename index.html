@@ -1437,14 +1437,6 @@ atualizarTela();
 buscarCotacao();
 setInterval(buscarCotacao, 300000);
 tornarPermanente();
-
-// ── Lembrete de Backup ──
-const _DIAS_BKP = 5;
-const _K_BKP = 'tourso_ult_backup';
-function _chkBkp(){ const d=(Date.now()-parseInt(localStorage.getItem(_K_BKP)||0))/86400000; document.querySelector('[onclick="exportar()"]').classList.toggle('piscante-amarelo',d>=_DIAS_BKP); }
-document.querySelector('[onclick="exportar()"]').addEventListener('click',()=>{localStorage.setItem(_K_BKP,Date.now()); setTimeout(_chkBkp,200);});
-_chkBkp();
-
 </script>
 </body>
 </html>
