@@ -1034,11 +1034,11 @@ function atualizarMonitor() {
             : '';
         segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
     }
-    const entradaLbl = `ENT R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-    const strikeLbl  = `STK R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+    const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+    const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
         + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
-        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div style="display:flex;justify-content:space-between;font-size:0.70em;color:#ccc;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
         + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
 
     // ════════════════════════════════════════════════════════
