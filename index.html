@@ -60,7 +60,7 @@
         .barra-container { background: #1a1c1f; border-radius: 10px; height: 14px; margin: 8px 0 4px; position: relative; overflow: visible; }
         .barra-fill { height: 100%; border-radius: 10px; transition: width 0.6s, background 0.5s; }
         .barra-marker { position: absolute; top: -2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--branco); transition: left 0.6s, background 0.5s; transform: translateX(-50%); }
-        .monitor-sep { font-size: 0.70em; color: #aaa; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
+        .monitor-sep { font-size: 0.63em; color: #aaa; text-transform: uppercase; text-align: center; letter-spacing: 0.1em; margin: 18px 0 10px; }
         .obs-box { border-radius: 8px; padding: 10px 12px; background: rgba(0,0,0,0.25); }
         /* Banner */
         #banner-install { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--ciano); color: var(--fundo); padding: 14px 20px; z-index: 200; align-items: center; justify-content: space-between; font-weight: bold; font-size: 0.9em; }
@@ -485,9 +485,9 @@ const HIST_KEYS  = { troco:'hist_troco', aportes:'hist_aportes' };
 
 let zonas = (() => {
     try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
-    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 65, reservaB3PorLote: 50 }; }
+    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
 })();
-if (!zonas.metaSaida)        zonas.metaSaida = 65;
+if (!zonas.metaSaida)        zonas.metaSaida = 70;
 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 
 const BASE = {
@@ -943,22 +943,9 @@ function atualizarMonitor() {
 
     const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0;
     let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
-    // Cálculo da cor dos dias
-    let corDias = '#aaa';
-    let diasTxt = '';
-    if (dias !== null) {
-    if (dias <= 0) {
-        diasTxt = '⚠️ VENCIDA';
-        corDias = '#ff6b6b';
-    } else {
-        diasTxt = `⏱️ ${dias} dias para vencer`;
-        if (dias <= 10 && dias > 2) corDias = '#f1c40f';
-        if (dias <= 2) corDias = '#ff6b6b';
-    }
-    } else {
-    diasTxt = '';
-    }
-    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div id="monitor-valor-acao" style="font-size:1.15em;font-weight:bold;color:#aaa;">—</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div id="monitor-valor-opcao" style="font-size:1.15em;font-weight:bold;color:#aaa;">—</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:${corDias};margin-top:10px;">${diasTxt}</div>`:''}`;
+    const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
+    const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
+    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
 
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
@@ -1047,11 +1034,11 @@ function atualizarMonitor() {
             : '';
         segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
     }
-    const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-    const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+    const entradaLbl = `ENT R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+    const strikeLbl  = `STK R$\u00a0${strike.toFixed(2).replace('.',',')}`;
     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
         + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
-        + `<div style="display:flex;justify-content:space-between;font-size:0.70em;color:#ccc;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
         + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
 
     // ════════════════════════════════════════════════════════
@@ -1079,28 +1066,28 @@ function atualizarMonitor() {
         } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=60){
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=70){
             pColor='#00e676'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=50){
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+        } else if(desv>=60){
             pColor='#f1c40f'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
             pColor='#777'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         }
         secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
             +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
             +`<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
             +`<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>`
-            +`</div><span style="font-size:1.0em;font-weight:bold;color:#ccc;min-width:50px;text-align:right;">${desvStr}</span></div>`
+            +`</div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div>`
             +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
             +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
             +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
@@ -1142,8 +1129,6 @@ function atualizarMonitor() {
     }
 
     el.innerHTML=secaoTopo+secaoStrike+secaoPremio+secaoDecisao;
-    document.getElementById('monitor-valor-acao').innerText=(cotacaoAcao!==null&&cotacaoAcao!==undefined)?fmt(cotacaoAcao):'—';
-    document.getElementById('monitor-valor-opcao').innerText=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
 }
 
 // ════════════════════════════════════════════════════════════
