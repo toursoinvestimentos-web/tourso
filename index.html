@@ -958,8 +958,7 @@ function atualizarMonitor() {
     } else {
     diasTxt = '';
     }
-    const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
-    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:${corDias};margin-top:10px;">${diasTxt}</div>`:''}`;
+    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div id="monitor-valor-acao" style="font-size:1.15em;font-weight:bold;color:#aaa;">—</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div id="monitor-valor-opcao" style="font-size:1.15em;font-weight:bold;color:#aaa;">—</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:${corDias};margin-top:10px;">${diasTxt}</div>`:''}`;
 
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
@@ -1143,6 +1142,8 @@ function atualizarMonitor() {
     }
 
     el.innerHTML=secaoTopo+secaoStrike+secaoPremio+secaoDecisao;
+    document.getElementById('monitor-valor-acao').innerText=(cotacaoAcao!==null&&cotacaoAcao!==undefined)?fmt(cotacaoAcao):'—';
+    document.getElementById('monitor-valor-opcao').innerText=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
 }
 
 // ════════════════════════════════════════════════════════════
