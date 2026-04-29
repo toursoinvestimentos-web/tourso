@@ -945,7 +945,7 @@ function atualizarMonitor() {
     let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
     const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
     const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
-    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
+    const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.95em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
 
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
@@ -1005,13 +1005,13 @@ function atualizarMonitor() {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
         sLinha1 = `Atenção — ${distStr} do Strike`;
-        sLinha2 = 'Acima do PM. Monitorar com mais frequência.';
+        sLinha2 = 'Acima da entrada. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
         // Zona 2 — preço abaixo do PM mas ainda não no patamar de segurança máxima
         zonaAtiva = 2;
         sColor  = '#00e676';
         sLinha1 = `OTM — ${distStr} do Strike`;
-        sLinha2 = 'Abaixo do PM. Posição confortável, sem ação.';
+        sLinha2 = 'Abaixo da entrada. Posição confortável, sem ação.';
     } else {
         // Zona 1 — muito abaixo, opção caminhando para virar pó
         zonaAtiva = 1;
@@ -1034,11 +1034,11 @@ function atualizarMonitor() {
             : '';
         segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
     }
-    const entradaLbl = `ENT R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-    const strikeLbl  = `STK R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+    const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+    const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
         + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
-        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#ccc;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
         + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
 
     // ════════════════════════════════════════════════════════
