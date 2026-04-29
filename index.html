@@ -1080,28 +1080,28 @@ function atualizarMonitor() {
         } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
-            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=70){
             pColor='#00e676'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=60){
             pColor='#f1c40f'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
             pColor='#777'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         }
         secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
             +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
             +`<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
             +`<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>`
-            +`</div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div>`
+            +`</div><span style="font-size:1.0em;font-weight:bold;color:#ccc;min-width:50px;text-align:right;">${desvStr}</span></div>`
             +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
             +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
             +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
