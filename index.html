@@ -484,16 +484,16 @@ const CHAVE_ZONAS= 'dados_zonas_v26';
 const HIST_KEYS  = { troco:'hist_troco', aportes:'hist_aportes' };
 
 let zonas = (() => {
-    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 65, reservaB3PorLote: 50 }; }
-    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 65, reservaB3PorLote: 50 }; }
+    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
+    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
 })();
-if (!zonas.metaSaida)        zonas.metaSaida = 65;
+if (!zonas.metaSaida)        zonas.metaSaida = 70;
 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
     troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
-    setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0, metaSaida:65 }
+    setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0, metaSaida:85 }
 };
 
 const BASE_OP = {
