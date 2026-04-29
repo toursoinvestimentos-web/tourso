@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.7</title>
+    <title>TOURSO_vCALL 2.8</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -463,7 +463,7 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 2.7", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.8", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -1020,19 +1020,19 @@ if (dias !== null) {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
         sLinha1 = `Atenção — ${distStr} do Strike`;
-        sLinha2 = 'Acima do PM. Monitorar com mais frequência.';
+        sLinha2 = 'Acima da Entrada. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
         // Zona 2 — preço abaixo do PM mas ainda não no patamar de segurança máxima
         zonaAtiva = 2;
         sColor  = '#00e676';
         sLinha1 = `OTM — ${distStr} do Strike`;
-        sLinha2 = 'Abaixo do PM. Posição confortável, sem ação.';
+        sLinha2 = 'Abaixo da Entrada. Posição confortável, sem ação.';
     } else {
         // Zona 1 — muito abaixo, opção caminhando para virar pó
         zonaAtiva = 1;
         sColor  = '#00bcd4';
         sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
-        sLinha2 = 'Segurança máxima. Prêmio caminhando para zero.';
+        sLinha2 = 'Segurança máxima. Opção derretendo.';
     }
 
     dispararAlerta(entrandoZonaAlerta, isGuerra);
@@ -1121,13 +1121,21 @@ if (dias !== null) {
         } else if(isGuerra){
             dColor='var(--queda)'; dClasse='piscante-vermelho';
             dTexto='🛑 ROLAGEM OBRIGATÓRIA AGORA!';
-        } else if(entrada>0 && preco>=zonaMonitorPrice){
+        } else if(dias !== null && dias <= 2){
+            dColor='#ff9900';
+            dTexto='⏰ VENCENDO EM BREVE — DECIDIR AGORA';
+        } else if(zonaAtiva===4){
             dColor='var(--queda)';
             dTexto='📢 PREPARAR ROLAGEM';
-        } else if(entrada>0 && preco>=entrada){
-            // v2.7: corrigido — só exibe este alerta quando preço realmente >= PM
+        } else if(zonaAtiva===3){
             dColor='#f1c40f';
             dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
+        } else if(zonaAtiva<=2 && desv!==null && desv>=60){
+            dColor='#00e676';
+            dTexto='🎯 CONSIDERAR ENCERRAR — Prêmio muito alto';
+        } else if(zonaAtiva<=2 && desv!==null && desv>=50){
+            dColor='#f1c40f';
+            dTexto='⏳ POSIÇÃO CONFORTÁVEL — Aguardar meta';
         } else {
             dColor='var(--alta)';
             dTexto='✅ OTM: AGUARDAR DESVALORIZAÇÃO';
@@ -1429,14 +1437,14 @@ atualizarTela();
 buscarCotacao();
 setInterval(buscarCotacao, 300000);
 tornarPermanente();
-    
+
 // ── Lembrete de Backup ──
 const _DIAS_BKP = 5;
 const _K_BKP = 'tourso_ult_backup';
 function _chkBkp(){ const d=(Date.now()-parseInt(localStorage.getItem(_K_BKP)||0))/86400000; document.querySelector('[onclick="exportar()"]').classList.toggle('piscante-amarelo',d>=_DIAS_BKP); }
 document.querySelector('[onclick="exportar()"]').addEventListener('click',()=>{localStorage.setItem(_K_BKP,Date.now()); setTimeout(_chkBkp,200);});
 _chkBkp();
-    
+
 </script>
 </body>
 </html>
