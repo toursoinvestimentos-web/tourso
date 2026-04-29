@@ -485,9 +485,9 @@ const HIST_KEYS  = { troco:'hist_troco', aportes:'hist_aportes' };
 
 let zonas = (() => {
     try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
-    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
+    catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 65, reservaB3PorLote: 50 }; }
 })();
-if (!zonas.metaSaida)        zonas.metaSaida = 70;
+if (!zonas.metaSaida)        zonas.metaSaida = 65;
 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 
 const BASE = {
@@ -1081,12 +1081,12 @@ function atualizarMonitor() {
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=70){
+        } else if(desv>=60){
             pColor='#00e676'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=60){
+        } else if(desv>=50){
             pColor='#f1c40f'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
