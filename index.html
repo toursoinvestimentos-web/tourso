@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.6</title>
+    <title>TOURSO_vCALL 2.7</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -45,7 +45,6 @@
         .btn-guardar { background: #444; color: var(--branco); }
         .btn-transferir { background: var(--ciano); color: var(--fundo); }
         /* Monitor */
-        /* ── v1.5: Estados de alerta ── */
         @keyframes piscarBordaGuerra {
             0%,100% { border-left-color: #ff3333; background-color: #3a1a1a; }
             50%      { border-left-color: transparent; background-color: #2c2f33; }
@@ -78,7 +77,6 @@
         .extrato-linha-valor { font-weight: bold; color: var(--branco); }
         .extrato-vazio { text-align: center; color: #555; font-size: 0.85em; padding: 20px 0; }
         .btn-extrato-fechar { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #444; color: var(--branco); font-weight: bold; cursor: pointer; font-size: 0.9em; margin-top: 18px; }
-        /* Ajuste 2: botão deletar lançamento */
         .btn-del-lancamento { background: none; border: none; color: var(--queda); font-size: 0.95em; font-weight: bold; cursor: pointer; padding: 0 4px 0 8px; line-height: 1; flex-shrink: 0; opacity: 0.7; }
         .btn-del-lancamento:hover { opacity: 1; }
         /* Operações de CALL — card */
@@ -100,6 +98,9 @@
         .ciclo-status { display: inline-block; margin-top: 6px; font-size: 0.72em; font-weight: bold; padding: 3px 10px; border-radius: 20px; }
         /* Preview da rolagem */
         .preview-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.82em; border-left: 3px solid #f1c40f; display: none; }
+        /* ══ v2.7: Modal de Confirmação Zerar ══ */
+        .modal-box-alerta { border-top-color: var(--queda) !important; }
+        .modal-box-alerta h3 { color: var(--queda) !important; }
     </style>
 </head>
 <body>
@@ -151,7 +152,7 @@
     </div>
 </div>
 
-<!-- ══ NOVO: Operações de CALL ══ -->
+<!-- ══ Operações de CALL ══ -->
 <div class="card" style="border-left-color:#7c4dff;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div class="pilar-label">Operações de CALL</div>
@@ -159,8 +160,9 @@
     </div>
     <div class="call-grid">
         <div class="call-item">
-            <div class="call-item-label">Prêmios líquidos</div>
-            <div class="call-item-val" id="call-premios-liq">R$ 0,00</div>
+            <!-- v2.7: renomeado de "Prêmios líquidos" para "Resultado líquido" -->
+            <div class="call-item-label">Resultado líquido</div>
+            <div class="call-item-val" id="call-resultado-liq">R$ 0,00</div>
         </div>
         <div class="call-item">
             <div class="call-item-label">Operações</div>
@@ -243,15 +245,34 @@
     </div>
 </div>
 
-
 <div class="area-botoes-inferior">
     <button onclick="exportar()" class="btn-discreto">Salvar Backup</button>
     <button onclick="document.getElementById('input-file').click()" class="btn-discreto">Ler Backup</button>
-    <button onclick="limparTudo()" class="btn-discreto">Zerar Tudo</button>
+    <!-- v2.7: chama confirmarZerar() em vez de limparTudo() diretamente -->
+    <button onclick="confirmarZerar()" class="btn-discreto">Zerar Tudo</button>
     <input type="file" id="input-file" style="display:none" onchange="importar(this)">
 </div>
 
-<!-- ══ v1.4: Modal Configuração de Zonas ══ -->
+<!-- ══ v2.7: Modal Confirmação Zerar Tudo ══ -->
+<div class="modal-overlay" id="modal-zerar">
+    <div class="modal-box modal-box-alerta">
+        <h3>⚠️ Zerar Tudo</h3>
+        <p style="font-size:0.88em; color:#ccc; line-height:1.6; margin:0 0 18px;">
+            Esta ação vai <b style="color:var(--queda);">apagar permanentemente</b> todos os seus dados:<br>
+            posições, operações de CALL, histórico, pilares e configurações.<br><br>
+            <b>Esta operação não pode ser desfeita.</b> Se quiser manter uma cópia, clique em <b>"Cancelar"</b> e use <b>"Salvar Backup"</b> primeiro.
+        </p>
+        <div style="background:rgba(255,107,107,0.1); border:1px solid var(--queda); border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.82em; color:var(--queda); text-align:center;">
+            Tudo será apagado. Deseja realmente prosseguir?
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharZerar()" style="flex:1.5;">← Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:var(--queda); color:var(--branco); font-size:0.9em;" onclick="limparTudo()">Zerar Tudo</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Modal Configuração de Zonas ══ -->
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
         <h3>⚠️ Zonas de Alerta &amp; Configurações</h3>
@@ -324,7 +345,7 @@
     </div>
 </div>
 
-<!-- ══ NOVO: Modal Finalizar Operação ══ -->
+<!-- ══ Modal Finalizar Operação ══ -->
 <div class="modal-overlay" id="modal-fin-op">
     <div class="modal-box">
         <h3>🏁 Finalizar Operação</h3>
@@ -341,12 +362,10 @@
                 <option value="liquidada">Liquidada 💰</option>
             </select>
         </div>
-        <!-- Campo extra apenas para Rolada -->
         <div class="modal-campo" id="fin-campo-recompra" style="display:none;">
             <label>Preço de Recompra por Ação (R$)</label>
             <input type="text" inputmode="decimal" id="fin-recompra" placeholder="Ex: 0,90" oninput="calcPreviewRolagem()">
         </div>
-        <!-- Preview do cálculo -->
         <div class="preview-box" id="fin-preview"></div>
         <div class="modal-btns">
             <button class="btn-cancelar" onclick="fecharFinOp()">Cancelar</button>
@@ -355,7 +374,7 @@
     </div>
 </div>
 
-<!-- ══ NOVO: Modal Extrato de Ciclos ══ -->
+<!-- ══ Modal Extrato de Ciclos ══ -->
 <div class="modal-overlay" id="modal-ciclos">
     <div class="modal-box">
         <h3>📊 Histórico de Ciclos</h3>
@@ -364,7 +383,7 @@
     </div>
 </div>
 
-<!-- ══ v2.6: Modal Editar Ciclo ══ -->
+<!-- ══ Modal Editar Ciclo ══ -->
 <div class="modal-overlay" id="modal-edit-ciclo">
     <div class="modal-box">
         <h3>✏️ Editar Ciclo</h3>
@@ -412,7 +431,6 @@
 <div class="modal-overlay" id="modal-acao">
     <div class="modal-box">
         <h3 id="modal-acao-titulo">Ação</h3>
-        <!-- Saldo disponível — visível apenas no modal Enviar -->
         <div id="modal-acao-saldo" style="display:none; background:rgba(0,188,212,0.1); border:1px solid var(--ciano); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
             <div style="font-size:0.68em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Total guardado</div>
             <div id="modal-acao-saldo-valor" style="font-size:1.4em; font-weight:bold; color:var(--ciano);">R$ 0,00</div>
@@ -428,7 +446,7 @@
     </div>
 </div>
 
-<!-- Modal Extrato Pilar (inalterado) -->
+<!-- Modal Extrato Pilar -->
 <div class="modal-overlay" id="modal-extrato">
     <div class="modal-box" id="modal-extrato-box">
         <h3 id="extrato-titulo">Extrato</h3>
@@ -439,12 +457,13 @@
 
 <script>
 // ════════════════════════════════════════════════════════════
-// PWA (inalterado da v1.1)
+// PWA
 // ════════════════════════════════════════════════════════════
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_vCALL 2.6", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    // v2.7: título atualizado no manifest
+    const mf = { name:"TOURSO_vCALL 2.7", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -459,18 +478,16 @@ function instalarApp() { if(!deferredPrompt) return; deferredPrompt.prompt(); de
 // ════════════════════════════════════════════════════════════
 // Estado
 // ════════════════════════════════════════════════════════════
-const CHAVE     = 'dados_tourso_v3';
-const CHAVE_OP   = 'dados_call_ops';   // operações de CALL
-const CHAVE_ZONAS= 'dados_zonas_v26';  // v2.6: zonas + meta saída + reserva B3
+const CHAVE      = 'dados_tourso_v3';
+const CHAVE_OP   = 'dados_call_ops';
+const CHAVE_ZONAS= 'dados_zonas_v26';
 const HIST_KEYS  = { troco:'hist_troco', aportes:'hist_aportes' };
 
-// Zonas de alerta configuráveis (em %)
 let zonas = (() => {
     try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
     catch(e) { return { monitor: 1.0, acao: 0.5, metaSaida: 70, reservaB3PorLote: 50 }; }
 })();
-// Compatibilidade: garante campos novos mesmo em dado antigo
-if (!zonas.metaSaida)       zonas.metaSaida = 70;
+if (!zonas.metaSaida)        zonas.metaSaida = 70;
 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
 
 const BASE = {
@@ -479,10 +496,10 @@ const BASE = {
     setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0, metaSaida:85 }
 };
 
-// Estrutura de operações de CALL (salva separado para não tocar no dado principal)
 const BASE_OP = {
-    operacaoAtual: null,   // null = sem operação aberta
-    resumo: { premiosLiquidos:0, totalOps:0, darfPago:0, escudoFiscal:0, somaOtm:0 },
+    operacaoAtual: null,
+    // v2.7: renomeado internamente para resultadoLiquido (era premiosLiquidos)
+    resumo: { resultadoLiquido:0, totalOps:0, darfPago:0, escudoFiscal:0, somaOtm:0 },
     historico: []
 };
 
@@ -501,6 +518,12 @@ if (!dados.setup.metaSaida) dados.setup.metaSaida = 85;
 let ops = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_OP)) || JSON.parse(JSON.stringify(BASE_OP)); } catch(e){ return JSON.parse(JSON.stringify(BASE_OP)); } })();
 if (!ops.resumo) ops.resumo = {...BASE_OP.resumo};
 if (!ops.historico) ops.historico = [];
+// v2.7: compatibilidade — migra campo antigo premiosLiquidos → resultadoLiquido
+if (ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === undefined) {
+    ops.resumo.resultadoLiquido = ops.resumo.premiosLiquidos;
+    delete ops.resumo.premiosLiquidos;
+}
+if (ops.resumo.resultadoLiquido === undefined) ops.resumo.resultadoLiquido = 0;
 
 let cotacaoAcao  = null;
 let cotacaoOpcao = null;
@@ -516,7 +539,25 @@ function toNum(v)  { return v ? parseFloat(String(v).replace(',','.')) : 0; }
 function salvar()  { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 function salvarOp(){ localStorage.setItem(CHAVE_OP, JSON.stringify(ops)); }
 
-// ── v2.6: Configuração de Zonas ──
+// ════════════════════════════════════════════════════════════
+// v2.7: Zerar Tudo com confirmação via modal
+// ════════════════════════════════════════════════════════════
+function confirmarZerar() {
+    document.getElementById('modal-zerar').classList.add('ativo');
+}
+function fecharZerar() {
+    document.getElementById('modal-zerar').classList.remove('ativo');
+}
+function limparTudo() {
+    fecharZerar();
+    localStorage.removeItem(CHAVE);
+    localStorage.removeItem(CHAVE_OP);
+    localStorage.removeItem(HIST_KEYS.troco);
+    localStorage.removeItem(HIST_KEYS.aportes);
+    location.reload();
+}
+
+// ── Configuração de Zonas ──
 function abrirConfigZonas() {
     document.getElementById('zona-monitor').value = zonas.monitor;
     document.getElementById('zona-acao').value    = zonas.acao;
@@ -552,35 +593,21 @@ function salvarConfigZonas() {
     if (isNaN(rb) || rb < 0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
     zonas = { monitor: m, acao: a, metaSaida: ms, reservaB3PorLote: rb };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
-    dados.setup.metaSaida = ms; // sincroniza com setup para o monitor
+    dados.setup.metaSaida = ms;
     salvar();
     fecharConfigZonas();
     atualizarTela();
 }
 
-function hoje() {
-    return new Date().toISOString().slice(0,10);
-}
-function formatarData(iso) {
-    if (!iso) return '—';
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}`;
-}
-function formatarDataCurta(iso) {
-    if (!iso) return '—';
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}/${y.slice(2)}`;
-}
+function hoje() { return new Date().toISOString().slice(0,10); }
+function formatarData(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); return`${d}/${m}`; }
+function formatarDataCurta(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); return`${d}/${m}/${y.slice(2)}`; }
 
 // ════════════════════════════════════════════════════════════
 // Operações de CALL — Nova operação
 // ════════════════════════════════════════════════════════════
 function acaoBotaoCall() {
-    if (ops.operacaoAtual && ops.operacaoAtual.aberta) {
-        abrirFinOp();
-    } else {
-        abrirNovaOp();
-    }
+    if (ops.operacaoAtual && ops.operacaoAtual.aberta) { abrirFinOp(); } else { abrirNovaOp(); }
 }
 
 function abrirNovaOp() {
@@ -591,12 +618,11 @@ function abrirNovaOp() {
     document.getElementById('nop-premio').value = '';
     document.getElementById('nop-venc').value   = '';
     document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
-    document.getElementById('nop-hint').innerText      = '';
+    document.getElementById('nop-hint').innerText = '';
     document.getElementById('modal-nova-op').classList.add('ativo');
 }
 function fecharNovaOp() { document.getElementById('modal-nova-op').classList.remove('ativo'); }
 
-// Hints na nova operação
 ['nop-qtd','nop-premio'].forEach(id => document.getElementById(id).addEventListener('input', () => {
     const qtd  = parseInt(document.getElementById('nop-qtd').value) || 0;
     const prem = toNum(document.getElementById('nop-premio').value);
@@ -611,40 +637,34 @@ function confirmarNovaOp() {
     const premio = toNum(document.getElementById('nop-premio').value);
     const venc   = document.getElementById('nop-venc').value;
     const codigo = document.getElementById('nop-codigo').value.toUpperCase().trim();
-    const meta   = zonas.metaSaida || 70;  // v2.6: vem das configurações globais
+    const meta   = zonas.metaSaida || 70;
 
     if (!dataAb || !preco || !strike || !qtd || !premio || !venc || !codigo) {
         alert('Preencha todos os campos antes de abrir a operação.'); return;
     }
 
     const otm = ((strike - preco) / preco) * 100;
-
     ops.operacaoAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, otm, codigoOpcao:codigo };
 
-    // Alimenta o monitor e o setup automaticamente
     dados.setup.precoEntrada   = preco;
     dados.setup.strike         = strike;
     dados.setup.qtdAcoes       = qtd;
     dados.setup.premioRecebido = premio;
     dados.setup.vencimento     = venc;
-    dados.setup.codigoOpcao    = codigo;   // → alimenta "Opção Ativa" no topo
-    dados.setup.metaSaida      = meta;     // → alimenta Monitor de Prêmio
+    dados.setup.codigoOpcao    = codigo;
+    dados.setup.metaSaida      = meta;
     cotacaoOpcao = null;
 
-    fecharNovaOp();
-    salvarOp();
-    salvar();
-    atualizarTela();
-    buscarCotacao();
+    fecharNovaOp(); salvarOp(); salvar(); atualizarTela(); buscarCotacao();
 }
 
 // ════════════════════════════════════════════════════════════
 // Operações de CALL — Finalizar
 // ════════════════════════════════════════════════════════════
 function abrirFinOp() {
-    document.getElementById('fin-data').value       = hoje();
-    document.getElementById('fin-tipo').value       = 'po';
-    document.getElementById('fin-recompra').value   = '';
+    document.getElementById('fin-data').value     = hoje();
+    document.getElementById('fin-tipo').value     = 'po';
+    document.getElementById('fin-recompra').value = '';
     document.getElementById('fin-campo-recompra').style.display = 'none';
     document.getElementById('fin-preview').style.display = 'none';
     document.getElementById('fin-preview').innerHTML = '';
@@ -670,21 +690,15 @@ function calcPreviewRolagem() {
     prev.style.display = 'block';
     if (resultTotal >= 0) {
         prev.style.borderLeftColor = 'var(--alta)';
-        prev.innerHTML = `<b style="color:var(--alta);">Resultado da rolagem</b><br>
-            Lucro por ação: ${fmt(resultPorAcao)}<br>
-            Resultado total: ${fmt(resultTotal)}<br>
-            <span style="color:#aaa; font-size:0.9em;">→ Será registrado como lucro</span>`;
+        prev.innerHTML = `<b style="color:var(--alta);">Resultado da rolagem</b><br>Lucro por ação: ${fmt(resultPorAcao)}<br>Resultado total: ${fmt(resultTotal)}<br><span style="color:#aaa; font-size:0.9em;">→ Será registrado como lucro</span>`;
     } else {
         prev.style.borderLeftColor = 'var(--queda)';
-        prev.innerHTML = `<b style="color:var(--queda);">Resultado da rolagem</b><br>
-            Prejuízo por ação: ${fmt(resultPorAcao)}<br>
-            Resultado total: ${fmt(resultTotal)}<br>
-            <span style="color:#aaa; font-size:0.9em;">→ Será adicionado ao escudo fiscal</span>`;
+        prev.innerHTML = `<b style="color:var(--queda);">Resultado da rolagem</b><br>Prejuízo por ação: ${fmt(resultPorAcao)}<br>Resultado total: ${fmt(resultTotal)}<br><span style="color:#aaa; font-size:0.9em;">→ Será adicionado ao escudo fiscal</span>`;
     }
 }
 
 function confirmarFinOp() {
-    const op   = ops.operacaoAtual;
+    const op = ops.operacaoAtual;
     if (!op || !op.aberta) return;
     const dataFech = document.getElementById('fin-data').value;
     const tipo     = document.getElementById('fin-tipo').value;
@@ -697,21 +711,21 @@ function confirmarFinOp() {
         darfOp         = parseFloat((resultadoBruto * 0.15).toFixed(2));
         statusNome     = tipo === 'po' ? 'Virou pó' : 'Exercida';
 
-        // Aplica escudo fiscal
         if (ops.resumo.escudoFiscal >= darfOp) {
-            escudoUsado           = darfOp;
+            escudoUsado             = darfOp;
             ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal - darfOp).toFixed(2));
-            darfPagoOp            = 0;
+            darfPagoOp              = 0;
         } else {
-            escudoUsado           = ops.resumo.escudoFiscal;
-            darfPagoOp            = parseFloat((darfOp - escudoUsado).toFixed(2));
+            escudoUsado             = ops.resumo.escudoFiscal;
+            darfPagoOp              = parseFloat((darfOp - escudoUsado).toFixed(2));
             ops.resumo.escudoFiscal = 0;
         }
         resultadoLiquido = parseFloat((resultadoBruto - darfPagoOp).toFixed(2));
-        ops.resumo.darfPago      = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
-        ops.resumo.premiosLiquidos = parseFloat((ops.resumo.premiosLiquidos + resultadoLiquido).toFixed(2));
+        ops.resumo.darfPago         = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
+        // v2.7: usa resultadoLiquido (acumula positivos e negativos)
+        ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
 
-    } else { // rolada ou liquidada
+    } else {
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         const resultPorAcao = op.premio - recompra;
@@ -719,84 +733,73 @@ function confirmarFinOp() {
         statusNome          = tipo === 'liquidada' ? 'Liquidada' : 'Rolada';
 
         if (resultadoBruto < 0) {
-            // Prejuízo → vai para escudo fiscal
             ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal + Math.abs(resultadoBruto)).toFixed(2));
-            resultadoLiquido = resultadoBruto; // registra como negativo no histórico
+            resultadoLiquido = resultadoBruto;
+            // v2.7: prejuízo também soma no resultado líquido (valor negativo)
+            ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
         } else {
-            // Lucro na rolagem → aplica DARF normalmente
             darfOp = parseFloat((resultadoBruto * 0.15).toFixed(2));
             if (ops.resumo.escudoFiscal >= darfOp) {
-                escudoUsado           = darfOp;
+                escudoUsado             = darfOp;
                 ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal - darfOp).toFixed(2));
-                darfPagoOp            = 0;
+                darfPagoOp              = 0;
             } else {
-                escudoUsado           = ops.resumo.escudoFiscal;
-                darfPagoOp            = parseFloat((darfOp - escudoUsado).toFixed(2));
+                escudoUsado             = ops.resumo.escudoFiscal;
+                darfPagoOp              = parseFloat((darfOp - escudoUsado).toFixed(2));
                 ops.resumo.escudoFiscal = 0;
             }
             resultadoLiquido = parseFloat((resultadoBruto - darfPagoOp).toFixed(2));
-            ops.resumo.darfPago      = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
-            ops.resumo.premiosLiquidos = parseFloat((ops.resumo.premiosLiquidos + resultadoLiquido).toFixed(2));
+            ops.resumo.darfPago         = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
+            ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
         }
     }
 
-    // Atualiza contadores
     ops.resumo.totalOps++;
     ops.resumo.somaOtm = parseFloat((ops.resumo.somaOtm + op.otm).toFixed(4));
 
-    // Gera nota de DARF
     const vencDarf = gerarVencDarf(dataFech);
 
-    // Salva no histórico
     ops.historico.unshift({
-        dataAbertura: op.dataAbertura,
-        dataFechamento: dataFech,
-        precoAcao: op.precoAcao,
-        strike: op.strike,
-        quantidade: op.quantidade,
-        premioPorAcao: op.premio,
-        resultadoBruto,
-        darf: darfOp,
-        escudoUsado,
-        darfPago: darfPagoOp,
-        resultadoLiquido,
-        status: statusNome,
-        vencDarf: darfPagoOp > 0 ? vencDarf : null
+        dataAbertura: op.dataAbertura, dataFechamento: dataFech,
+        precoAcao: op.precoAcao, strike: op.strike, quantidade: op.quantidade,
+        premioPorAcao: op.premio, resultadoBruto, darf: darfOp,
+        escudoUsado, darfPago: darfPagoOp, resultadoLiquido,
+        status: statusNome, vencDarf: darfPagoOp > 0 ? vencDarf : null
     });
 
-    // Limpa operação atual e monitor
-    ops.operacaoAtual = null;
+    ops.operacaoAtual      = null;
     dados.setup.precoEntrada   = 0;
     dados.setup.strike         = 0;
     dados.setup.qtdAcoes       = 0;
     dados.setup.premioRecebido = 0;
     dados.setup.vencimento     = '';
 
-    fecharFinOp();
-    salvarOp();
-    salvar();
-    atualizarTela();
+    fecharFinOp(); salvarOp(); salvar(); atualizarTela();
 }
 
-// DARF vence no último dia útil do mês seguinte ao fechamento
 function gerarVencDarf(dataFech) {
     const d = new Date(dataFech + 'T12:00:00');
-    // último dia útil do mês seguinte (aproximação: dia 20 é seguro na maioria dos casos)
     const mesProximo = new Date(d.getFullYear(), d.getMonth()+1, 20);
     return mesProximo.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
 }
 
 // ════════════════════════════════════════════════════════════
-// Atualiza card de Operações de CALL
+// v2.7: Card de Operações de CALL — usa resultadoLiquido
 // ════════════════════════════════════════════════════════════
 function atualizarCardCall() {
     const r = ops.resumo;
-    document.getElementById('call-premios-liq').innerText = fmt(r.premiosLiquidos);
-    document.getElementById('call-total-op').innerText    = r.totalOps;
-    document.getElementById('call-media-op').innerText    = r.totalOps > 0 ? fmt(r.premiosLiquidos / r.totalOps) : 'R$ 0,00';
-    document.getElementById('call-media-otm').innerText   = r.totalOps > 0 ? fmtP(r.somaOtm / r.totalOps) : '—';
-    document.getElementById('call-darf').innerText        = fmt(r.darfPago);
-    document.getElementById('call-escudo').innerText      = fmt(r.escudoFiscal);
+    const resLiq = r.resultadoLiquido || 0;
+    const el = document.getElementById('call-resultado-liq');
+    el.innerText = fmt(resLiq);
+    // Colore positivo/negativo
+    el.style.color = resLiq >= 0 ? 'var(--branco)' : 'var(--queda)';
+
+    document.getElementById('call-total-op').innerText  = r.totalOps;
+    // Média por operação baseada no resultado líquido real
+    document.getElementById('call-media-op').innerText  = r.totalOps > 0 ? fmt(resLiq / r.totalOps) : 'R$ 0,00';
+    document.getElementById('call-media-otm').innerText = r.totalOps > 0 ? fmtP(r.somaOtm / r.totalOps) : '—';
+    document.getElementById('call-darf').innerText      = fmt(r.darfPago);
+    document.getElementById('call-escudo').innerText    = fmt(r.escudoFiscal);
 
     const btn = document.getElementById('btn-call-acao');
     const txt = document.getElementById('call-status-txt');
@@ -812,7 +815,7 @@ function atualizarCardCall() {
 }
 
 // ════════════════════════════════════════════════════════════
-// Extrato de Ciclos — v2.6: detalhado + editável
+// Extrato de Ciclos
 // ════════════════════════════════════════════════════════════
 function abrirExtratoCiclos() {
     const hist = ops.historico;
@@ -828,13 +831,11 @@ function abrirExtratoCiclos() {
         const corStatus = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
         const bgStatus  = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
 
-        // DARF detalhado
         let darfLinha = '';
         if (c.darf > 0) {
             darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF gerado (15%)</span><span class="ciclo-valor" style="color:#aaa;">- ${fmt(c.darf)}</span></div>`;
         }
         if (c.escudoUsado > 0) {
-            const escudoRestante = ops.resumo.escudoFiscal;
             darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">🛡️ Escudo usado</span><span class="ciclo-valor" style="color:var(--alta);">+ ${fmt(c.escudoUsado)}</span></div>`;
         }
         if (c.darfPago > 0) {
@@ -869,19 +870,18 @@ function abrirExtratoCiclos() {
 }
 function fecharExtratoCiclos() { document.getElementById('modal-ciclos').classList.remove('ativo'); }
 
-// ── v2.6: Editar ciclo ──
 let _editandoCicloIdx = -1;
 function abrirEditarCiclo(idx) {
     const c = ops.historico[idx];
     if (!c) return;
     _editandoCicloIdx = idx;
-    document.getElementById('edit-ciclo-dataab').value    = c.dataAbertura || '';
-    document.getElementById('edit-ciclo-datafech').value  = c.dataFechamento || '';
-    document.getElementById('edit-ciclo-preco').value     = String(c.precoAcao || '').replace('.',',');
-    document.getElementById('edit-ciclo-strike').value    = String(c.strike || '').replace('.',',');
-    document.getElementById('edit-ciclo-qtd').value       = c.quantidade || '';
-    document.getElementById('edit-ciclo-premio').value    = String(c.premioPorAcao || '').replace('.',',');
-    document.getElementById('edit-ciclo-status').value    = c.status || 'Virou pó';
+    document.getElementById('edit-ciclo-dataab').value   = c.dataAbertura || '';
+    document.getElementById('edit-ciclo-datafech').value = c.dataFechamento || '';
+    document.getElementById('edit-ciclo-preco').value    = String(c.precoAcao || '').replace('.',',');
+    document.getElementById('edit-ciclo-strike').value   = String(c.strike || '').replace('.',',');
+    document.getElementById('edit-ciclo-qtd').value      = c.quantidade || '';
+    document.getElementById('edit-ciclo-premio').value   = String(c.premioPorAcao || '').replace('.',',');
+    document.getElementById('edit-ciclo-status').value   = c.status || 'Virou pó';
     document.getElementById('modal-edit-ciclo').classList.add('ativo');
 }
 function fecharEditarCiclo() { document.getElementById('modal-edit-ciclo').classList.remove('ativo'); }
@@ -896,16 +896,12 @@ function confirmarEditarCiclo() {
     c.quantidade     = parseInt(document.getElementById('edit-ciclo-qtd').value) || c.quantidade;
     c.premioPorAcao  = toNum(document.getElementById('edit-ciclo-premio').value);
     c.status         = document.getElementById('edit-ciclo-status').value;
-    salvarOp();
-    fecharEditarCiclo();
-    abrirExtratoCiclos(); // re-renderiza
+    salvarOp(); fecharEditarCiclo(); abrirExtratoCiclos();
 }
 
 // ════════════════════════════════════════════════════════════
-// Busca cotações (inalterada)
+// Busca cotações
 // ════════════════════════════════════════════════════════════
-// v2.4 atualizado: uma única requisição à planilha extrai ação (C12) e opção (C7) juntos
-// Antes eram duas funções separadas fazendo dois downloads do mesmo arquivo — corrigido aqui
 const PLANILHA_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT9dPFYxT9aecDIkXC1ZKM8XWuD6tHbzWvD8Bjfz-_LwiCzOaj8DFYkwtV49d5nHMgt8FbRGwll4RxU/pub?gid=0&single=true&output=csv';
 async function buscarPlanilha() {
     try {
@@ -915,10 +911,10 @@ async function buscarPlanilha() {
         clearTimeout(t);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const linhas = (await res.text()).split('\n');
-        const extrair = (l) => { if(!l) return null; const m=l.match(/\"(\d+),(\d+)\"/); if(m){const v=parseFloat(m[1]+'.'+m[2]); return(!isNaN(v)&&v>0)?v:null;} return null; };
+        const extrair = (l) => { if(!l)return null; const m=l.match(/\"(\d+),(\d+)\"/); if(m){const v=parseFloat(m[1]+'.'+m[2]); return(!isNaN(v)&&v>0)?v:null;} return null; };
         return {
-            acao:  linhas.length >= 12 ? extrair(linhas[11]) : null,  // célula C12 — preço da ação
-            opcao: linhas.length >= 7  ? extrair(linhas[6])  : null   // célula C7  — preço da opção
+            acao:  linhas.length >= 12 ? extrair(linhas[11]) : null,
+            opcao: linhas.length >= 7  ? extrair(linhas[6])  : null
         };
     } catch(e) { console.warn('Planilha:', e.message); return { acao: null, opcao: null }; }
 }
@@ -930,9 +926,7 @@ async function buscarCotacao() {
     const pAcao = planilha.acao;
     const pOpcao = cod ? planilha.opcao : null;
 
-// FALLBACK: se a ação não veio, busca só ela a cada 10s até aparecer
-if(pAcao === null) soAcaoAteAparecer(); // v2.5: ativa mesmo sem operação aberta
-    
+    if(pAcao === null) soAcaoAteAparecer();
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
     if(cod) cotacaoOpcao=pOpcao;
@@ -940,34 +934,27 @@ if(pAcao === null) soAcaoAteAparecer(); // v2.5: ativa mesmo sem operação aber
 }
 
 // ════════════════════════════════════════════════════════════
-// Monitor (inalterado da v1.1)
+// Monitor — v2.7 com lógica de zonas corrigida
 // ════════════════════════════════════════════════════════════
 function atualizarMonitor() {
     const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
     document.getElementById('header-opcao').innerText=s.codigoOpcao?s.codigoOpcao.toUpperCase():'— sem setup —';
     if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
+
     const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0;
     let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
     const diasTxt=dias!==null?(dias>0?`⏱️ ${dias} dias para vencer`:'⚠️ VENCIDA'):'';
     const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
     const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:#aaa;margin-top:10px;">${diasTxt}</div>`:''}`;
-    // v2.6: Zonas baseadas em entrada (PM), Strike e Gap simétrico
-    const gap       = entrada > 0 ? (strike - entrada) : 0;
-    const precoAzul = entrada > 0 ? (entrada - gap)   : -Infinity;
 
-    // Preços-limite das zonas configuráveis
     const zonaMonitorPrice = strike * (1 - zonas.monitor / 100);
     const zonaAcaoPrice    = strike * (1 - zonas.acao    / 100);
-
-    // Distância % até o strike em tempo real
-    const distStrikePct = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
-    // v2.6: para ITM mostramos % acima
-    const acimaPct      = preco > 0 ? (((preco / strike) - 1) * 100) : 0;
+    const distStrikePct    = preco > 0 ? (((strike / preco) - 1) * 100) : 0;
+    const acimaPct         = preco > 0 ? (((preco / strike) - 1) * 100) : 0;
 
     let sColor, sLinha1, sLinha2, isGuerra = false, zonaAtiva = 0;
     let entrandoZonaAlerta = false;
 
-    // v1.7 Bug1: sem cotação → não entra nas zonas
     if (preco === null || preco === undefined || preco <= 0) {
         document.body.classList.remove('guerra');
         card.style.borderLeftColor = '#444';
@@ -978,9 +965,24 @@ function atualizarMonitor() {
         return;
     }
 
-    // ── v2.6: 6 zonas com frases exatas do protocolo ──
-    const distStr   = distStrikePct.toFixed(1).replace('.',',') + '%';
-    const acimaStr  = acimaPct.toFixed(1).replace('.',',') + '%';
+    const distStr  = distStrikePct.toFixed(1).replace('.',',') + '%';
+    const acimaStr = acimaPct.toFixed(1).replace('.',',') + '%';
+
+    // ════════════════════════════════════════════════════════
+    // v2.7: Lógica de zonas corrigida
+    //
+    // Zona 1 — Rumo ao pó:   preco <= precoAzul (abaixo do espelho do gap)
+    // Zona 2 — OTM confortável: precoAzul < preco < entrada (abaixo do PM)
+    // Zona 3 — Atenção:      entrada <= preco < zonaMonitorPrice  (acima PM, ainda longe do alerta)
+    // Zona 4 — Preparar rolagem: zonaMonitorPrice <= preco < zonaAcaoPrice
+    // Zona 5 — ATM crítico:  zonaAcaoPrice <= preco < strike
+    // Zona 6 — ITM:          preco >= strike
+    //
+    // CORREÇÃO: Zona 3 só ativa quando preco >= entrada (realmente acima do PM)
+    // E a mensagem "Acima do PM, monitorar mais frequência" é exibida corretamente
+    // ════════════════════════════════════════════════════════
+    const gap       = entrada > 0 ? (strike - entrada) : 0;
+    const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
 
     if (preco >= strike) {
         zonaAtiva = 6; isGuerra = true; entrandoZonaAlerta = true;
@@ -998,16 +1000,20 @@ function atualizarMonitor() {
         sLinha1 = `ATM · Preparar rolagem — ${distStr} do Strike`;
         sLinha2 = 'Zona de alerta. Definir plano de saída.';
     } else if (entrada > 0 && preco >= entrada) {
+        // v2.7 CORREÇÃO: Zona 3 — preço está entre o PM e a zona de monitoramento
+        // Significa que está ACIMA do PM mas ainda longe da zona de alerta → monitorar mais
         zonaAtiva = 3;
         sColor  = '#f1c40f';
         sLinha1 = `Atenção — ${distStr} do Strike`;
         sLinha2 = 'Acima do PM. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
+        // Zona 2 — preço abaixo do PM mas ainda não no patamar de segurança máxima
         zonaAtiva = 2;
         sColor  = '#00e676';
         sLinha1 = `OTM — ${distStr} do Strike`;
         sLinha2 = 'Abaixo do PM. Posição confortável, sem ação.';
     } else {
+        // Zona 1 — muito abaixo, opção caminhando para virar pó
         zonaAtiva = 1;
         sColor  = '#00bcd4';
         sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
@@ -1018,16 +1024,11 @@ function atualizarMonitor() {
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-    // ── v2.6: Barra com 6 segmentos independentes ──
-    // Cada segmento tem opacity 0.18 (apagado) exceto o ativo (0.85)
-    // As 6 zonas são exibidas como segmentos de largura igual (proporcionais pode ser implementado;
-    // usamos larguras iguais pois os limites das zonas do usuário são configuráveis)
     const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
     let segHtml = '';
     for (let i = 0; i < 6; i++) {
         const ativo = (i + 1 === zonaAtiva);
         const op    = ativo ? '1' : '0.18';
-        // bolinha marcadora aparece apenas no segmento ativo, centralizada
         const bolinha = ativo
             ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
             : '';
@@ -1040,42 +1041,56 @@ function atualizarMonitor() {
         + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#666;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
         + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
 
-    // ── v2.6: Monitor de Prêmio com 5 faixas de cor corretas ──
+    // ════════════════════════════════════════════════════════
+    // v2.7: Monitor de Prêmio — barra com cor correta em todos os cenários
+    // incluindo quando a opção está valorizada (desv < 0) → barra vermelha
+    // ════════════════════════════════════════════════════════
     let secaoPremio='';
     if(prem>0){
         const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
         let desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
         let pColor,pLinha1,pLinha2,pBarW=0;
         const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
+
         if(desv===null){
-            pColor='#555';pBarW=0;
+            pColor='#555'; pBarW=0;
             pLinha1='Buscando cotação da opção…';
             pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
         } else if(desv<0){
-            pColor='#e05252';pBarW=0;
+            // v2.7 CORREÇÃO: opção valorizando → barra vermelha com largura proporcional ao risco
+            // quanto mais negativo, mais cheia a barra (vermelho = risco crescente)
+            const risco = Math.min(Math.abs(desv) / 30 * 100, 100); // 30% de valorização = barra cheia
+            pColor='#e05252'; pBarW=risco;
             pLinha1='🔺 Risco — Opção valorizando';
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)}`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
         } else if(desv>=meta){
-            pColor='#00bcd4';pBarW=100;   // azul = melhor cenário (meta atingida)
+            pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
             pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=70){
-            pColor='#00e676';pBarW=(desv/meta)*100; // verde: zona de saída antecipada
+            pColor='#00e676'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=60){
-            pColor='#f1c40f';pBarW=(desv/meta)*100; // amarelo: 60–69%
+            pColor='#f1c40f'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
-            pColor='#777';pBarW=(desv/meta)*100; // cinza: 0–59%
+            pColor='#777'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`💰 Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         }
-        secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;"><div style="height:100%;border-radius:8px;background:${pColor};width:${pBarW.toFixed(1)}%;transition:width 0.6s;"></div></div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div><div class="obs-box" style="border-left:3px solid ${pColor};"><div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
+        secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
+            +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
+            +`<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
+            +`<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>`
+            +`</div><span style="font-size:0.8em;font-weight:bold;color:${pColor};min-width:46px;text-align:right;">${desvStr}</span></div>`
+            +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
+            +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
+            +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
     }
 
     // ── Decisão Estratégica ──
@@ -1095,6 +1110,7 @@ function atualizarMonitor() {
             dColor='var(--queda)';
             dTexto='📢 PREPARAR ROLAGEM';
         } else if(entrada>0 && preco>=entrada){
+            // v2.7: corrigido — só exibe este alerta quando preço realmente >= PM
             dColor='#f1c40f';
             dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
         } else {
@@ -1103,7 +1119,7 @@ function atualizarMonitor() {
         }
         secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div></div>`;
     }
-    // v1.8: Notificação de meta de prêmio
+
     if (prem > 0 && cotacaoOpcao !== null) {
         const metaN = zonas.metaSaida || dados.setup.metaSaida || 70;
         const desvMeta = ((prem - cotacaoOpcao) / prem) * 100;
@@ -1116,7 +1132,7 @@ function atualizarMonitor() {
 }
 
 // ════════════════════════════════════════════════════════════
-// Histórico pilares (inalterado)
+// Histórico pilares
 // ════════════════════════════════════════════════════════════
 function carregarHistorico(tipo){ try{return JSON.parse(localStorage.getItem(HIST_KEYS[tipo]))||[];}catch(e){return[];} }
 function salvarHistorico(tipo,lista){ localStorage.setItem(HIST_KEYS[tipo],JSON.stringify(lista)); }
@@ -1128,17 +1144,15 @@ function registrarLancamento(tipo,valor){
     const lista=carregarHistorico(tipo); lista.unshift({valor:parseFloat(valor.toFixed(2)),data,hora,mesAno}); salvarHistorico(tipo,lista);
 }
 const NOMES={troco:'Troco/Troca',aportes:'Aportes'};
-let _extratoTipo = ''; // Ajuste 2: armazena o tipo do extrato aberto para deletar lançamentos
+let _extratoTipo = '';
 function abrirExtrato(tipo){
     _extratoTipo = tipo;
     const lista=carregarHistorico(tipo);
     document.getElementById('extrato-titulo').innerText=`📄 Extrato — ${NOMES[tipo]}`;
     const corpo=document.getElementById('extrato-corpo');
     if(lista.length===0){corpo.innerHTML=`<div class="extrato-vazio">Nenhum lançamento registrado ainda.</div>`;document.getElementById('modal-extrato').classList.add('ativo');return;}
-    // Ajuste 1: total geral = soma de TODAS as entradas (já que enviar não é mais registrado)
     const totalGeral=lista.reduce((s,e)=>s+e.valor,0);
     const grupos=[]; const mapaIdx={};
-    // Ajuste 2: preserva o índice original de cada entrada para poder deletar pelo índice correto
     lista.forEach((e, idx) => {
         if(mapaIdx[e.mesAno]===undefined){mapaIdx[e.mesAno]=grupos.length;grupos.push({mesAno:e.mesAno,total:0,entradas:[]});}
         const g=grupos[mapaIdx[e.mesAno]];g.total+=e.valor;g.entradas.push({...e, _idx: idx});
@@ -1147,7 +1161,6 @@ function abrirExtrato(tipo){
     for(const g of grupos){
         html+=`<div class="extrato-mes-titulo"><span>${g.mesAno}</span></div>`;
         for(const e of g.entradas){
-            // Ajuste 2: botão X vermelho + botão editar para cada lançamento
             html+=`<div class="extrato-linha"><span class="extrato-linha-data">${e.data} &nbsp; ${e.hora}</span><span class="extrato-linha-valor">${fmt(e.valor)}</span><div style="display:flex;gap:4px;"><button onclick="editarLancamento(${e._idx})" style="background:none;border:none;color:#aaa;font-size:0.85em;cursor:pointer;padding:0 4px;">✏️</button><button class="btn-del-lancamento" onclick="deletarLancamento(${e._idx})" title="Remover lançamento">✕</button></div></div>`;
         }
     }
@@ -1156,7 +1169,6 @@ function abrirExtrato(tipo){
 }
 function fecharExtrato(){ document.getElementById('modal-extrato').classList.remove('ativo'); }
 
-// Ajuste 2: apaga lançamento individual do extrato e subtrai do cofre
 function deletarLancamento(idx){
     const tipo = _extratoTipo;
     const lista = carregarHistorico(tipo);
@@ -1164,15 +1176,10 @@ function deletarLancamento(idx){
     const val = lista[idx].valor;
     lista.splice(idx, 1);
     salvarHistorico(tipo, lista);
-    // Subtrai o valor do cofre (o lançamento nunca deveria ter entrado)
     dados[tipo].cofre = parseFloat(Math.max(0, dados[tipo].cofre - val).toFixed(2));
-    salvar();
-    atualizarTela();
-    // Re-renderiza o extrato sem fechar o modal
-    abrirExtrato(tipo);
+    salvar(); atualizarTela(); abrirExtrato(tipo);
 }
 
-// v2.6: editar lançamento individual do extrato
 let _editandoLancIdx = -1;
 function editarLancamento(idx) {
     const tipo = _extratoTipo;
@@ -1187,19 +1194,16 @@ function editarLancamento(idx) {
     lista[idx].valor = parseFloat(novoVal.toFixed(2));
     salvarHistorico(tipo, lista);
     dados[tipo].cofre = parseFloat(Math.max(0, dados[tipo].cofre + diff).toFixed(2));
-    salvar();
-    atualizarTela();
-    abrirExtrato(tipo);
+    salvar(); atualizarTela(); abrirExtrato(tipo);
 }
 
 // ════════════════════════════════════════════════════════════
-// Modais Pilar (inalterado)
+// Modais Pilar
 // ════════════════════════════════════════════════════════════
 function abrirAcao(tipo,acao){
     _acaoAtiva={tipo,acao};
     document.getElementById('modal-acao-titulo').innerText=acao==='guardar'?`💰 Guardar em ${NOMES[tipo]}`:`📈 Investir de ${NOMES[tipo]}`;
     document.getElementById('modal-acao-input').value='';
-    // Ajuste 3: mostrar saldo disponível apenas no modal Enviar
     const saldoBox = document.getElementById('modal-acao-saldo');
     if(acao==='enviar'){
         document.getElementById('modal-acao-saldo-valor').innerText = fmt(dados[tipo].cofre);
@@ -1216,15 +1220,18 @@ function confirmarAcao(){
     const{tipo,acao}=_acaoAtiva;
     if(acao==='guardar'){
         dados[tipo].cofre=parseFloat((dados[tipo].cofre+val).toFixed(2));
-        registrarLancamento(tipo,val); // Ajuste 1: só registra entradas no extrato
+        registrarLancamento(tipo,val);
+    } else {
+        if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente.\nGuardado: ${fmt(dados[tipo].cofre)}`);return;}
+        dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));
+        dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));
+        dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));
     }
-    else{if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente.\nGuardado: ${fmt(dados[tipo].cofre)}`);return;}dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));}
-    // registrarLancamento agora é chamado apenas no bloco guardar acima
-    fecharAcao();atualizarTela();
+    fecharAcao(); atualizarTela();
 }
 
 // ════════════════════════════════════════════════════════════
-// Tela principal (inalterada + chama atualizarCardCall)
+// Tela principal
 // ════════════════════════════════════════════════════════════
 function atualizarTela(){
     const q=dados.acoes.reduce((a,x)=>a+x.qtd,0);
@@ -1239,13 +1246,11 @@ function atualizarTela(){
     document.getElementById('rent-tag').style.color=rent>=0?'var(--alta)':'var(--queda)';
     document.getElementById('saldo-caixa').innerText=fmt(dados.caixaDisponivel);
 
-    // v2.6: Reserva B3 — R$ por lote (100 ações)
     const reservaB3PorLote = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const reservaB3Total = parseFloat((lotes * reservaB3PorLote).toFixed(2));
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(reservaB3Total)}`;
 
-    // v2.6: pode-comprar descontando a reserva B3
     const ctp=(cotacaoAcao!==null&&cotacaoAcao>0)?cotacaoAcao:1;
     const saldoDisponivel = Math.max(0, dados.caixaDisponivel - reservaB3Total);
     document.getElementById('pode-comprar').innerText=`Pode comprar +${Math.floor(saldoDisponivel/ctp)} ações BBAS3`;
@@ -1255,25 +1260,24 @@ function atualizarTela(){
     document.getElementById('aportes-cofre').innerText=fmt(dados.aportes.cofre);
     document.getElementById('aportes-transferido').innerText=fmt(dados.aportes.transferido);
     atualizarMonitor();
-    atualizarCardCall(); // ← único acréscimo
+    atualizarCardCall();
     salvar();
 }
 
 // ════════════════════════════════════════════════════════════
-// Compra / Backup (inalterados)
+// Compra / Backup
 // ════════════════════════════════════════════════════════════
 function abrirCompra(){
     const q=prompt("Quantidade comprada:"); const p=prompt("Preço pago (ex: 25,50):");
     if(q&&p){dados.acoes.push({qtd:parseInt(q),preco:toNum(p)});dados.caixaDisponivel=parseFloat((dados.caixaDisponivel-parseInt(q)*toNum(p)).toFixed(2));atualizarTela();}
 }
 function exportar(){
-    // v2.6: inclui históricos de extratos e zonas no backup
     const payload = {
         ...dados,
-        opsCall:      ops,
-        histTroco:    carregarHistorico('troco'),
-        histAportes:  carregarHistorico('aportes'),
-        zonasConfig:  zonas
+        opsCall:     ops,
+        histTroco:   carregarHistorico('troco'),
+        histAportes: carregarHistorico('aportes'),
+        zonasConfig: zonas
     };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`TOURSO_vCALL_BACKUP_${new Date().toISOString().slice(0,10)}.json`; a.click();
@@ -1283,15 +1287,21 @@ function importar(input){
     r.onload=function(){
         try{
             const payload=JSON.parse(r.result);
-            // v2.3: restaura opsCall
-            if(payload.opsCall){ ops=payload.opsCall; delete payload.opsCall; salvarOp(); }
-            // v2.3: restaura históricos de extratos
+            if(payload.opsCall){
+                ops=payload.opsCall; 
+                // v2.7: migra premiosLiquidos → resultadoLiquido ao restaurar backup antigo
+                if(ops.resumo && ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === undefined){
+                    ops.resumo.resultadoLiquido = ops.resumo.premiosLiquidos;
+                    delete ops.resumo.premiosLiquidos;
+                }
+                if(ops.resumo && ops.resumo.resultadoLiquido === undefined) ops.resumo.resultadoLiquido = 0;
+                delete payload.opsCall; salvarOp();
+            }
             if(payload.histTroco)   { salvarHistorico('troco',   payload.histTroco);   delete payload.histTroco; }
             if(payload.histAportes) { salvarHistorico('aportes', payload.histAportes); delete payload.histAportes; }
-            // v2.3: restaura zonas de alerta
             if(payload.zonasConfig) {
                 zonas=payload.zonasConfig;
-                if (!zonas.metaSaida)       zonas.metaSaida = 70;
+                if (!zonas.metaSaida)        zonas.metaSaida = 70;
                 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
                 localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
                 delete payload.zonasConfig;
@@ -1306,120 +1316,68 @@ function importar(input){
     };
     r.readAsText(input.files[0]);
 }
-function limparTudo(){
-    if(confirm("TOURSO, zerar o aplicativo agora?")){
-        localStorage.removeItem(CHAVE); localStorage.removeItem(CHAVE_OP);
-        localStorage.removeItem(HIST_KEYS.troco); localStorage.removeItem(HIST_KEYS.aportes);
-        location.reload();
-    }
-}
 
 // ════════════════════════════════════════════════════════════
-// v1.6: Sistema de Notificações e Badge
+// Notificações e Badge
 // ════════════════════════════════════════════════════════════
-let _alertaAtivo  = false; // evita spam de notificações de zona
-let _metaAtiva    = false; // evita spam de notificação de meta
+let _alertaAtivo  = false;
+let _metaAtiva    = false;
 
 async function pedirPermissaoNotificacao() {
     if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-        await Notification.requestPermission();
-    }
+    if (Notification.permission === 'default') { await Notification.requestPermission(); }
 }
 
 function dispararAlerta(emZonaAlerta, emGuerra) {
-    // Badge no ícone do app (Android/Chrome)
     if ('setAppBadge' in navigator) {
-        if (emZonaAlerta || emGuerra) {
-            navigator.setAppBadge(1).catch(() => {});
-        } else {
-            navigator.clearAppBadge().catch(() => {});
-        }
+        if (emZonaAlerta || emGuerra) { navigator.setAppBadge(1).catch(() => {}); }
+        else { navigator.clearAppBadge().catch(() => {}); }
     }
-
-    // Push notification — só dispara UMA vez quando entra na zona
-    // Para não incomodar a cada atualização de 5 min
     if (emZonaAlerta && !_alertaAtivo) {
         _alertaAtivo = true;
         if (Notification.permission === 'granted') {
             const titulo  = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
-            const corpo   = emGuerra
-                ? 'Preço atingiu o Strike. Rolar posição imediatamente!'
-                : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
-            // Tenta via ServiceWorker (mais confiável em segundo plano)
+            const corpo   = emGuerra ? 'Preço atingiu o Strike. Rolar posição imediatamente!' : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(titulo, {
-                        body:    corpo,
-                        icon:    'icon-192.png',
-                        badge:   'icon-192.png',
-                        vibrate: [300, 100, 300],
-                        tag:     'tourso-alerta', // substitui notificação anterior
-                        renotify: true
-                    });
-                }).catch(() => {
-                    // Fallback: Notification direta
-                    new Notification(titulo, { body: corpo });
-                });
-            } else {
-                new Notification(titulo, { body: corpo });
-            }
+                    reg.showNotification(titulo, { body:corpo, icon:'icon-192.png', badge:'icon-192.png', vibrate:[300,100,300], tag:'tourso-alerta', renotify:true });
+                }).catch(() => { new Notification(titulo, { body: corpo }); });
+            } else { new Notification(titulo, { body: corpo }); }
         }
-    } else if (!emZonaAlerta) {
-        // Saiu da zona — reseta para poder notificar de novo na próxima entrada
-        _alertaAtivo = false;
-    }
+    } else if (!emZonaAlerta) { _alertaAtivo = false; }
 }
 
 function dispararMeta(metaAtingida) {
-    // Badge
     if ('setAppBadge' in navigator) {
         if (metaAtingida) navigator.setAppBadge(1).catch(() => {});
-        // Não limpa badge aqui — pode coexistir com alerta de zona
     }
-    // Push — dispara só uma vez ao atingir meta
     if (metaAtingida && !_metaAtiva) {
         _metaAtiva = true;
         if (Notification.permission === 'granted') {
             const titulo = '💰 META ATINGIDA';
-            const corpo  = 'Recomprar';
-            const opts   = {
-                body: corpo, icon: 'icon-192.png', badge: 'icon-192.png',
-                vibrate: [200, 100, 200], tag: 'tourso-meta', renotify: true
-            };
+            const opts   = { body:'Recomprar', icon:'icon-192.png', badge:'icon-192.png', vibrate:[200,100,200], tag:'tourso-meta', renotify:true };
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready
-                    .then(reg => reg.showNotification(titulo, opts))
-                    .catch(() => new Notification(titulo, opts));
-            } else {
-                new Notification(titulo, opts);
-            }
+                navigator.serviceWorker.ready.then(reg => reg.showNotification(titulo, opts)).catch(() => new Notification(titulo, opts));
+            } else { new Notification(titulo, opts); }
         }
-    } else if (!metaAtingida) {
-        _metaAtiva = false; // reseta ao sair da meta
-    }
+    } else if (!metaAtingida) { _metaAtiva = false; }
 }
 
-   // ════════════════════════════════════════════════════════════
-// FALLBACK: Busca só a ação com limite de tentativas (máximo 2)
+// ════════════════════════════════════════════════════════════
+// Fallback busca ação
 // ════════════════════════════════════════════════════════════
 let buscandoAcao = false;
-// v2.5: fallback da ação — tenta 3x com espera crescente, tem try/catch e timeout
 async function soAcaoAteAparecer() {
     if(buscandoAcao || cotacaoAcao !== null) return;
     buscandoAcao = true;
-
     const maxTentativas = 3;
-    const tempos = [2000, 4000, 6000]; // espera crescente entre tentativas
-
+    const tempos = [2000, 4000, 6000];
     for(let tentativa = 0; tentativa < maxTentativas; tentativa++) {
-        if(cotacaoAcao !== null) break; // já chegou pelo ciclo normal
+        if(cotacaoAcao !== null) break;
         try {
             const ctrl = new AbortController();
-            const t    = setTimeout(() => ctrl.abort(), 10000); // timeout de 10s
-            const res  = await fetch(PLANILHA_URL + '&t=' + Date.now(), {
-                signal: ctrl.signal, cache: 'no-store'
-            });
+            const t    = setTimeout(() => ctrl.abort(), 10000);
+            const res  = await fetch(PLANILHA_URL + '&t=' + Date.now(), { signal: ctrl.signal, cache: 'no-store' });
             clearTimeout(t);
             if(!res.ok) throw new Error('HTTP ' + res.status);
             const linhas = (await res.text()).split('\n');
@@ -1430,45 +1388,31 @@ async function soAcaoAteAparecer() {
                     cotacaoAcao = v;
                     document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
                     document.getElementById('status-bolinha').style.background = '#00e676';
-                    atualizarTela();
-                    break; // sucesso — sai do loop
+                    atualizarTela(); break;
                 }
             }
-        } catch(e) {
-            console.warn('Fallback ação tentativa ' + (tentativa+1) + ':', e.message);
-        }
-        // Aguarda antes da próxima tentativa (não aguarda após a última)
+        } catch(e) { console.warn('Fallback ação tentativa ' + (tentativa+1) + ':', e.message); }
         if(tentativa < maxTentativas - 1 && cotacaoAcao === null) {
             await new Promise(r => setTimeout(r, tempos[tentativa]));
         }
     }
-    buscandoAcao = false; // sempre libera, mesmo se falhar
+    buscandoAcao = false;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// TORNA OS DADOS PERMANENTES (não são apagados na limpeza de cache)
-// ═══════════════════════════════════════════════════════════════════════
 async function tornarPermanente() {
     if ('storage' in navigator && 'persist' in navigator.storage) {
         const persistido = await navigator.storage.persisted();
-        if (!persistido) {
-            const permitiu = await navigator.storage.persist();
-            if (permitiu) console.log('✅ Dados agora são PERMANENTES');
-            else console.log('⚠️ Usuário não permitiu');
-        } else {
-            console.log('✅ Dados já são permanentes');
-        }
+        if (!persistido) { const permitiu = await navigator.storage.persist(); }
     }
 }
 
-    
 // ════════════════════════════════════════════════════════════
-// Init               Atualiza a cada 5 minutos (300000 ms)
+// Init
 // ════════════════════════════════════════════════════════════
-pedirPermissaoNotificacao(); // pede permissão logo ao abrir
+pedirPermissaoNotificacao();
 atualizarTela();
 buscarCotacao();
-setInterval(buscarCotacao, 300000); // v2.5: volta para 5 min
+setInterval(buscarCotacao, 300000);
 tornarPermanente();
 </script>
 </body>
