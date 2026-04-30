@@ -925,10 +925,9 @@ async function buscarCotacao() {
     const pAcao = planilha.acao;
     const pOpcao = cod ? planilha.opcao : null;
 
-    if(pAcao === null) soAcaoAteAparecer();
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
-    else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
-    if(cod && pOpcao !== null) cotacaoOpcao=pOpcao; // v2.9: preserva último valor válido
+    else { document.getElementById('status-bolinha').style.background='#f1c40f'; if(cotacaoAcao===null) soAcaoAteAparecer(); }
+    if(cod && pOpcao !== null) cotacaoOpcao=pOpcao;
     _buscando=false; atualizarTela();
 }
 
@@ -1359,15 +1358,16 @@ function dispararAlerta(emZonaAlerta, emGuerra) {
     }
     if (emZonaAlerta && !_alertaAtivo) {
         _alertaAtivo = true;
-        if (Notification.permission === 'granted') {
-            const titulo  = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
-            const corpo   = emGuerra ? 'Preço atingiu o Strike. Rolar posição imediatamente!' : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(titulo, { body:corpo, icon:'icon-192.png', badge:'icon-192.png', vibrate:[300,100,300], tag:'tourso-alerta', renotify:true });
-                }).catch(() => { new Notification(titulo, { body: corpo }); });
-            } else { new Notification(titulo, { body: corpo }); }
-        }
+        try {
+            if (Notification.permission === 'granted') {
+                const titulo  = emGuerra ? '🛑 TOURSO: ROLAGEM OBRIGATÓRIA' : '⚠️ TOURSO: PREPARAR ROLAGEM';
+                const corpo   = emGuerra ? 'Preço atingiu o Strike. Rolar posição imediatamente!' : 'Preço na zona de alerta. Monitore e prepare a rolagem.';
+                const opts    = { body:corpo, vibrate:[300,100,300], tag:'tourso-alerta', renotify:true };
+                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(reg => reg.showNotification(titulo, opts)).catch(() => { try{ new Notification(titulo, opts); }catch(e){} });
+                } else { new Notification(titulo, opts); }
+            }
+        } catch(e) {}
     } else if (!emZonaAlerta) { _alertaAtivo = false; }
 }
 
@@ -1377,13 +1377,15 @@ function dispararMeta(metaAtingida) {
     }
     if (metaAtingida && !_metaAtiva) {
         _metaAtiva = true;
-        if (Notification.permission === 'granted') {
-            const titulo = '💰 META ATINGIDA';
-            const opts   = { body:'Recomprar', icon:'icon-192.png', badge:'icon-192.png', vibrate:[200,100,200], tag:'tourso-meta', renotify:true };
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(reg => reg.showNotification(titulo, opts)).catch(() => new Notification(titulo, opts));
-            } else { new Notification(titulo, opts); }
-        }
+        try {
+            if (Notification.permission === 'granted') {
+                const titulo = '💰 META ATINGIDA';
+                const opts   = { body:'Recomprar', vibrate:[200,100,200], tag:'tourso-meta', renotify:true };
+                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(reg => reg.showNotification(titulo, opts)).catch(() => { try{ new Notification(titulo, opts); }catch(e){} });
+                } else { new Notification(titulo, opts); }
+            }
+        } catch(e) {}
     } else if (!metaAtingida) { _metaAtiva = false; }
 }
 
