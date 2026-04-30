@@ -513,7 +513,6 @@ let dados = (() => {
 if (!dados.setup)           dados.setup   = {...BASE.setup};
 if (!dados.troco)           dados.troco   = {cofre:0,transferido:0};
 if (!dados.aportes)         dados.aportes = {cofre:0,transferido:0};
-if (!dados.setup.metaSaida) dados.setup.metaSaida = 85;
 
 let ops = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_OP)) || JSON.parse(JSON.stringify(BASE_OP)); } catch(e){ return JSON.parse(JSON.stringify(BASE_OP)); } })();
 if (!ops.resumo) ops.resumo = {...BASE_OP.resumo};
@@ -1333,7 +1332,7 @@ function importar(input){
             if(!dados.troco)           dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)         dados.aportes={cofre:0,transferido:0};
             if(!dados.setup)           dados.setup={...BASE.setup};
-            if(!dados.setup.metaSaida) dados.setup.metaSaida=85;
+            
             cotacaoOpcao=null; atualizarTela(); alert("Backup restaurado com sucesso, TOURSO!");
         }catch(e){alert("Erro ao ler o arquivo de backup.");}
     };
