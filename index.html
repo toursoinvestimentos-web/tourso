@@ -1108,10 +1108,12 @@ if (dias !== null) {
             +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
     }
 
-    // ── Decisão Estratégica ──
+   // ── Decisão Estratégica ──
     let secaoDecisao='';
     if(prem>0){
         const metaD = zonas.metaSaida || dados.setup.metaSaida || 70;
+        const limVerde   = metaD * 0.85;
+        const limAmarelo = metaD * 0.70;
         const desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
         let dColor, dTexto, dClasse='';
 
@@ -1130,10 +1132,10 @@ if (dias !== null) {
         } else if(zonaAtiva===3){
             dColor='#f1c40f';
             dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
-        } else if(zonaAtiva<=2 && desv!==null && desv>=60){
+       } else if(zonaAtiva<=2 && desv!==null && desv>=limVerde){
             dColor='#00e676';
             dTexto='🎯 CONSIDERAR ENCERRAR — Prêmio muito alto';
-        } else if(zonaAtiva<=2 && desv!==null && desv>=50){
+        } else if(zonaAtiva<=2 && desv!==null && desv>=limAmarelo){
             dColor='#f1c40f';
             dTexto='⏳ POSIÇÃO CONFORTÁVEL — Aguardar meta';
         } else {
