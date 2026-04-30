@@ -928,7 +928,7 @@ async function buscarCotacao() {
     if(pAcao === null) soAcaoAteAparecer();
     if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
     else { document.getElementById('status-bolinha').style.background='#f1c40f'; }
-    if(cod) cotacaoOpcao=pOpcao;
+    if(cod && pOpcao !== null) cotacaoOpcao=pOpcao; // v2.9: preserva último valor válido
     _buscando=false; atualizarTela();
 }
 
