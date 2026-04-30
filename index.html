@@ -1082,17 +1082,17 @@ if (dias !== null) {
             pLinha1='💰 META ATINGIDA — Encerrar posição';
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=60){
-            pColor='#00e676'; pBarW=(desv/meta)*100;
+            pColor='#00e676'; pBarW = Math.min(99.9, (desv / meta) * 100);
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=50){
-            pColor='#f1c40f'; pBarW=(desv/meta)*100;
+            pColor='#f1c40f'; pBarW = Math.min(99.9, (desv / meta) * 100);
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
-            pColor='#777'; pBarW=(desv/meta)*100;
+            pColor='#777'; pBarW = Math.min(99.9, (desv / meta) * 100);
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
