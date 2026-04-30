@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.9</title>
+    <title>TOURSO_vCALL 3.0</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -119,7 +119,7 @@
         <text x="200" y="200" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text>
     </svg>
     <div style="text-align:right;">
-        <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; letter-spacing:0.05em;">Opção Ativa</div>
+        <div id="header-venc-label" style="font-size:0.65em; color:#aaa; text-transform:uppercase; letter-spacing:0.05em;">Vencimento</div>
         <div id="header-opcao" style="font-size:1.1em; font-weight:bold; color:var(--ciano); margin-top:2px;">— sem setup —</div>
     </div>
 </div>
@@ -177,8 +177,8 @@
             <div class="call-item-val" id="call-media-otm">—</div>
         </div>
         <div class="call-item">
-            <div class="call-item-label">🦁 DARF pago</div>
-            <div class="call-item-val" id="call-darf">R$ 0,00</div>
+            <div class="call-item-label">⏱️ Tempo médio</div>
+            <div class="call-item-val" id="call-tempo-medio">—</div>
         </div>
         <div class="call-item">
             <div class="call-item-label">🛡️ Escudo fiscal</div>
@@ -248,7 +248,7 @@
 <div class="area-botoes-inferior">
     <button onclick="exportar()" class="btn-discreto">Salvar Backup</button>
     <button onclick="document.getElementById('input-file').click()" class="btn-discreto">Ler Backup</button>
-    <!-- v2.7: chama confirmarZerar() em vez de limparTudo() diretamente -->
+    <button onclick="abrirResumoAnual()" class="btn-discreto">Resumo IR</button>
     <button onclick="confirmarZerar()" class="btn-discreto">Zerar Tudo</button>
     <input type="file" id="input-file" style="display:none" onchange="importar(this)">
 </div>
@@ -388,6 +388,10 @@
     <div class="modal-box">
         <h3>✏️ Editar Ciclo</h3>
         <div class="modal-campo">
+            <label>Código da Opção</label>
+            <input type="text" id="edit-ciclo-codigo" placeholder="Ex: BBASL245" style="text-transform:uppercase">
+        </div>
+        <div class="modal-campo">
             <label>Data de Abertura</label>
             <input type="date" id="edit-ciclo-dataab">
         </div>
@@ -455,6 +459,15 @@
     </div>
 </div>
 
+<!-- ══ Modal Resumo Anual (IR) ══ -->
+<div class="modal-overlay" id="modal-resumo-anual">
+    <div class="modal-box">
+        <h3>📋 Resumo Anual — IR</h3>
+        <div id="resumo-anual-corpo"></div>
+        <button class="btn-extrato-fechar" onclick="fecharResumoAnual()">Fechar</button>
+    </div>
+</div>
+
 <script>
 // ════════════════════════════════════════════════════════════
 // PWA
@@ -463,11 +476,11 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 2.9", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 3.0", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v2.9';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
+    const sw = `const CACHE='tourso-v3.0';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 let deferredPrompt = null;
@@ -603,6 +616,28 @@ function formatarData(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); r
 function formatarDataCurta(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); return`${d}/${m}/${y.slice(2)}`; }
 
 // ════════════════════════════════════════════════════════════
+// v3.0: Dias Úteis (exclui sáb e dom)
+// ════════════════════════════════════════════════════════════
+function calcularDiasUteis(dataInicio, dataFim) {
+    const d1 = new Date(dataInicio + 'T12:00:00');
+    const d2 = new Date(dataFim   + 'T12:00:00');
+    if (isNaN(d1) || isNaN(d2)) return 0;
+    let count = 0;
+    const cur = new Date(d1);
+    while (cur < d2) {
+        const dow = cur.getDay();
+        if (dow !== 0 && dow !== 6) count++;
+        cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+}
+
+function diasUteisAteVenc(dataVenc) {
+    const hoje2 = new Date().toISOString().slice(0, 10);
+    return calcularDiasUteis(hoje2, dataVenc);
+}
+
+// ════════════════════════════════════════════════════════════
 // Operações de CALL — Nova operação
 // ════════════════════════════════════════════════════════════
 function acaoBotaoCall() {
@@ -703,67 +738,44 @@ function confirmarFinOp() {
     const tipo     = document.getElementById('fin-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
 
-    let resultadoBruto, darfOp=0, escudoUsado=0, darfPagoOp=0, resultadoLiquido, statusNome;
+    // v3.0: NÃO calcular DARF por ciclo — apenas armazenar resultado bruto.
+    // O DARF é calculado mensalmente na exibição do histórico.
+    let resultadoBruto, resultadoLiquido, statusNome;
 
     if (tipo === 'po' || tipo === 'exercida') {
-        resultadoBruto = op.premio * op.quantidade;
-        darfOp         = parseFloat((resultadoBruto * 0.15).toFixed(2));
-        statusNome     = tipo === 'po' ? 'Virou pó' : 'Exercida';
-
-        if (ops.resumo.escudoFiscal >= darfOp) {
-            escudoUsado             = darfOp;
-            ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal - darfOp).toFixed(2));
-            darfPagoOp              = 0;
-        } else {
-            escudoUsado             = ops.resumo.escudoFiscal;
-            darfPagoOp              = parseFloat((darfOp - escudoUsado).toFixed(2));
-            ops.resumo.escudoFiscal = 0;
-        }
-        resultadoLiquido = parseFloat((resultadoBruto - darfPagoOp).toFixed(2));
-        ops.resumo.darfPago         = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
-        // v2.7: usa resultadoLiquido (acumula positivos e negativos)
-        ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
-
+        resultadoBruto   = parseFloat((op.premio * op.quantidade).toFixed(2));
+        resultadoLiquido = resultadoBruto; // sem desconto de DARF aqui
+        statusNome       = tipo === 'po' ? 'Virou pó' : 'Exercida';
     } else {
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         const resultPorAcao = op.premio - recompra;
         resultadoBruto      = parseFloat((resultPorAcao * op.quantidade).toFixed(2));
+        resultadoLiquido    = resultadoBruto;
         statusNome          = tipo === 'liquidada' ? 'Liquidada' : 'Rolada';
-
-        if (resultadoBruto < 0) {
-            ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal + Math.abs(resultadoBruto)).toFixed(2));
-            resultadoLiquido = resultadoBruto;
-            // v2.7: prejuízo também soma no resultado líquido (valor negativo)
-            ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
-        } else {
-            darfOp = parseFloat((resultadoBruto * 0.15).toFixed(2));
-            if (ops.resumo.escudoFiscal >= darfOp) {
-                escudoUsado             = darfOp;
-                ops.resumo.escudoFiscal = parseFloat((ops.resumo.escudoFiscal - darfOp).toFixed(2));
-                darfPagoOp              = 0;
-            } else {
-                escudoUsado             = ops.resumo.escudoFiscal;
-                darfPagoOp              = parseFloat((darfOp - escudoUsado).toFixed(2));
-                ops.resumo.escudoFiscal = 0;
-            }
-            resultadoLiquido = parseFloat((resultadoBruto - darfPagoOp).toFixed(2));
-            ops.resumo.darfPago         = parseFloat((ops.resumo.darfPago + darfPagoOp).toFixed(2));
-            ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoLiquido).toFixed(2));
-        }
     }
+
+    // Acumula resultado bruto no resumo (escudo e DARF serão calculados mensalmente)
+    ops.resumo.resultadoLiquido = parseFloat((ops.resumo.resultadoLiquido + resultadoBruto).toFixed(2));
 
     ops.resumo.totalOps++;
     ops.resumo.somaOtm = parseFloat((ops.resumo.somaOtm + op.otm).toFixed(4));
 
-    const vencDarf = gerarVencDarf(dataFech);
+    // v3.0: duração em dias úteis do ciclo
+    const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
 
     ops.historico.unshift({
-        dataAbertura: op.dataAbertura, dataFechamento: dataFech,
-        precoAcao: op.precoAcao, strike: op.strike, quantidade: op.quantidade,
-        premioPorAcao: op.premio, resultadoBruto, darf: darfOp,
-        escudoUsado, darfPago: darfPagoOp, resultadoLiquido,
-        status: statusNome, vencDarf: darfPagoOp > 0 ? vencDarf : null
+        dataAbertura:  op.dataAbertura,
+        dataFechamento: dataFech,
+        codigoOpcao:   op.codigoOpcao || '',
+        precoAcao:     op.precoAcao,
+        strike:        op.strike,
+        quantidade:    op.quantidade,
+        premioPorAcao: op.premio,
+        resultadoBruto,
+        resultadoLiquido: resultadoBruto, // bruto = líquido antes do DARF mensal
+        status:        statusNome,
+        duracaoUteis
     });
 
     ops.operacaoAtual      = null;
@@ -783,22 +795,29 @@ function gerarVencDarf(dataFech) {
 }
 
 // ════════════════════════════════════════════════════════════
-// v2.7: Card de Operações de CALL — usa resultadoLiquido
+// v3.0: Card de Operações de CALL
 // ════════════════════════════════════════════════════════════
 function atualizarCardCall() {
     const r = ops.resumo;
     const resLiq = r.resultadoLiquido || 0;
     const el = document.getElementById('call-resultado-liq');
     el.innerText = fmt(resLiq);
-    // Colore positivo/negativo
     el.style.color = resLiq >= 0 ? 'var(--branco)' : 'var(--queda)';
 
     document.getElementById('call-total-op').innerText  = r.totalOps;
-    // Média por operação baseada no resultado líquido real
     document.getElementById('call-media-op').innerText  = r.totalOps > 0 ? fmt(resLiq / r.totalOps) : 'R$ 0,00';
     document.getElementById('call-media-otm').innerText = r.totalOps > 0 ? fmtP(r.somaOtm / r.totalOps) : '—';
-    document.getElementById('call-darf').innerText      = fmt(r.darfPago);
     document.getElementById('call-escudo').innerText    = fmt(r.escudoFiscal);
+
+    // v3.0: Tempo médio em dias úteis
+    const tmEl = document.getElementById('call-tempo-medio');
+    const ciclosComDuracao = ops.historico.filter(c => c.duracaoUteis > 0);
+    if (ciclosComDuracao.length > 0) {
+        const media = ciclosComDuracao.reduce((s,c)=>s+c.duracaoUteis,0) / ciclosComDuracao.length;
+        tmEl.innerText = `${Math.round(media)} d.u.`;
+    } else {
+        tmEl.innerText = '—';
+    }
 
     const btn = document.getElementById('btn-call-acao');
     const txt = document.getElementById('call-status-txt');
@@ -814,8 +833,35 @@ function atualizarCardCall() {
 }
 
 // ════════════════════════════════════════════════════════════
-// Extrato de Ciclos
+// v3.0: Extrato de Ciclos — com resumo, código, duração, DARF mensal
 // ════════════════════════════════════════════════════════════
+function _chavesMes(hist) {
+    // Retorna lista de meses únicos no formato YYYY-MM, ordenados desc
+    const set = new Set(hist.map(c => (c.dataFechamento || '').slice(0,7)));
+    return [...set].sort((a,b) => b.localeCompare(a));
+}
+
+function _nomeMes(yyyymm) {
+    if (!yyyymm) return '—';
+    const [y, m] = yyyymm.split('-');
+    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return `${nomes[parseInt(m)-1]}/${y}`;
+}
+
+function _ultimoDiaUtilMesSeguinte(yyyymm) {
+    if (!yyyymm) return '—';
+    const [y, m] = yyyymm.split('-').map(Number);
+    // Último dia do mês seguinte
+    const ultimoDia = new Date(y, m, 0); // dia 0 do mês m+1 = último dia do mês m
+    const mesRef = new Date(y, m, 1);    // primeiro dia do mês seguinte
+    // Buscar último dia útil do mês seguinte
+    const ultMes = new Date(y, m+1, 0);
+    while (ultMes.getDay() === 0 || ultMes.getDay() === 6) {
+        ultMes.setDate(ultMes.getDate() - 1);
+    }
+    return ultMes.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
 function abrirExtratoCiclos() {
     const hist = ops.historico;
     const el   = document.getElementById('ciclos-corpo');
@@ -824,46 +870,127 @@ function abrirExtratoCiclos() {
         document.getElementById('modal-ciclos').classList.add('ativo');
         return;
     }
-    let html = '';
-    for (let i = 0; i < hist.length; i++) {
-        const c = hist[i];
-        const corStatus = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
-        const bgStatus  = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
 
-        let darfLinha = '';
-        if (c.darf > 0) {
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF gerado (15%)</span><span class="ciclo-valor" style="color:#aaa;">- ${fmt(c.darf)}</span></div>`;
-        }
-        if (c.escudoUsado > 0) {
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">🛡️ Escudo usado</span><span class="ciclo-valor" style="color:var(--alta);">+ ${fmt(c.escudoUsado)}</span></div>`;
-        }
-        if (c.darfPago > 0) {
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--queda);">- ${fmt(c.darfPago)}</span></div>`;
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">Venc. DARF</span><span class="ciclo-valor" style="color:var(--queda);">${c.vencDarf}</span></div>`;
-        } else if (c.darf > 0) {
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--alta);">R$ 0,00 (coberto)</span></div>`;
+    // ── Resumo Global no topo — será atualizado após o cálculo do DARF mensal ──
+    const totalBruto = hist.reduce((s,c) => s + (c.resultadoBruto || 0), 0);
+    let html = `__RESUMO_PLACEHOLDER__`;
+
+    // ── Agrupamento Mensal com DARF correto ──
+    // Processa meses do mais antigo para o mais recente para acumular escudo corretamente
+    const meses    = _chavesMes(hist); // desc
+    const mesesAsc = [...meses].reverse(); // asc para calcular escudo em ordem cronológica
+    const darfPorMes = {}; // chave: YYYY-MM → { darf, escudoUsado, escudoAcumulado, baseTribt, liqMes }
+    let escudoAcumulado = 0; // começa do zero, recalcula do histórico completo
+
+    for (const mes of mesesAsc) {
+        const ciclosMes = hist.filter(c => (c.dataFechamento || '').startsWith(mes));
+        const liqMes = ciclosMes.reduce((s, c) => s + (c.resultadoBruto || 0), 0);
+
+        if (liqMes <= 0) {
+            // Mês com prejuízo: acumula escudo
+            escudoAcumulado = parseFloat((escudoAcumulado + Math.abs(liqMes)).toFixed(2));
+            darfPorMes[mes] = { darf: 0, escudoUsado: 0, escudoAcumulado, baseTribt: 0, liqMes };
         } else {
-            darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF</span><span class="ciclo-valor" style="color:#aaa;">Não gerou DARF</span></div>`;
+            // Mês com lucro: compensar escudo
+            const escudoUsado  = Math.min(escudoAcumulado, liqMes);
+            const baseTribt    = parseFloat((liqMes - escudoUsado).toFixed(2));
+            const darf         = parseFloat((baseTribt * 0.15).toFixed(2));
+            escudoAcumulado    = parseFloat((escudoAcumulado - escudoUsado).toFixed(2));
+            darfPorMes[mes]    = { darf, escudoUsado, escudoAcumulado, baseTribt, liqMes };
         }
-
-        html += `
-        <div class="ciclo-box">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <div class="ciclo-titulo" style="margin-bottom:0;">Ciclo ${formatarData(c.dataAbertura)} → ${formatarData(c.dataFechamento)}</div>
-                <button onclick="abrirEditarCiclo(${i})" style="background:none;border:1px solid #555;color:#aaa;border-radius:5px;padding:3px 8px;font-size:0.65em;cursor:pointer;">✏️ Editar</button>
-            </div>
-            <div class="ciclo-linha"><span class="ciclo-label">Entrada ação</span><span class="ciclo-valor">${fmt(c.precoAcao || 0)}</span></div>
-            <div class="ciclo-linha"><span class="ciclo-label">Strike</span><span class="ciclo-valor">${fmt(c.strike || 0)}</span></div>
-            <div class="ciclo-linha"><span class="ciclo-label">Prêmio</span><span class="ciclo-valor">${fmt(c.premioPorAcao)}/ação × ${c.quantidade}</span></div>
-            <div class="ciclo-linha"><span class="ciclo-label">Resultado bruto</span><span class="ciclo-valor" style="color:${c.resultadoBruto>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoBruto)}</span></div>
-            ${darfLinha}
-            <div class="ciclo-linha" style="border-top:1px solid #444;margin-top:6px;padding-top:6px;">
-                <span class="ciclo-label" style="font-weight:bold;color:var(--branco);">Resultado líquido</span>
-                <span class="ciclo-valor" style="font-size:1em;color:${c.resultadoLiquido>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoLiquido)}</span>
-            </div>
-            <span class="ciclo-status" style="background:${bgStatus}; color:${corStatus};">${c.status}</span>
-        </div>`;
     }
+
+    // Atualizar escudo fiscal real no resumo com base no recálculo
+    ops.resumo.escudoFiscal = escudoAcumulado;
+    ops.resumo.darfPago = Object.values(darfPorMes).reduce((s, m) => s + m.darf, 0);
+    salvarOp();
+
+    // Montar resumo global com valores corretos pós-cálculo
+    const totalDarf    = ops.resumo.darfPago;
+    const totalLiquido = parseFloat((totalBruto - totalDarf).toFixed(2));
+    const escudoAtual  = escudoAcumulado;
+    const resumoHtml = `
+    <div style="background:rgba(0,188,212,0.08);border:1px solid #00bcd4;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:0.65em;color:var(--ciano);text-transform:uppercase;font-weight:bold;margin-bottom:8px;">Resumo Geral</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div><div style="font-size:0.63em;color:#aaa;">💰 Bruto total</div><div style="font-weight:bold;color:var(--branco);">${fmt(totalBruto)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">🧾 DARF total</div><div style="font-weight:bold;color:var(--queda);">- ${fmt(totalDarf)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">💵 Líquido total</div><div style="font-weight:bold;color:${totalLiquido>=0?'var(--alta)':'var(--queda)'};">${fmt(totalLiquido)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo fiscal</div><div style="font-weight:bold;color:var(--alta);">${fmt(escudoAtual)}</div></div>
+        </div>
+    </div>`;
+    html = html.replace('__RESUMO_PLACEHOLDER__', resumoHtml);
+
+    for (const mes of meses) {
+        const ciclosMes  = hist.filter(c => (c.dataFechamento || '').startsWith(mes));
+        const brutomes   = ciclosMes.reduce((s,c) => s + (c.resultadoBruto || 0), 0);
+        const dm         = darfPorMes[mes] || { darf:0, escudoUsado:0, liqMes: brutomes, baseTribt:0 };
+        const darfMes    = dm.darf;
+        const liqLiqMes  = parseFloat((brutomes - darfMes).toFixed(2));
+        const vencDarfMes = _ultimoDiaUtilMesSeguinte(mes);
+
+        html += `<div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:12px 14px;margin-bottom:12px;border-left:3px solid #444;">
+            <div style="font-size:0.72em;color:var(--ciano);font-weight:bold;text-transform:uppercase;margin-bottom:8px;">${_nomeMes(mes)} — Resumo Mensal</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.78em;margin-bottom:8px;">
+                <div><span style="color:#aaa;">Bruto:</span> <b>${fmt(brutomes)}</b></div>
+                <div><span style="color:#aaa;">Líquido:</span> <b style="color:${liqLiqMes>=0?'var(--alta)':'var(--queda)'};">${fmt(liqLiqMes)}</b></div>
+                ${dm.escudoUsado > 0 ? `<div style="grid-column:1/-1;font-size:0.9em;color:var(--alta);">🛡️ Escudo usado: ${fmt(dm.escudoUsado)} | Base tributável: ${fmt(dm.baseTribt)}</div>` : ''}
+                ${darfMes > 0
+                    ? `<div style="grid-column:1/-1;margin-top:4px;padding:6px 8px;background:rgba(255,107,107,0.1);border-radius:6px;">🧾 DARF: <b style="color:var(--queda);">- ${fmt(darfMes)}</b> &nbsp;|&nbsp; 📅 Venc: <b style="color:#f1c40f;">${vencDarfMes}</b></div>`
+                    : brutomes < 0
+                        ? `<div style="grid-column:1/-1;margin-top:4px;padding:6px 8px;background:rgba(0,230,118,0.06);border-radius:6px;color:#aaa;font-size:0.9em;">🛡️ Prejuízo acumulado ao escudo fiscal</div>`
+                        : `<div style="grid-column:1/-1;margin-top:4px;padding:6px 8px;background:rgba(0,230,118,0.06);border-radius:6px;color:#aaa;font-size:0.9em;">DARF zerado pelo escudo fiscal</div>`
+                }
+            </div>`;
+
+        // Ciclos individuais do mês
+        for (let i = 0; i < hist.length; i++) {
+            const c = hist[i];
+            if (!(c.dataFechamento || '').startsWith(mes)) continue;
+            const corStatus = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'var(--alta)' : (c.resultadoLiquido<0 ? 'var(--queda)' : '#f1c40f');
+            const bgStatus  = c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada' ? 'rgba(0,230,118,0.15)' : (c.resultadoLiquido<0 ? 'rgba(255,107,107,0.15)' : 'rgba(241,196,15,0.15)');
+
+            const codigoLinha = c.codigoOpcao ? `<div class="ciclo-linha"><span class="ciclo-label">Código opção</span><span class="ciclo-valor" style="color:var(--ciano);">${c.codigoOpcao}</span></div>` : '';
+            const duracaoLinha = c.duracaoUteis > 0 ? `<div class="ciclo-linha"><span class="ciclo-label">Duração</span><span class="ciclo-valor">${c.duracaoUteis} dia${c.duracaoUteis!==1?'s':''} útil${c.duracaoUteis!==1?'':'is'}</span></div>` : '';
+
+            let darfLinha = '';
+            if (c.darf > 0) {
+                darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF gerado (15%)</span><span class="ciclo-valor" style="color:#aaa;">- ${fmt(c.darf)}</span></div>`;
+            }
+            if (c.escudoUsado > 0) {
+                darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">🛡️ Escudo usado</span><span class="ciclo-valor" style="color:var(--alta);">+ ${fmt(c.escudoUsado)}</span></div>`;
+            }
+            if (c.darfPago > 0) {
+                darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--queda);">- ${fmt(c.darfPago)}</span></div>`;
+            } else if (c.darf > 0) {
+                darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF pago</span><span class="ciclo-valor" style="color:var(--alta);">R$ 0,00 (coberto)</span></div>`;
+            } else {
+                darfLinha += `<div class="ciclo-linha"><span class="ciclo-label">DARF</span><span class="ciclo-valor" style="color:#aaa;">Não gerou</span></div>`;
+            }
+
+            html += `
+            <div class="ciclo-box" style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div class="ciclo-titulo" style="margin-bottom:0;">Ciclo ${formatarData(c.dataAbertura)} → ${formatarData(c.dataFechamento)}</div>
+                    <button onclick="abrirEditarCiclo(${i})" style="background:none;border:1px solid #555;color:#aaa;border-radius:5px;padding:3px 8px;font-size:0.65em;cursor:pointer;">✏️ Editar</button>
+                </div>
+                ${codigoLinha}
+                <div class="ciclo-linha"><span class="ciclo-label">Entrada ação</span><span class="ciclo-valor">${fmt(c.precoAcao || 0)}</span></div>
+                <div class="ciclo-linha"><span class="ciclo-label">Strike</span><span class="ciclo-valor">${fmt(c.strike || 0)}</span></div>
+                <div class="ciclo-linha"><span class="ciclo-label">Prêmio</span><span class="ciclo-valor">${fmt(c.premioPorAcao)}/ação × ${c.quantidade}</span></div>
+                ${duracaoLinha}
+                <div class="ciclo-linha"><span class="ciclo-label">Resultado bruto</span><span class="ciclo-valor" style="color:${(c.resultadoBruto||0)>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoBruto||0)}</span></div>
+                ${darfLinha}
+                <div class="ciclo-linha" style="border-top:1px solid #444;margin-top:6px;padding-top:6px;">
+                    <span class="ciclo-label" style="font-weight:bold;color:var(--branco);">Resultado líquido</span>
+                    <span class="ciclo-valor" style="font-size:1em;color:${c.resultadoLiquido>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoLiquido)}</span>
+                </div>
+                <span class="ciclo-status" style="background:${bgStatus}; color:${corStatus};">${c.status}</span>
+            </div>`;
+        }
+        html += `</div>`; // fecha bloco mensal
+    }
+
     el.innerHTML = html;
     document.getElementById('modal-ciclos').classList.add('ativo');
 }
@@ -874,6 +1001,7 @@ function abrirEditarCiclo(idx) {
     const c = ops.historico[idx];
     if (!c) return;
     _editandoCicloIdx = idx;
+    document.getElementById('edit-ciclo-codigo').value   = c.codigoOpcao || '';
     document.getElementById('edit-ciclo-dataab').value   = c.dataAbertura || '';
     document.getElementById('edit-ciclo-datafech').value = c.dataFechamento || '';
     document.getElementById('edit-ciclo-preco').value    = String(c.precoAcao || '').replace('.',',');
@@ -888,6 +1016,7 @@ function confirmarEditarCiclo() {
     const idx = _editandoCicloIdx;
     if (idx < 0 || idx >= ops.historico.length) return;
     const c = ops.historico[idx];
+    c.codigoOpcao    = (document.getElementById('edit-ciclo-codigo').value || '').toUpperCase().trim();
     c.dataAbertura   = document.getElementById('edit-ciclo-dataab').value;
     c.dataFechamento = document.getElementById('edit-ciclo-datafech').value;
     c.precoAcao      = toNum(document.getElementById('edit-ciclo-preco').value);
@@ -895,6 +1024,10 @@ function confirmarEditarCiclo() {
     c.quantidade     = parseInt(document.getElementById('edit-ciclo-qtd').value) || c.quantidade;
     c.premioPorAcao  = toNum(document.getElementById('edit-ciclo-premio').value);
     c.status         = document.getElementById('edit-ciclo-status').value;
+    // recalcular duração
+    if (c.dataAbertura && c.dataFechamento) {
+        c.duracaoUteis = calcularDiasUteis(c.dataAbertura, c.dataFechamento);
+    }
     salvarOp(); fecharEditarCiclo(); abrirExtratoCiclos();
 }
 
@@ -932,30 +1065,44 @@ async function buscarCotacao() {
 }
 
 // ════════════════════════════════════════════════════════════
-// Monitor — v2.7 com lógica de zonas corrigida
+// Monitor — v3.0
 // ════════════════════════════════════════════════════════════
 function atualizarMonitor() {
     const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
-    document.getElementById('header-opcao').innerText=s.codigoOpcao?s.codigoOpcao.toUpperCase():'— sem setup —';
+
+    // v3.0: Header exibe Venc:DD/MM no lugar de "Opção Ativa"
+    if (s.codigoOpcao && s.vencimento) {
+        const [y,m,d] = s.vencimento.split('-');
+        document.getElementById('header-opcao').innerText = `Venc: ${d}/${m}`;
+        document.getElementById('header-venc-label').innerText = s.codigoOpcao.toUpperCase();
+    } else if (s.codigoOpcao) {
+        document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
+        document.getElementById('header-venc-label').innerText = 'Opção Ativa';
+    } else {
+        document.getElementById('header-opcao').innerText = '— sem setup —';
+        document.getElementById('header-venc-label').innerText = 'Vencimento';
+    }
+
     if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
 
     const preco=cotacaoAcao, strike=s.strike, entrada=s.precoEntrada, prem=s.premioRecebido, qtd=s.qtdAcoes||0;
     
-    let dias=null; if(s.vencimento) dias=Math.ceil((new Date(s.vencimento+'T12:00:00')-new Date())/86400000);
-let corDias = '#aaa';
-let diasTxt = '';
-if (dias !== null) {
-    if (dias <= 0) {
-        diasTxt = '⚠️ VENCIDA';
-        corDias = '#ff6b6b';
+    // v3.0: dias úteis
+    let dias=null; if(s.vencimento) dias = diasUteisAteVenc(s.vencimento);
+    let corDias = '#aaa';
+    let diasTxt = '';
+    if (dias !== null) {
+        if (dias <= 0) {
+            diasTxt = '⚠️ VENCIDA';
+            corDias = '#ff6b6b';
+        } else {
+            diasTxt = `⏱️ ${dias} dia${dias!==1?'s':''} úteis para vencer`;
+            if (dias <= 7 && dias > 2) corDias = '#f1c40f';
+            if (dias <= 2) corDias = '#ff6b6b';
+        }
     } else {
-        diasTxt = `⏱️ ${dias} dias para vencer`;
-        if (dias <= 10 && dias > 2) corDias = '#f1c40f';
-        if (dias <= 2) corDias = '#ff6b6b';
+        diasTxt = '';
     }
-} else {
-    diasTxt = '';
-}
     
     const valorAcao=(preco!==null&&preco!==undefined)?fmt(preco):'—', valorOpcao=(cotacaoOpcao!==null)?fmt(cotacaoOpcao):'—';
     const secaoTopo=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Ação</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorAcao}</div></div><div style="background:rgba(0,0,0,0.22);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:0.63em;color:#aaa;text-transform:uppercase;margin-bottom:5px;">Opção</div><div style="font-size:1.15em;font-weight:bold;color:#aaa;">${valorOpcao}</div></div></div>${diasTxt?`<div style="text-align:center;font-size:0.8em;color:${corDias};margin-top:10px;">${diasTxt}</div>`:''}`;
@@ -981,19 +1128,6 @@ if (dias !== null) {
     const distStr  = distStrikePct.toFixed(1).replace('.',',') + '%';
     const acimaStr = acimaPct.toFixed(1).replace('.',',') + '%';
 
-    // ════════════════════════════════════════════════════════
-    // v2.7: Lógica de zonas corrigida
-    //
-    // Zona 1 — Rumo ao pó:   preco <= precoAzul (abaixo do espelho do gap)
-    // Zona 2 — OTM confortável: precoAzul < preco < entrada (abaixo do PM)
-    // Zona 3 — Atenção:      entrada <= preco < zonaMonitorPrice  (acima PM, ainda longe do alerta)
-    // Zona 4 — Preparar rolagem: zonaMonitorPrice <= preco < zonaAcaoPrice
-    // Zona 5 — ATM crítico:  zonaAcaoPrice <= preco < strike
-    // Zona 6 — ITM:          preco >= strike
-    //
-    // CORREÇÃO: Zona 3 só ativa quando preco >= entrada (realmente acima do PM)
-    // E a mensagem "Acima do PM, monitorar mais frequência" é exibida corretamente
-    // ════════════════════════════════════════════════════════
     const gap       = entrada > 0 ? (strike - entrada) : 0;
     const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
 
@@ -1013,20 +1147,16 @@ if (dias !== null) {
         sLinha1 = `ATM · Preparar rolagem — ${distStr} do Strike`;
         sLinha2 = 'Zona de alerta. Definir plano de saída.';
     } else if (entrada > 0 && preco >= entrada) {
-        // v2.7 CORREÇÃO: Zona 3 — preço está entre o PM e a zona de monitoramento
-        // Significa que está ACIMA do PM mas ainda longe da zona de alerta → monitorar mais
         zonaAtiva = 3;
         sColor  = '#f1c40f';
         sLinha1 = `Atenção — ${distStr} do Strike`;
         sLinha2 = 'Acima da Entrada. Monitorar com mais frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
-        // Zona 2 — preço abaixo do PM mas ainda não no patamar de segurança máxima
         zonaAtiva = 2;
         sColor  = '#00e676';
         sLinha1 = `OTM — ${distStr} do Strike`;
         sLinha2 = 'Abaixo da Entrada. Posição confortável, sem ação.';
     } else {
-        // Zona 1 — muito abaixo, opção caminhando para virar pó
         zonaAtiva = 1;
         sColor  = '#00bcd4';
         sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
@@ -1047,17 +1177,15 @@ if (dias !== null) {
             : '';
         segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
     }
+    // v3.0: Entrada e Strike centralizados
     const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
     const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
         + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
-        + `<div style="display:flex;justify-content:space-between;font-size:0.68em;color:#fff;margin-bottom:10px;letter-spacing:0.02em;"><span>${entradaLbl}</span><span>${strikeLbl}</span></div>`
+        + `<div style="text-align:center;font-size:0.72em;color:#fff;margin-bottom:10px;letter-spacing:0.02em;">${entradaLbl} &nbsp;|&nbsp; ${strikeLbl}</div>`
         + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
 
-    // ════════════════════════════════════════════════════════
-    // v2.7: Monitor de Prêmio — barra com cor correta em todos os cenários
-    // incluindo quando a opção está valorizada (desv < 0) → barra vermelha
-    // ════════════════════════════════════════════════════════
+    // Monitor de Prêmio — v3.0 com linha de Recompra
     let secaoPremio='';
     if(prem>0){
         const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
@@ -1065,9 +1193,14 @@ if (dias !== null) {
         let pColor,pLinha1,pLinha2,pBarW=0;
         const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
 
-        // v2.9: faixas de cor proporcionais à meta configurada — sem conflito
-        const limVerde   = meta * 0.85; // 85% do caminho → verde
-        const limAmarelo = meta * 0.70; // 70% do caminho → amarelo
+        const limVerde   = meta * 0.85;
+        const limAmarelo = meta * 0.70;
+
+        // v3.0: valor-alvo de recompra
+        const alvoRecompra = prem > 0 ? parseFloat((prem * (1 - meta / 100)).toFixed(2)) : null;
+        const recompraLinha = alvoRecompra !== null
+            ? `<div style="font-size:0.75em;color:#00bcd4;margin-top:5px;">🎯 Recompra: R$\u00a0${alvoRecompra.toFixed(2).replace('.',',')}</div>`
+            : '';
 
         if(desv===null){
             pColor='#555'; pBarW=0;
@@ -1105,7 +1238,9 @@ if (dias !== null) {
             +`</div><span style="font-size:1.5em;font-weight:bold;color:${pColor};min-width:60px;text-align:right;">${desvStr}</span></div>`
             +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
             +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
-            +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div></div>`;
+            +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div>`
+            +recompraLinha
+            +`</div>`;
     }
 
    // ── Decisão Estratégica ──
@@ -1433,6 +1568,85 @@ async function tornarPermanente() {
         if (!persistido) { const permitiu = await navigator.storage.persist(); }
     }
 }
+
+// ════════════════════════════════════════════════════════════
+// v3.0: Resumo Anual (IR)
+// ════════════════════════════════════════════════════════════
+function abrirResumoAnual() {
+    const anos = [...new Set(ops.historico.map(c => (c.dataFechamento || '').slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+    const el = document.getElementById('resumo-anual-corpo');
+
+    if (anos.length === 0) {
+        el.innerHTML = `<div class="extrato-vazio">Nenhum ciclo finalizado ainda.</div>`;
+        document.getElementById('modal-resumo-anual').classList.add('ativo');
+        return;
+    }
+
+    // Dados de ações
+    const qtdAcoes = dados.acoes.reduce((s,x) => s + x.qtd, 0);
+    const custoTotal = dados.acoes.reduce((s,x) => s + (x.qtd * x.preco), 0);
+    const pm = qtdAcoes > 0 ? custoTotal / qtdAcoes : 0;
+
+    let html = '';
+
+    for (const ano of anos) {
+        const ciclosAno = ops.historico.filter(c => (c.dataFechamento || '').startsWith(ano));
+
+        // Calcular DARF anual corretamente agrupando por mês dentro do ano
+        const mesesAno = [...new Set(ciclosAno.map(c => (c.dataFechamento || '').slice(0,7)))].sort();
+        let escudoAno = 0;
+        // Pegar escudo acumulado até o início do ano (de meses de anos anteriores)
+        const ciclosAnteriores = ops.historico.filter(c => (c.dataFechamento || '') < `${ano}-01`);
+        const mesesAnt = [...new Set(ciclosAnteriores.map(c => (c.dataFechamento||'').slice(0,7)))].sort();
+        let escudoAte = 0;
+        for (const m of mesesAnt) {
+            const cm = ciclosAnteriores.filter(c => (c.dataFechamento||'').startsWith(m));
+            const lm = cm.reduce((s,c) => s + (c.resultadoBruto||0), 0);
+            if (lm <= 0) { escudoAte += Math.abs(lm); }
+            else { const eu = Math.min(escudoAte, lm); escudoAte = Math.max(0, escudoAte - eu); }
+        }
+        escudoAno = escudoAte;
+
+        let lucroAno = 0, darfAno = 0;
+        for (const m of mesesAno) {
+            const cm = ciclosAno.filter(c => (c.dataFechamento||'').startsWith(m));
+            const lm = cm.reduce((s,c) => s + (c.resultadoBruto||0), 0);
+            if (lm <= 0) { escudoAno += Math.abs(lm); }
+            else {
+                const eu = Math.min(escudoAno, lm);
+                const base = parseFloat((lm - eu).toFixed(2));
+                const darf = parseFloat((base * 0.15).toFixed(2));
+                escudoAno = Math.max(0, escudoAno - eu);
+                darfAno += darf;
+                lucroAno += lm;
+            }
+        }
+        const brutoanual = ciclosAno.reduce((s,c) => s + (c.resultadoBruto||0), 0);
+        const liquidoAno = parseFloat((brutoanual - darfAno).toFixed(2));
+
+        html += `
+        <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:14px;margin-bottom:14px;border-left:3px solid var(--ciano);">
+            <div style="font-size:0.85em;font-weight:bold;color:var(--ciano);margin-bottom:10px;">ANO: ${ano}</div>
+            <div style="font-size:0.72em;color:#aaa;text-transform:uppercase;margin-bottom:6px;">📊 Ações</div>
+            <div class="ciclo-linha"><span class="ciclo-label">Ativo</span><span class="ciclo-valor">BBAS3</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Quantidade</span><span class="ciclo-valor">${qtdAcoes}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Preço médio</span><span class="ciclo-valor">${fmt(pm)}</span></div>
+            <div style="font-size:0.72em;color:#aaa;text-transform:uppercase;margin:10px 0 6px;">📊 Opções — Resultado</div>
+            <div class="ciclo-linha"><span class="ciclo-label">Bruto no ano</span><span class="ciclo-valor">${fmt(brutoanual)}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">DARF total pago</span><span class="ciclo-valor" style="color:var(--queda);">- ${fmt(darfAno)}</span></div>
+            <div class="ciclo-linha" style="border-top:1px solid #444;margin-top:6px;padding-top:6px;">
+                <span class="ciclo-label" style="font-weight:bold;color:var(--branco);">Líquido no ano</span>
+                <span class="ciclo-valor" style="color:${liquidoAno>=0?'var(--alta)':'var(--queda)'};">${fmt(liquidoAno)}</span>
+            </div>
+            <div class="ciclo-linha"><span class="ciclo-label">🛡️ Escudo fiscal restante</span><span class="ciclo-valor" style="color:var(--alta);">${fmt(escudoAno)}</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Ciclos encerrados</span><span class="ciclo-valor">${ciclosAno.length}</span></div>
+        </div>`;
+    }
+
+    el.innerHTML = html;
+    document.getElementById('modal-resumo-anual').classList.add('ativo');
+}
+function fecharResumoAnual() { document.getElementById('modal-resumo-anual').classList.remove('ativo'); }
 
 // ════════════════════════════════════════════════════════════
 // Init
