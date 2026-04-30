@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 2.8</title>
+    <title>TOURSO_vCALL 2.9</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -463,7 +463,7 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 2.8", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 2.9", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
@@ -1066,14 +1066,16 @@ if (dias !== null) {
         let pColor,pLinha1,pLinha2,pBarW=0;
         const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
 
+        // v2.9: faixas de cor proporcionais à meta configurada — sem conflito
+        const limVerde   = meta * 0.85; // 85% do caminho → verde
+        const limAmarelo = meta * 0.70; // 70% do caminho → amarelo
+
         if(desv===null){
             pColor='#555'; pBarW=0;
             pLinha1='Buscando cotação da opção…';
             pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
         } else if(desv<0){
-            // v2.7 CORREÇÃO: opção valorizando → barra vermelha com largura proporcional ao risco
-            // quanto mais negativo, mais cheia a barra (vermelho = risco crescente)
-            const risco = Math.min(Math.abs(desv) / 30 * 100, 100); // 30% de valorização = barra cheia
+            const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor='#e05252'; pBarW=risco;
             pLinha1='🔺 Risco — Opção valorizando';
             pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
@@ -1081,21 +1083,21 @@ if (dias !== null) {
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=60){
-            pColor='#00e676'; pBarW = (desv / meta) * 100;
+        } else if(desv>=limVerde){
+            pColor='#00e676'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=50){
-            pColor='#f1c40f'; pBarW = (desv / meta) * 100;
+        } else if(desv>=limAmarelo){
+            pColor='#f1c40f'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
             pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
-            pColor='#777'; pBarW = (desv / meta) * 100;
+            pColor='#777'; pBarW=(desv/meta)*100;
             const faltam=(meta-desv).toFixed(1).replace('.',',');
-            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha1=`⏸️ Aguardando: ${desvStr} — Faltam ${faltam}% para meta`;
+            pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
         }
         secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
             +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
