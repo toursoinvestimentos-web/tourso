@@ -1077,7 +1077,7 @@ if (dias !== null) {
             pColor='#e05252'; pBarW=risco;
             pLinha1='🔺 Risco — Opção valorizando';
             pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
-        } else if(desv>meta){
+        } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 META ATINGIDA — Encerrar posição';
             pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
