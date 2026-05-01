@@ -1070,11 +1070,11 @@ async function buscarCotacao() {
 function atualizarMonitor() {
     const s=dados.setup; const el=document.getElementById('monitor-conteudo'); const card=document.getElementById('card-monitor');
 
-    // v3.0: Header exibe Venc:DD/MM no lugar de "Opção Ativa"
-    if (s.codigoOpcao && s.vencimento) {
-        const [y,m,d] = s.vencimento.split('-');
-        document.getElementById('header-opcao').innerText = `Venc: ${d}/${m}`;
-        document.getElementById('header-venc-label').innerText = s.codigoOpcao.toUpperCase();
+    // Header exibe Venc:DD/MM no lugar de "Opção Ativa"
+   if (s.codigoOpcao && s.vencimento) {
+    const [y,m,d] = s.vencimento.split('-');
+    document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
+    document.getElementById('header-venc-label').innerText = `Venc: ${d}/${m}`;
     } else if (s.codigoOpcao) {
         document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
         document.getElementById('header-venc-label').innerText = 'Opção Ativa';
