@@ -1079,8 +1079,8 @@ function atualizarMonitor() {
         document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
         document.getElementById('header-venc-label').innerText = 'Opção Ativa';
     } else {
-        document.getElementById('header-opcao').innerText = '— sem setup —';
-        document.getElementById('header-venc-label').innerText = 'Vencimento';
+        document.getElementById('header-opcao').innerText = 'Lançar Call';
+        document.getElementById('header-venc-label').innerText = 'Aguardando';
     }
 
     if(!s.codigoOpcao||!s.precoEntrada||!s.strike){ el.innerHTML=`<span style="color:#555;">Abra uma operação no card abaixo para iniciar o monitoramento.</span>`; card.style.borderLeftColor='#444'; return; }
