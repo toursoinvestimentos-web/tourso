@@ -1076,8 +1076,8 @@ function atualizarMonitor() {
     document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
     document.getElementById('header-venc-label').innerText = `Venc: ${d}/${m}`;
     } else if (s.codigoOpcao) {
-        document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
-        document.getElementById('header-venc-label').innerText = 'Opção Ativa';
+       document.getElementById('header-opcao').innerText = s.codigoOpcao.toUpperCase();
+        document.getElementById('header-venc-label').innerText = 'Aguardando';
     } else {
         document.getElementById('header-opcao').innerText = 'Lançar Call';
         document.getElementById('header-venc-label').innerText = 'Aguardando';
