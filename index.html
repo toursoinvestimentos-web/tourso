@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 3.0</title>
+    <title>TOURSO_vCALL 3.1</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -476,11 +476,21 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 3.0", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 3.1", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v3.0';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
+    const sw = `const CACHE='tourso-v3.1';
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',e=>{
+  e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
+});`;
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 let deferredPrompt = null;
@@ -539,6 +549,20 @@ if (ops.resumo.resultadoLiquido === undefined) ops.resumo.resultadoLiquido = 0;
 
 let cotacaoAcao  = null;
 let cotacaoOpcao = null;
+
+// ── v3.1: Cache de preços offline ──
+let _precoOffline = false;
+(function carregarCachePrecos() {
+    const ca = localStorage.getItem('cache_cot_acao');
+    const co = localStorage.getItem('cache_cot_opcao');
+    if (ca !== null) {
+        cotacaoAcao = parseFloat(ca);
+        document.getElementById('txt-cotacao').innerText = cotacaoAcao.toFixed(2).replace('.',',');
+        document.getElementById('status-bolinha').style.background = '#888888'; // cinza = offline
+    }
+    if (co !== null) { cotacaoOpcao = parseFloat(co); }
+    if (ca !== null || co !== null) _precoOffline = true;
+})();
 let _acaoAtiva   = {};
 let _buscando    = false;
 
@@ -1058,9 +1082,17 @@ async function buscarCotacao() {
     const pAcao = planilha.acao;
     const pOpcao = cod ? planilha.opcao : null;
 
-    if(pAcao!==null){ cotacaoAcao=pAcao; document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',','); document.getElementById('status-bolinha').style.background='#00e676'; }
-    else { document.getElementById('status-bolinha').style.background='#f1c40f'; if(cotacaoAcao===null) soAcaoAteAparecer(); }
-    if(cod && pOpcao !== null) cotacaoOpcao=pOpcao;
+    if(pAcao!==null){
+        cotacaoAcao=pAcao;
+        localStorage.setItem('cache_cot_acao', pAcao);
+        document.getElementById('txt-cotacao').innerText=cotacaoAcao.toFixed(2).replace('.',',');
+        document.getElementById('status-bolinha').style.background='#00e676';
+        _precoOffline = false;
+    } else {
+        document.getElementById('status-bolinha').style.background = (cotacaoAcao !== null) ? '#888888' : '#f1c40f';
+        if(cotacaoAcao===null) soAcaoAteAparecer();
+    }
+    if(cod && pOpcao !== null) { cotacaoOpcao=pOpcao; localStorage.setItem('cache_cot_opcao', pOpcao); }
     _buscando=false; atualizarTela();
 }
 
