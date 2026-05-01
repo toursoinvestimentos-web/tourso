@@ -1705,12 +1705,6 @@ function _chkIR(){ const m=new Date().getMonth(); const d=(Date.now()-parseInt(l
 document.querySelector('[onclick="abrirResumoAnual()"]').addEventListener('click',()=>{localStorage.setItem(_K_IR,Date.now()); setTimeout(_chkIR,200);});
 _chkIR();
 
-// ── v3.1: Bloquear pull-to-refresh (evita dinossauro offline) ──
-document.addEventListener('touchmove', function(e) {
-    if (window.scrollY === 0 && e.touches[0].clientY > 0) {
-        e.preventDefault();
-    }
-}, { passive: false });
 
 </script>
 </body>
