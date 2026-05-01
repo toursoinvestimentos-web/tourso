@@ -1665,7 +1665,12 @@ function _chkBkp(){ const d=(Date.now()-parseInt(localStorage.getItem(_K_BKP)||0
 document.querySelector('[onclick="exportar()"]').addEventListener('click',()=>{localStorage.setItem(_K_BKP,Date.now()); setTimeout(_chkBkp,200);});
 _chkBkp();
 
-    
+    // Resumo IR pisca em maio, 5 em 5 dias
+const _K_IR = 'tourso_ult_ir';
+function _chkIR(){ const m=new Date().getMonth(); const d=(Date.now()-parseInt(localStorage.getItem(_K_IR)||0))/86400000; document.querySelector('[onclick="abrirResumoAnual()"]').classList.toggle('piscante-amarelo', m===4 && d>=5); }
+document.querySelector('[onclick="abrirResumoAnual()"]').addEventListener('click',()=>{localStorage.setItem(_K_IR,Date.now()); setTimeout(_chkIR,200);});
+_chkIR();
+
 </script>
 </body>
 </html>
