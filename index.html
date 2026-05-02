@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 3.3</title>
+    <title>TOURSO_vCALL 4.0</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -479,11 +479,11 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 3.3", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 4.0", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v3.3';
+    const sw = `const CACHE='tourso-v4.0';
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));
   self.skipWaiting();
@@ -1212,32 +1212,32 @@ function atualizarMonitor() {
     if (preco >= strike) {
         zonaAtiva = 6; isGuerra = true; entrandoZonaAlerta = true;
         sColor  = '#c0392b';
-        sLinha1 = `ITM — ${acimaStr} acima do Strike`;
-        sLinha2 = 'Dentro do dinheiro. Prêmio e dias definem urgência.';
+        sLinha1 = `🔴 ITM — ${acimaStr} acima do Strike`;
+        sLinha2 = 'Dentro do dinheiro. Alto risco de exercício.';
     } else if (preco >= zonaAcaoPrice) {
         zonaAtiva = 5; isGuerra = true; entrandoZonaAlerta = true;
         sColor  = '#e05252';
-        sLinha1 = `ATM · Risco de exercício — ${distStr} do Strike`;
-        sLinha2 = 'Zona crítica. Decisão depende do prêmio e dos dias.';
+        sLinha1 = `🟠 ATM · Risco — ${distStr} do Strike`;
+        sLinha2 = 'Muito próximo do strike. Atenção total.';
     } else if (preco >= zonaMonitorPrice) {
         zonaAtiva = 4; entrandoZonaAlerta = true;
         sColor  = '#ff9900';
-        sLinha1 = `ATM · Preparar rolagem — ${distStr} do Strike`;
-        sLinha2 = 'Zona de alerta. Definir plano de saída.';
+        sLinha1 = `🟡 ATM · Preparar — ${distStr} do Strike`;
+        sLinha2 = 'Entrando na zona de atenção.';
     } else if (entrada > 0 && preco >= entrada) {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
-        sLinha1 = `Atenção — ${distStr} do Strike`;
-        sLinha2 = 'Acima da Entrada. Monitorar com mais frequência.';
+        sLinha1 = `🔵 Atenção — ${distStr} do Strike`;
+        sLinha2 = 'Acima da entrada. Monitorar com frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
         zonaAtiva = 2;
         sColor  = '#00e676';
-        sLinha1 = `OTM — ${distStr} do Strike`;
-        sLinha2 = 'Abaixo da Entrada. Posição confortável, sem ação.';
+        sLinha1 = `🟢 OTM — ${distStr} do Strike`;
+        sLinha2 = 'Posição confortável, sem risco imediato.';
     } else {
         zonaAtiva = 1;
         sColor  = '#00bcd4';
-        sLinha1 = `Rumo ao pó — ${distStr} do Strike`;
+        sLinha1 = `💠 Rumo ao pó — ${distStr} do Strike`;
         sLinha2 = 'Segurança máxima. Opção derretendo.';
     }
 
@@ -1282,32 +1282,29 @@ function atualizarMonitor() {
 
         if(desv===null){
             pColor='#555'; pBarW=0;
-            pLinha1='Buscando cotação da opção…';
+            pLinha1='⏳ Buscando cotação da opção';
             pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
         } else if(desv<0){
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor='#e05252'; pBarW=risco;
-            pLinha1='🔺 Risco — Opção valorizando';
+            pLinha1='🔺 Risco — Opção subindo';
             pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
         } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
-            pLinha1='💰 META ATINGIDA — Encerrar posição';
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha1='💰 Meta batida';
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Encerrar garante: +${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=limVerde){
             pColor='#00e676'; pBarW=(desv/meta)*100;
-            const faltam=(meta-desv).toFixed(1).replace('.',',');
-            pLinha1=`✅ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha1=`✅ Quase lá — ${desvStr}`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else if(desv>=limAmarelo){
             pColor='#f1c40f'; pBarW=(desv/meta)*100;
-            const faltam=(meta-desv).toFixed(1).replace('.',',');
-            pLinha1=`⏳ Lucro: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Se fechar: ${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pLinha1=`⏳ Evoluindo — ${desvStr}`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
         } else {
             pColor='#777'; pBarW=(desv/meta)*100;
-            const faltam=(meta-desv).toFixed(1).replace('.',',');
-            pLinha1=`⏸️ Aguardando: ${desvStr} — Faltam ${faltam}% para meta`;
-            pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
+            pLinha1=`⏸️ Aguardando — ${desvStr}`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
         }
         secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
             +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
@@ -1328,32 +1325,51 @@ function atualizarMonitor() {
         const limVerde   = metaD * 0.85;
         const limAmarelo = metaD * 0.70;
         const desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
+        const alvoRecompraD = prem > 0 ? parseFloat((prem * (1 - metaD / 100)).toFixed(2)) : null;
         let dColor, dTexto, dClasse='';
 
-        if(desv!==null&&desv>=metaD){
+        // Operação recém-aberta (hoje ou ontem)
+        const op = ops.operacaoAtual;
+        const dataAb = op?.dataAbertura ? new Date(op.dataAbertura + 'T12:00:00') : null;
+        const diffDias = dataAb ? Math.floor((new Date() - dataAb) / 86400000) : 99;
+        const recenteAberta = diffDias <= 1;
+
+        if (cotacaoAcao === null || cotacaoAcao <= 0) {
+            dColor='#555';
+            dTexto='⏳ Aguardando dados. Sem decisão possível.';
+        } else if (recenteAberta && alvoRecompraD !== null) {
+            dColor='#00bcd4';
+            dTexto=`🎯 Ordem limitada: coloque recompra em R$\u00a0${alvoRecompraD.toFixed(2).replace('.',',')} para garantir a meta.`;
+        } else if(desv!==null && desv>=metaD && dias!==null && dias>=7){
             dColor='#00bcd4'; dClasse='piscante-azul';
-            dTexto='💰 META ATINGIDA: ENCERRAR';
-        } else if(isGuerra){
-            dColor='var(--queda)'; dClasse='piscante-vermelho';
-            dTexto='🛑 ROLAGEM OBRIGATÓRIA AGORA!';
-        } else if(dias !== null && dias <= 2){
-            dColor='#ff9900';
-            dTexto='⏰ VENCENDO EM BREVE — DECIDIR AGORA';
-        } else if(zonaAtiva===4){
-            dColor='var(--queda)';
-            dTexto='📢 PREPARAR ROLAGEM';
-        } else if(zonaAtiva===3){
-            dColor='#f1c40f';
-            dTexto='⚠️ ALERTA: MONITORANDO STRIKE';
-       } else if(zonaAtiva<=2 && desv!==null && desv>=limVerde){
+            dTexto='💰 Meta atingida com tempo. Faça o giro: recompre e lance nova Call.';
+        } else if(desv!==null && desv>=metaD){
+            dColor='#00bcd4'; dClasse='piscante-azul';
+            dTexto='💰 Meta atingida no fim. Pode segurar (mais prêmio) ou encerrar agora.';
+        } else if(desv!==null && desv>=limVerde && dias!==null && dias>=7){
             dColor='#00e676';
-            dTexto='🎯 CONSIDERAR ENCERRAR — Prêmio muito alto';
-        } else if(zonaAtiva<=2 && desv!==null && desv>=limAmarelo){
+            dTexto='🎯 Quase lá. Avalie encerrar e girar a posição.';
+        } else if(isGuerra && desv!==null && desv<0){
+            dColor='var(--queda)'; dClasse='piscante-vermelho';
+            dTexto='🛑 Pressão forte. Considere rolagem imediata.';
+        } else if(zonaAtiva>=5 && desv!==null && desv<0 && dias!==null && dias<=2){
+            dColor='var(--queda)'; dClasse='piscante-vermelho';
+            dTexto='⏰ Risco iminente. Recompra ou rolagem urgente.';
+        } else if(zonaAtiva===4 && dias!==null && dias>7){
+            dColor='#ff9900';
+            dTexto='📢 Prepare rolagem. Ainda há tempo para ajustar.';
+        } else if(zonaAtiva===3 && dias!==null && dias>7){
             dColor='#f1c40f';
-            dTexto='⏳ POSIÇÃO CONFORTÁVEL — Aguardar meta';
+            dTexto='⚠️ Monitorando. Sem ação imediata, manter atenção.';
+        } else if(zonaAtiva<=2 && dias!==null && dias<=7){
+            dColor='#aaa';
+            dTexto='⏳ Fase final. Verifique se a ordem limitada está ativa.';
+        } else if(zonaAtiva<=2){
+            dColor='var(--alta)';
+            dTexto='💠 Rumo ao pó. Seguro. Deixe a ordem limitada atuar.';
         } else {
             dColor='var(--alta)';
-            dTexto='✅ OTM: AGUARDAR DESVALORIZAÇÃO';
+            dTexto='✅ OTM: Aguardando desvalorização.';
         }
         secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div></div>`;
     }
