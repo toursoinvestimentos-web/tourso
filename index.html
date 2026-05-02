@@ -1278,7 +1278,7 @@ function atualizarMonitor() {
         // v3.0: valor-alvo de recompra
         const alvoRecompra = prem > 0 ? parseFloat((prem * (1 - meta / 100)).toFixed(2)) : null;
         const recompraLinha = alvoRecompra !== null
-            ? `<div style="font-size:0.75em;color:#00bcd4;margin-top:5px;">🎯 Recompra: R$\u00a0${alvoRecompra.toFixed(2).replace('.',',')}</div>`
+            ? `<div style="font-size:0.75em;color:#00bcd4;margin-top:5px;">🎯 Ordem limitada: R$\u00a0${alvoRecompra.toFixed(2).replace('.',',')}</div>`
             : '';
 
         if(desv===null){
@@ -1289,7 +1289,8 @@ function atualizarMonitor() {
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor='#e05252'; pBarW=risco;
             pLinha1='🔺 Risco — Opção subindo';
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima) · Se fechar agora: -${fmt((cotacaoOpcao - prem) * qtd)}`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima)<br>
+            Se fechar agora: prejuízo de ${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}`;
         } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 Meta batida';
