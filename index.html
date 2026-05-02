@@ -1289,7 +1289,7 @@ function atualizarMonitor() {
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor='#e05252'; pBarW=risco;
             pLinha1='🔺 Risco — Opção subindo';
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima do recebido)`;
+            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima) · Se fechar agora: -${fmt((cotacaoOpcao - prem) * qtd)}`;
         } else if(desv>=meta){
             pColor='#00bcd4'; pBarW=100;
             pLinha1='💰 Meta batida';
