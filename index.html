@@ -856,9 +856,9 @@ function atualizarCardCall() {
                 escudoMM          = parseFloat((escudoMM - escudoUsado).toFixed(2));
                 liqMes            = parseFloat((brutomes - darf).toFixed(2));
             }
-            // Base = preço da ação × quantidade no último ciclo do mês
-            const ultimoCiclo  = ciclosMes[ciclosMes.length - 1];
-            const valorPosicao = (ultimoCiclo?.precoAcao||0) * (ultimoCiclo?.quantidade||0);
+           // Base = preço da ação × quantidade no primeiro ciclo do mês
+            const primeiroCiclo  = ciclosMes[0];
+            const valorPosicao = (primeiroCiclo?.precoAcao||0) * (primeiroCiclo?.quantidade||0);
             if (valorPosicao > 0) {
                 somaRent += (liqMes / valorPosicao) * 100;
                 mesesValidos++;
