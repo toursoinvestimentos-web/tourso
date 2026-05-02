@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_vCALL 3.2</title>
+    <title>TOURSO_vCALL 3.3</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -184,8 +184,8 @@
             <div class="call-item-val" id="call-tempo-medio">—</div>
         </div>
         <div class="call-item">
-            <div class="call-item-label">🛡️ Escudo fiscal</div>
-            <div class="call-item-val" id="call-escudo" style="color:var(--alta);">R$ 0,00</div>
+            <div class="call-item-label">📅 Média mensal</div>
+            <div class="call-item-val" id="call-media-mensal">—</div>
         </div>
     </div>
     <div class="call-status-row">
@@ -479,11 +479,11 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     // v2.7: título atualizado no manifest
-    const mf = { name:"TOURSO_vCALL 3.2", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_vCALL 3.3", short_name:"vCALL", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v3.2';
+    const sw = `const CACHE='tourso-v3.3';
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));
   self.skipWaiting();
@@ -835,7 +835,47 @@ function atualizarCardCall() {
     document.getElementById('call-total-op').innerText  = r.totalOps;
     document.getElementById('call-media-op').innerText  = r.totalOps > 0 ? fmt(resLiq / r.totalOps) : 'R$ 0,00';
     document.getElementById('call-media-otm').innerText = r.totalOps > 0 ? fmtP(r.somaOtm / r.totalOps) : '—';
-    document.getElementById('call-escudo').innerText    = fmt(r.escudoFiscal);
+
+    // v3.4: Média mensal em % — líquido do mês ÷ valor da posição no fechamento do último ciclo
+    const mmEl = document.getElementById('call-media-mensal');
+    const mesesUnicos = [...new Set(ops.historico.map(c => (c.dataFechamento||'').slice(0,7)).filter(Boolean))].sort();
+    if (mesesUnicos.length > 0) {
+        // Recalcula DARF/escudo mês a mês igual ao histórico (opção A — líquido real)
+        let escudoMM = 0, somaRent = 0, mesesValidos = 0;
+        for (const mes of mesesUnicos) {
+            const ciclosMes = ops.historico.filter(c => (c.dataFechamento||'').startsWith(mes));
+            const brutomes   = ciclosMes.reduce((s,c) => s + (c.resultadoBruto||0), 0);
+            let liqMes;
+            if (brutomes <= 0) {
+                escudoMM += Math.abs(brutomes);
+                liqMes = brutomes;
+            } else {
+                const escudoUsado = Math.min(escudoMM, brutomes);
+                const baseTribt   = parseFloat((brutomes - escudoUsado).toFixed(2));
+                const darf        = parseFloat((baseTribt * 0.15).toFixed(2));
+                escudoMM          = parseFloat((escudoMM - escudoUsado).toFixed(2));
+                liqMes            = parseFloat((brutomes - darf).toFixed(2));
+            }
+            // Base = preço da ação × quantidade no último ciclo do mês
+            const ultimoCiclo  = ciclosMes[ciclosMes.length - 1];
+            const valorPosicao = (ultimoCiclo?.precoAcao||0) * (ultimoCiclo?.quantidade||0);
+            if (valorPosicao > 0) {
+                somaRent += (liqMes / valorPosicao) * 100;
+                mesesValidos++;
+            }
+        }
+        if (mesesValidos > 0) {
+            const mediaMensal = somaRent / mesesValidos;
+            mmEl.innerText = mediaMensal.toFixed(2).replace('.',',') + '%';
+            mmEl.style.color = mediaMensal >= 0 ? 'var(--alta)' : 'var(--queda)';
+        } else {
+            mmEl.innerText = '—';
+            mmEl.style.color = 'var(--branco)';
+        }
+    } else {
+        mmEl.innerText = '—';
+        mmEl.style.color = 'var(--branco)';
+    }
 
     // v3.0: Tempo médio em dias úteis
     const tmEl = document.getElementById('call-tempo-medio');
