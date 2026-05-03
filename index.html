@@ -1258,7 +1258,7 @@ for (let i = 0; i < 6; i++) {
 
     if (i === 1) {
         segHtml += `<div style="width:4px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
-            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.65em;color:#ccc;margin-top:3px;text-align:center;">
+            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;text-align:center;">
                 Entrada R$ ${entrada.toFixed(2).replace('.',',')}
             </span>
         </div>`;
@@ -1266,7 +1266,7 @@ for (let i = 0; i < 6; i++) {
 
     if (i === 4) {
         segHtml += `<div style="width:4px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
-            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.65em;color:#ccc;margin-top:3px;text-align:center;">
+            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;text-align:center;">
                 Strike R$ ${strike.toFixed(2).replace('.',',')}
             </span>
         </div>`;
@@ -1278,7 +1278,7 @@ for (let i = 0; i < 6; i++) {
 const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
 const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
 const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 18px;">${segHtml}</div>`
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
     
     
