@@ -1246,16 +1246,33 @@ function atualizarMonitor() {
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-    const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
-    let segHtml = '';
-    for (let i = 0; i < 6; i++) {
-        const ativo = (i + 1 === zonaAtiva);
-        const op    = ativo ? '1' : '0.18';
-        const bolinha = ativo
-            ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
-            : '';
-        segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+   const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
+let segHtml = '';
+for (let i = 0; i < 6; i++) {
+    const ativo = (i + 1 === zonaAtiva);
+    const op    = ativo ? '1' : '0.18';
+    const bolinha = ativo
+        ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
+        : '';
+    segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+
+    if (i === 1) {
+        segHtml += `<div style="width:4px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
+            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.65em;color:#ccc;margin-top:3px;text-align:center;">
+                Entrada R$ ${entrada.toFixed(2).replace('.',',')}
+            </span>
+        </div>`;
     }
+
+    if (i === 4) {
+        segHtml += `<div style="width:4px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
+            <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.65em;color:#ccc;margin-top:3px;text-align:center;">
+                Strike R$ ${strike.toFixed(2).replace('.',',')}
+            </span>
+        </div>`;
+    }
+}
+    
     
   // Barra do Strike
 const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
