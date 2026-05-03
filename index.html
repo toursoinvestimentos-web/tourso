@@ -1256,15 +1256,15 @@ function atualizarMonitor() {
             : '';
         segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
     }
-    // v3.0: Entrada e Strike centralizados
-    const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-    const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
-    const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-        + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
-        + `<div style="text-align:center;font-size:0.72em;color:#fff;margin-bottom:10px;letter-spacing:0.02em;">${entradaLbl} &nbsp;|&nbsp; ${strikeLbl}</div>`
-        + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
-
-    // Monitor de Prêmio — v3.0 com linha de Recompra
+    
+  // Barra do Strike
+const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 4px;">${segHtml}</div>`
+    + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
+    
+    
     let secaoPremio='';
     if(prem>0){
         const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
