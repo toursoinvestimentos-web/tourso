@@ -1292,7 +1292,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
         const premioTotal = prem * qtd;
         const metaValor = premioTotal * (metaPct / 100);
 
-        const linhaMeta = `<div style="font-size:0.88em;color:#aaa;margin-top:0px;margin-bottom:0px;">Prêmio: ${fmt(premioTotal)} · Meta: ${fmt(metaValor)}</div>`;
+        const linhaMeta = `<div style="font-size:0.88em;color:#aaa;margin-top:3px;margin-bottom:3px;">Prêmio: ${fmt(premioTotal)} · Meta: ${fmt(metaValor)}</div>`;
 
         if (desv === null) {
             pColor = '#555'; pBarW = 0;
@@ -1303,12 +1303,12 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             pColor = '#e05252'; pBarW = risco;
             pLinha1 = '🔺 Risco — Opção subindo';
             pLinha1 += `<br>${linhaMeta}`;
-            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:#ff6b6b;">-${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span>`;
+            pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:#ff6b6b;">-${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span></div>`;
         } else if (desv >= metaPct) {
             pColor = '#00bcd4'; pBarW = 100;
             pLinha1 = '💰 Meta batida';
             pLinha1 += `<br>${linhaMeta}`;
-            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
+            pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span></div>`;
         } else {
             if (desv >= metaPct * 0.85) {
                 pColor = '#00e676'; pBarW = (desv / metaPct) * 100;
@@ -1321,7 +1321,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
                 pLinha1 = '⏸️ Aguardando';
             }
             pLinha1 += `<br>${linhaMeta}`;
-            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
+            pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span></div>`;
         }
 
         secaoPremio = `<div class="monitor-sep">── Monitor de Prêmio ──</div>`
