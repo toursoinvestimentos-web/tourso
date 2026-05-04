@@ -1297,11 +1297,11 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor = '#e05252'; pBarW = risco;
             pLinha1 = '🔺 Risco — Opção subindo';
-            pLinha1 += `<br><span style="font-size:0.78em;color:#ff6b6b;">Se fechar agora: prejuízo de ${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span>`;
+            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:#ff6b6b;">-${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span>`;
         } else if (desv >= meta) {
             pColor = '#00bcd4'; pBarW = 100;
             pLinha1 = '💰 Meta batida';
-            pLinha1 += `<br><span style="font-size:0.78em;color:var(--alta);">Se fechar agora: +${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
+            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         } else {
             if (desv >= meta * 0.85) {
                 pColor = '#00e676'; pBarW = (desv / meta) * 100;
