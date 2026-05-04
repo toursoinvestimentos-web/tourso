@@ -1223,7 +1223,7 @@ function atualizarMonitor() {
     } else if (preco >= zonaMonitorPrice) {
         zonaAtiva = 4; entrandoZonaAlerta = true;
         sColor  = '#ff9900';
-        sLinha1 = `🟡 ATM · Preparar: ${distStr} abaixo do Strike`;
+        sLinha1 = `🟡 ATM · Aproximação: ${distStr} abaixo do Strike`;
         sLinha2 = 'Entrando na zona de atenção.';
     } else if (entrada > 0 && preco >= entrada) {
         zonaAtiva = 3;
@@ -1318,7 +1318,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
                 pLinha1 = '⏳ Ganho em andamento';
             } else {
                 pColor = '#777'; pBarW = (desv / metaPct) * 100;
-                pLinha1 = '⏸️ Neutro';
+                pLinha1 = '⏸️ Estável';
             }
             pLinha1 += `<br>${linhaMeta}`;
             pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span></div>`;
@@ -1387,12 +1387,12 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             dAcao='Recomprar ou rolar agora';
         } else if(zonaAtiva===4 && dias!==null && dias>7){
             dColor='#ff9900';
-            dTitulo='📢 Chegando no strike';
+            dTitulo='📢 Aproximação do strike';
             dContexto='Preço se aproximando da zona de risco';
             dAcao='Preparar rolagem';
         } else if(zonaAtiva===3 && dias!==null && dias>7){
             dColor='#f1c40f';
-            dTitulo='⚠️ Subindo contra';
+            dTitulo='⚠️ Subindo contra a posição';
             dContexto='Preço acima da entrada';
             dAcao='Monitorar';
         } else if(zonaAtiva<=2 && dias!==null && dias<=7){
