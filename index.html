@@ -1313,7 +1313,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
                 pColor = '#777'; pBarW = (desv / meta) * 100;
                 pLinha1 = `⏸️ Aguardando — ${desvStr}`;
             }
-            pLinha1 += `<br><span style="font-size:0.78em;color:var(--alta);">Se fechar agora: +${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
+                pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         }
 
         secaoPremio = `<div class="monitor-sep">── Monitor de Prêmio ──</div>`
