@@ -1246,12 +1246,11 @@ function atualizarMonitor() {
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-   const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
+      const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
 let segHtml = '';
 for (let i = 0; i < 6; i++) {
     const ativo = (i + 1 === zonaAtiva);
     const op    = ativo ? '1' : '0.18';
-    
     // Segmento sem bolinha interna
     segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;"></div>`;
 
@@ -1271,16 +1270,18 @@ for (let i = 0; i < 6; i++) {
         </div>`;
     }
 }
-    
-    
-  // Barra do Strike
-     const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-     const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
-     const bolinhaPosicao = `<div style="position:absolute;top:50%;left:${posPreco}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${sColor};border:2px solid #fff;box-shadow:0 0 6px ${sColor};z-index:3;"></div>`;
-     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
+
+// Posição percentual do preço na barra (cálculo que estava faltando)
+const posPreco = preco > 0
+    ? Math.max(0, Math.min(100, ((preco - strike) / (strike * 0.10)) * (100 / 6) + (100 / 6) * 2))
+    : (entrada > 0 ? ((entrada - strike) / (strike * 0.10)) * (100 / 6) + (100 / 6) * 2 : 25);
+
+// Bolinha deslizante com a cor da zona ativa
+const bolinhaPosicao = `<div style="position:absolute;top:50%;left:${posPreco}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${sColor};border:2px solid #fff;box-shadow:0 0 6px ${sColor};z-index:3;"></div>`;
+
+const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
     + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 25px;position:relative;">${segHtml}${bolinhaPosicao}</div>`
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
-    
             // Monitor de Prêmio
     let secaoPremio = '';
     if (prem > 0) {
