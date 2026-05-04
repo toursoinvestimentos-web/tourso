@@ -1243,21 +1243,22 @@ function atualizarMonitor() {
     }
 
     dispararAlerta(entrandoZonaAlerta, isGuerra);
-    document.body.classList.toggle('guerra', isGuerra);
+    document.body.classList.remove('guerra'); // pisca-pisca removido: só a borda do monitor fica vermelha
     card.style.borderLeftColor = sColor;
 
    const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
 let segHtml = '';
 
-// Posição fluída da bolinha: cada segmento ocupa 1/6 da barra visualmente.
-// Mapeamos o preço real para uma posição proporcional dentro do segmento correto.
+// Posição fluída da bolinha: cada segmento = 1/6 da barra visual.
+// Segmento 5 usa 3× a largura do seg 4 para a bolinha não correr para o final.
+const _w4 = strike - zonaAcaoPrice;
 const segBounds = [
-    [2 * precoAzul - entrada,          precoAzul      ],  // seg 0: ciano
-    [precoAzul,                         entrada        ],  // seg 1: verde  → gap Entrada
-    [entrada,                           zonaMonitorPrice], // seg 2: amarelo
-    [zonaMonitorPrice,                  zonaAcaoPrice  ],  // seg 3: laranja
-    [zonaAcaoPrice,                     strike         ],  // seg 4: vermelho → gap Strike
-    [strike,  strike + (strike - zonaAcaoPrice)        ]   // seg 5: vermelho escuro
+    [2 * precoAzul - entrada,   precoAzul         ],
+    [precoAzul,                  entrada            ],
+    [entrada,                    zonaMonitorPrice   ],
+    [zonaMonitorPrice,           zonaAcaoPrice      ],
+    [zonaAcaoPrice,              strike             ],
+    [strike,                     strike + (_w4 * 3) ]
 ];
 let bolinhaLeft = 0;
 if (preco !== null && preco > 0) {
@@ -1272,6 +1273,8 @@ if (preco !== null && preco > 0) {
     }
 }
 const bolinhaColor = segCores[zonaAtiva - 1] || '#aaa';
+// Bolinha pisca quando preço ultrapassa o strike
+const bolinhaAnim  = zonaAtiva === 6 ? 'animation:piscarVermelho 0.6s infinite;' : '';
 
 for (let i = 0; i < 6; i++) {
     const ativo = (i + 1 === zonaAtiva);
@@ -1294,8 +1297,8 @@ for (let i = 0; i < 6; i++) {
         </div>`;
     }
 }
-// Bolinha absolutamente posicionada: acompanha o preço de forma fluída
-segHtml += `<div style="position:absolute;top:50%;left:${bolinhaLeft.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bolinhaColor};border:2px solid #fff;box-shadow:0 0 6px ${bolinhaColor};z-index:10;pointer-events:none;transition:left 0.4s ease;"></div>`;
+// Bolinha absolutamente posicionada — fluída e proporcional ao preço real
+segHtml += `<div style="position:absolute;top:50%;left:${bolinhaLeft.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bolinhaColor};border:2px solid #fff;box-shadow:0 0 6px ${bolinhaColor};z-index:10;pointer-events:none;transition:left 0.4s ease;${bolinhaAnim}"></div>`;
     
     
   // Barra do Strike
