@@ -1228,7 +1228,7 @@ function atualizarMonitor() {
     } else if (entrada > 0 && preco >= entrada) {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
-        sLinha1 = `🔵 Atenção: ${distStr} abaixo do Strike`;
+        sLinha1 = `🔵 Zona intermediária: ${distStr} abaixo do Strike`;
         sLinha2 = 'Acima da entrada. Monitorar com frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
         zonaAtiva = 2;
@@ -1306,7 +1306,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:#ff6b6b;">-${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span></div>`;
         } else if (desv >= metaPct) {
             pColor = '#00bcd4'; pBarW = 100;
-            pLinha1 = '💰 Meta batida';
+            pLinha1 = '💰 Meta atingida';
             pLinha1 += `<br>${linhaMeta}`;
             pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span></div>`;
         } else {
@@ -1315,10 +1315,10 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
                 pLinha1 = '✅ Quase lá';
             } else if (desv >= metaPct * 0.70) {
                 pColor = '#f1c40f'; pBarW = (desv / metaPct) * 100;
-                pLinha1 = '⏳ Evoluindo';
+                pLinha1 = '⏳ Ganho em andamento';
             } else {
                 pColor = '#777'; pBarW = (desv / metaPct) * 100;
-                pLinha1 = '⏸️ Aguardando';
+                pLinha1 = '⏸️ Neutro';
             }
             pLinha1 += `<br>${linhaMeta}`;
             pLinha1 += `<div style="margin-top:3px;"><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span></div>`;
@@ -1387,7 +1387,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             dAcao='Recomprar ou rolar agora';
         } else if(zonaAtiva===4 && dias!==null && dias>7){
             dColor='#ff9900';
-            dTitulo='📢 Atenção ao strike';
+            dTitulo='📢 Chegando no strike';
             dContexto='Preço se aproximando da zona de risco';
             dAcao='Preparar rolagem';
         } else if(zonaAtiva===3 && dias!==null && dias>7){
@@ -1402,7 +1402,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             dAcao='Conferir ordem limitada no book';
         } else if(zonaAtiva<=2){
             dColor='var(--alta)';
-            dTitulo='💠 Rumo ao pó';
+            dTitulo='💠 Fluxo favorável';
             dContexto='Opção desvalorizando com segurança';
             dAcao='Manter estratégia';
         } else {
