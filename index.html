@@ -1251,10 +1251,9 @@ let segHtml = '';
 for (let i = 0; i < 6; i++) {
     const ativo = (i + 1 === zonaAtiva);
     const op    = ativo ? '1' : '0.18';
-    const bolinha = ativo
-        ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${segCores[i]};border:2px solid #fff;box-shadow:0 0 6px ${segCores[i]};"></div>`
-        : '';
-    segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
+    
+    // Segmento sem bolinha interna
+    segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;"></div>`;
 
     if (i === 1) {
         segHtml += `<div style="width:2px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
@@ -1275,12 +1274,12 @@ for (let i = 0; i < 6; i++) {
     
     
   // Barra do Strike
-const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
-const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
-const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 25px;">${segHtml}</div>`
+     const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+     const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
+     const bolinhaPosicao = `<div style="position:absolute;top:50%;left:${posPreco}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${sColor};border:2px solid #fff;box-shadow:0 0 6px ${sColor};z-index:3;"></div>`;
+     const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 25px;position:relative;">${segHtml}${bolinhaPosicao}</div>`
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
-    
     
             // Monitor de Prêmio
     let secaoPremio = '';
