@@ -1257,7 +1257,7 @@ for (let i = 0; i < 6; i++) {
     segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;">${bolinha}</div>`;
 
     if (i === 1) {
-        segHtml += `<div style="width:3px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
+        segHtml += `<div style="width:2px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
             <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.85em;color:#ccc;margin-top:3px;text-align:center;">
                 Entrada R$ ${entrada.toFixed(2).replace('.',',')}
             </span>
@@ -1265,7 +1265,7 @@ for (let i = 0; i < 6; i++) {
     }
 
     if (i === 4) {
-        segHtml += `<div style="width:2px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
+        segHtml += `<div style="width:3px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
             <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.85em;color:#ccc;margin-top:3px;text-align:center;">
                 Strike R$ ${strike.toFixed(2).replace('.',',')}
             </span>
