@@ -1228,8 +1228,8 @@ function atualizarMonitor() {
     } else if (entrada > 0 && preco >= entrada) {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
-        sLinha1 = `🔵 Zona intermediária: ${distStr} abaixo do Strike`;
-        sLinha2 = 'Acima da entrada. Monitorar com frequência.';
+        sLinha1 = `🔵 Acima da entrada: ${distStr} abaixo do Strike`;
+        sLinha2 = 'Preço ainda distante do strike.';
     } else if (entrada > 0 && preco > precoAzul) {
         zonaAtiva = 2;
         sColor  = '#00e676';
@@ -1388,7 +1388,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
         } else if(zonaAtiva===4 && dias!==null && dias>7){
             dColor='#ff9900';
             dTitulo='📢 Aproximação do strike';
-            dContexto='Preço se aproximando da zona de risco';
+            dContexto='Preço se aproximando do strike';
             dAcao='Preparar rolagem';
         } else if(zonaAtiva===3 && dias!==null && dias>7){
             dColor='#f1c40f';
