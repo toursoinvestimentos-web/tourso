@@ -1282,38 +1282,46 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
     
     
-      // Monitor de Prêmio
+            // Monitor de Prêmio
     let secaoPremio = '';
     if (prem > 0) {
-        const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
+        const metaPct = zonas.metaSaida || dados.setup.metaSaida || 70;
         let desv = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
         let pColor, pLinha1, pBarW = 0;
         const desvStr = desv !== null ? desv.toFixed(2).replace('.', ',') + '%' : '—';
+        const premioTotal = prem * qtd;
+        const metaValor = premioTotal * (metaPct / 100);
+
+        const linhaMeta = `<div style="font-size:0.88em;color:#aaa;margin-top:0px;margin-bottom:0px;">Prêmio: ${fmt(premioTotal)} · Meta: ${fmt(metaValor)}</div>`;
 
         if (desv === null) {
             pColor = '#555'; pBarW = 0;
             pLinha1 = '⏳ Buscando cotação da opção';
+            pLinha1 += `<br>${linhaMeta}`;
         } else if (desv < 0) {
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
             pColor = '#e05252'; pBarW = risco;
             pLinha1 = '🔺 Risco — Opção subindo';
+            pLinha1 += `<br>${linhaMeta}`;
             pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:#ff6b6b;">-${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span>`;
-        } else if (desv >= meta) {
+        } else if (desv >= metaPct) {
             pColor = '#00bcd4'; pBarW = 100;
             pLinha1 = '💰 Meta batida';
+            pLinha1 += `<br>${linhaMeta}`;
             pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         } else {
-            if (desv >= meta * 0.85) {
-                pColor = '#00e676'; pBarW = (desv / meta) * 100;
-                pLinha1 = `✅ Quase lá — ${desvStr}`;
-            } else if (desv >= meta * 0.70) {
-                pColor = '#f1c40f'; pBarW = (desv / meta) * 100;
-                pLinha1 = `⏳ Evoluindo — ${desvStr}`;
+            if (desv >= metaPct * 0.85) {
+                pColor = '#00e676'; pBarW = (desv / metaPct) * 100;
+                pLinha1 = '✅ Quase lá';
+            } else if (desv >= metaPct * 0.70) {
+                pColor = '#f1c40f'; pBarW = (desv / metaPct) * 100;
+                pLinha1 = '⏳ Evoluindo';
             } else {
-                pColor = '#777'; pBarW = (desv / meta) * 100;
-                pLinha1 = `⏸️ Aguardando — ${desvStr}`;
+                pColor = '#777'; pBarW = (desv / metaPct) * 100;
+                pLinha1 = '⏸️ Aguardando';
             }
-                pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
+            pLinha1 += `<br>${linhaMeta}`;
+            pLinha1 += `<br><span style="font-size:0.88em;color:#aaa;">Se fechar agora: </span><span style="font-size:0.88em;color:var(--alta);">+${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         }
 
         secaoPremio = `<div class="monitor-sep">── Monitor de Prêmio ──</div>`
