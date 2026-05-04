@@ -1282,59 +1282,48 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
     
     
-    let secaoPremio='';
-    if(prem>0){
+      // Monitor de Prêmio
+    let secaoPremio = '';
+    if (prem > 0) {
         const meta = zonas.metaSaida || dados.setup.metaSaida || 70;
-        let desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
-        let pColor,pLinha1,pLinha2,pBarW=0;
-        const desvStr=desv!==null?desv.toFixed(2).replace('.',',')+' %':'—';
+        let desv = cotacaoOpcao !== null ? ((prem - cotacaoOpcao) / prem) * 100 : null;
+        let pColor, pLinha1, pBarW = 0;
+        const desvStr = desv !== null ? desv.toFixed(2).replace('.', ',') + '%' : '—';
 
-        const limVerde   = meta * 0.85;
-        const limAmarelo = meta * 0.70;
-
-        // v3.0: valor-alvo de recompra
-        const alvoRecompra = prem > 0 ? parseFloat((prem * (1 - meta / 100)).toFixed(2)) : null;
-        const recompraLinha = alvoRecompra !== null
-            ? `<div style="font-size:0.75em;color:#00bcd4;margin-top:5px;">🎯 Ordem limitada: R$\u00a0${alvoRecompra.toFixed(2).replace('.',',')}</div>`
-            : '';
-
-        if(desv===null){
-            pColor='#555'; pBarW=0;
-            pLinha1='⏳ Buscando cotação da opção';
-            pLinha2=`Prêmio recebido: ${fmt(prem)}/ação`;
-        } else if(desv<0){
+        if (desv === null) {
+            pColor = '#555'; pBarW = 0;
+            pLinha1 = '⏳ Buscando cotação da opção';
+        } else if (desv < 0) {
             const risco = Math.min(Math.abs(desv) / 30 * 100, 100);
-            pColor='#e05252'; pBarW=risco;
-            pLinha1='🔺 Risco — Opção subindo';
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} (${Math.abs(desv).toFixed(2).replace('.',',')}% acima)<br>
-            Se fechar agora: prejuízo de ${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}`;
-        } else if(desv>=meta){
-            pColor='#00bcd4'; pBarW=100;
-            pLinha1='💰 Meta batida';
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Encerrar garante: +${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=limVerde){
-            pColor='#00e676'; pBarW=(desv/meta)*100;
-            pLinha1=`✅ Quase lá — ${desvStr}`;
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
-        } else if(desv>=limAmarelo){
-            pColor='#f1c40f'; pBarW=(desv/meta)*100;
-            pLinha1=`⏳ Evoluindo — ${desvStr}`;
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
+            pColor = '#e05252'; pBarW = risco;
+            pLinha1 = '🔺 Risco — Opção subindo';
+            pLinha1 += `<br><span style="font-size:0.78em;color:#ff6b6b;">Se fechar agora: prejuízo de ${fmt(Math.abs((cotacaoOpcao - prem) * qtd))}</span>`;
+        } else if (desv >= meta) {
+            pColor = '#00bcd4'; pBarW = 100;
+            pLinha1 = '💰 Meta batida';
+            pLinha1 += `<br><span style="font-size:0.78em;color:var(--alta);">Se fechar agora: +${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         } else {
-            pColor='#777'; pBarW=(desv/meta)*100;
-            pLinha1=`⏸️ Aguardando — ${desvStr}`;
-            pLinha2=`Prêmio atual: ${fmt(cotacaoOpcao)} · Se fechar agora: +${fmt((prem-cotacaoOpcao)*qtd)}`;
+            if (desv >= meta * 0.85) {
+                pColor = '#00e676'; pBarW = (desv / meta) * 100;
+                pLinha1 = `✅ Quase lá — ${desvStr}`;
+            } else if (desv >= meta * 0.70) {
+                pColor = '#f1c40f'; pBarW = (desv / meta) * 100;
+                pLinha1 = `⏳ Evoluindo — ${desvStr}`;
+            } else {
+                pColor = '#777'; pBarW = (desv / meta) * 100;
+                pLinha1 = `⏸️ Aguardando — ${desvStr}`;
+            }
+            pLinha1 += `<br><span style="font-size:0.78em;color:var(--alta);">Se fechar agora: +${fmt((prem - cotacaoOpcao) * qtd)}</span>`;
         }
-        secaoPremio=`<div class="monitor-sep">── Monitor de Prêmio ──</div>`
-            +`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
-            +`<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
-            +`<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW,0).toFixed(1)}%;transition:width 0.6s;"></div>`
-            +`</div><span style="font-size:1.5em;font-weight:bold;color:${pColor};min-width:60px;text-align:right;">${desvStr}</span></div>`
-            +`<div class="obs-box" style="border-left:3px solid ${pColor};">`
-            +`<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
-            +`<div style="font-size:0.75em;color:#aaa;margin-top:3px;">${pLinha2}</div>`
-            +recompraLinha
-            +`</div>`;
+
+        secaoPremio = `<div class="monitor-sep">── Monitor de Prêmio ──</div>`
+            + `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">`
+            + `<div style="flex:1;background:#1a1c1f;border-radius:8px;height:13px;overflow:hidden;">`
+            + `<div style="height:100%;border-radius:8px;background:${pColor};width:${Math.max(pBarW, 0).toFixed(1)}%;transition:width 0.6s;"></div>`
+            + `</div><span style="font-size:1.5em;font-weight:bold;color:${pColor};min-width:60px;text-align:right;">${desvStr}</span></div>`
+            + `<div class="obs-box" style="border-left:3px solid ${pColor};">`
+            + `<div style="font-size:0.83em;font-weight:bold;color:${pColor};">${pLinha1}</div>`
+            + `</div>`;
     }
 
    // ── Decisão Estratégica ──
