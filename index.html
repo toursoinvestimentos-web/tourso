@@ -1246,13 +1246,37 @@ function atualizarMonitor() {
     document.body.classList.toggle('guerra', isGuerra);
     card.style.borderLeftColor = sColor;
 
-      const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
+   const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
 let segHtml = '';
+
+// Posição fluída da bolinha: cada segmento ocupa 1/6 da barra visualmente.
+// Mapeamos o preço real para uma posição proporcional dentro do segmento correto.
+const segBounds = [
+    [2 * precoAzul - entrada,          precoAzul      ],  // seg 0: ciano
+    [precoAzul,                         entrada        ],  // seg 1: verde  → gap Entrada
+    [entrada,                           zonaMonitorPrice], // seg 2: amarelo
+    [zonaMonitorPrice,                  zonaAcaoPrice  ],  // seg 3: laranja
+    [zonaAcaoPrice,                     strike         ],  // seg 4: vermelho → gap Strike
+    [strike,  strike + (strike - zonaAcaoPrice)        ]   // seg 5: vermelho escuro
+];
+let bolinhaLeft = 0;
+if (preco !== null && preco > 0) {
+    for (let s = 0; s < 6; s++) {
+        const [lo, hi] = segBounds[s];
+        if (preco <= hi || s === 5) {
+            const range    = hi - lo;
+            const fraction = range > 0 ? Math.max(0, Math.min(1, (preco - lo) / range)) : 0;
+            bolinhaLeft    = ((s + fraction) / 6) * 100;
+            break;
+        }
+    }
+}
+const bolinhaColor = segCores[zonaAtiva - 1] || '#aaa';
+
 for (let i = 0; i < 6; i++) {
     const ativo = (i + 1 === zonaAtiva);
     const op    = ativo ? '1' : '0.18';
-    // Segmento sem bolinha interna
-    segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};position:relative;transition:opacity 0.5s;"></div>`;
+    segHtml += `<div style="flex:1;height:14px;background:${segCores[i]};opacity:${op};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};transition:opacity 0.5s;"></div>`;
 
     if (i === 1) {
         segHtml += `<div style="width:2px;height:14px;background:#ffffff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;">
@@ -1270,18 +1294,18 @@ for (let i = 0; i < 6; i++) {
         </div>`;
     }
 }
-
-// Posição percentual do preço na barra (cálculo que estava faltando)
-const posPreco = preco > 0
-    ? Math.max(0, Math.min(100, ((preco - strike) / (strike * 0.10)) * (100 / 6) + (100 / 6) * 2))
-    : (entrada > 0 ? ((entrada - strike) / (strike * 0.10)) * (100 / 6) + (100 / 6) * 2 : 25);
-
-// Bolinha deslizante com a cor da zona ativa
-const bolinhaPosicao = `<div style="position:absolute;top:50%;left:${posPreco}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${sColor};border:2px solid #fff;box-shadow:0 0 6px ${sColor};z-index:3;"></div>`;
-
+// Bolinha absolutamente posicionada: acompanha o preço de forma fluída
+segHtml += `<div style="position:absolute;top:50%;left:${bolinhaLeft.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bolinhaColor};border:2px solid #fff;box-shadow:0 0 6px ${bolinhaColor};z-index:10;pointer-events:none;transition:left 0.4s ease;"></div>`;
+    
+    
+  // Barra do Strike
+const entradaLbl = `Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}`;
+const strikeLbl  = `Strike R$\u00a0${strike.toFixed(2).replace('.',',')}`;
 const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 25px;position:relative;">${segHtml}${bolinhaPosicao}</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 25px;position:relative;">${segHtml}</div>`
     + `<div class="obs-box" style="border-left:3px solid ${sColor};"><div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div><div style="font-size:0.75em;color:#aaa;margin-top:3px;">${sLinha2}</div></div>`;
+    
+    
             // Monitor de Prêmio
     let secaoPremio = '';
     if (prem > 0) {
