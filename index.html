@@ -1213,32 +1213,32 @@ function atualizarMonitor() {
     if (preco >= strike) {
         zonaAtiva = 6; isGuerra = true; entrandoZonaAlerta = true;
         sColor  = '#c0392b';
-        sLinha1 = `🔴 ITM — ${acimaStr} acima do Strike`;
+        sLinha1 = `🔴 ITM: ${acimaStr} acima do Strike`;
         sLinha2 = 'Dentro do dinheiro. Alto risco de exercício.';
     } else if (preco >= zonaAcaoPrice) {
         zonaAtiva = 5; isGuerra = true; entrandoZonaAlerta = true;
         sColor  = '#e05252';
-        sLinha1 = `🟠 ATM · Risco — ${distStr} abaixo do Strike`;
+        sLinha1 = `🟠 ATM · Risco: ${distStr} abaixo do Strike`;
         sLinha2 = 'Muito próximo do strike. Atenção total.';
     } else if (preco >= zonaMonitorPrice) {
         zonaAtiva = 4; entrandoZonaAlerta = true;
         sColor  = '#ff9900';
-        sLinha1 = `🟡 ATM · Preparar — ${distStr} abaixo do Strike`;
+        sLinha1 = `🟡 ATM · Preparar: ${distStr} abaixo do Strike`;
         sLinha2 = 'Entrando na zona de atenção.';
     } else if (entrada > 0 && preco >= entrada) {
         zonaAtiva = 3;
         sColor  = '#f1c40f';
-        sLinha1 = `🔵 Atenção — ${distStr} abaixo do Strike`;
+        sLinha1 = `🔵 Atenção: ${distStr} abaixo do Strike`;
         sLinha2 = 'Acima da entrada. Monitorar com frequência.';
     } else if (entrada > 0 && preco > precoAzul) {
         zonaAtiva = 2;
         sColor  = '#00e676';
-        sLinha1 = `🟢 OTM — ${distStr} abaixo do Strike`;
+        sLinha1 = `🟢 OTM: ${distStr} abaixo do Strike`;
         sLinha2 = 'Posição confortável, sem risco imediato.';
     } else {
         zonaAtiva = 1;
         sColor  = '#00bcd4';
-        sLinha1 = `💠 Rumo ao pó — ${distStr} abaixo do Strike`;
+        sLinha1 = `💠 Rumo ao pó: ${distStr} abaixo do Strike`;
         sLinha2 = 'Segurança máxima. Opção derretendo.';
     }
 
