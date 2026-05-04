@@ -1334,7 +1334,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
             + `</div>`;
     }
 
-   // ── Decisão Estratégica ──
+     // ── Decisão Estratégica ──
     let secaoDecisao='';
     if(prem>0){
         const metaD = zonas.metaSaida || dados.setup.metaSaida || 70;
@@ -1342,7 +1342,7 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
         const limAmarelo = metaD * 0.70;
         const desv=cotacaoOpcao!==null?((prem-cotacaoOpcao)/prem)*100:null;
         const alvoRecompraD = prem > 0 ? parseFloat((prem * (1 - metaD / 100)).toFixed(2)) : null;
-        let dColor, dTexto, dClasse='';
+        let dColor, dTitulo, dContexto, dAcao, dClasse='';
 
         // Operação recém-aberta (hoje ou ontem)
         const op = ops.operacaoAtual;
@@ -1352,42 +1352,66 @@ const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</d
 
         if (cotacaoAcao === null || cotacaoAcao <= 0) {
             dColor='#555';
-            dTexto='⏳ Aguardando dados. Sem decisão possível.';
+            dTitulo='⏳ Sem cotação';
+            dContexto='Aguardando preço da ação para análise';
+            dAcao='Aguardar atualização';
         } else if (recenteAberta && alvoRecompraD !== null) {
             dColor='#00bcd4';
-            dTexto=`🎯 Ordem limitada: coloque recompra em R$\u00a0${alvoRecompraD.toFixed(2).replace('.',',')} para garantir a meta.`;
+            dTitulo='🎯 Ordem pendente';
+            dContexto=`Defina recompra em R$\u00a0${alvoRecompraD.toFixed(2).replace('.',',')} para garantir a meta`;
+            dAcao='Inserir ordem limitada no book';
         } else if(desv!==null && desv>=metaD && dias!==null && dias>=7){
             dColor='#00bcd4'; dClasse='piscante-azul';
-            dTexto='💰 Meta atingida com tempo. Faça o giro: recompre e lance nova Call.';
+            dTitulo='💰 Meta antecipada';
+            dContexto='Meta atingida com folga de tempo';
+            dAcao='Fazer giro: recomprar e lançar nova call';
         } else if(desv!==null && desv>=metaD){
             dColor='#00bcd4'; dClasse='piscante-azul';
-            dTexto='💰 Meta atingida no fim. Pode segurar (mais prêmio) ou encerrar agora.';
+            dTitulo='💰 Meta perto do vencimento';
+            dContexto='Meta atingida próximo ao vencimento';
+            dAcao='Segurar ou encerrar';
         } else if(desv!==null && desv>=limVerde && dias!==null && dias>=7){
             dColor='#00e676';
-            dTexto='🎯 Quase lá. Avalie encerrar e girar a posição.';
+            dTitulo='🎯 Quase na meta';
+            dContexto='Próximo do objetivo de lucro';
+            dAcao='Avaliar saída antecipada';
         } else if(isGuerra && desv!==null && desv<0){
             dColor='var(--queda)'; dClasse='piscante-vermelho';
-            dTexto='🛑 Pressão forte. Considere rolagem imediata.';
+            dTitulo='🛑 Pressão no strike';
+            dContexto='Ação próxima ou acima do strike';
+            dAcao='Rolar imediatamente';
         } else if(zonaAtiva>=5 && desv!==null && desv<0 && dias!==null && dias<=2){
             dColor='var(--queda)'; dClasse='piscante-vermelho';
-            dTexto='⏰ Risco iminente. Recompra ou rolagem urgente.';
+            dTitulo='⏰ Risco de exercício';
+            dContexto='Prazo curto e opção pressionada';
+            dAcao='Recomprar ou rolar agora';
         } else if(zonaAtiva===4 && dias!==null && dias>7){
             dColor='#ff9900';
-            dTexto='📢 Prepare rolagem. Ainda há tempo para ajustar.';
+            dTitulo='📢 Atenção ao strike';
+            dContexto='Preço se aproximando da zona de risco';
+            dAcao='Preparar rolagem';
         } else if(zonaAtiva===3 && dias!==null && dias>7){
             dColor='#f1c40f';
-            dTexto='⚠️ Monitorando. Sem ação imediata, manter atenção.';
+            dTitulo='⚠️ Subindo contra';
+            dContexto='Preço acima da entrada';
+            dAcao='Monitorar';
         } else if(zonaAtiva<=2 && dias!==null && dias<=7){
             dColor='#aaa';
-            dTexto='⏳ Fase final. Verifique se a ordem limitada está ativa.';
+            dTitulo='⏳ Vencimento próximo';
+            dContexto='Operação na fase final';
+            dAcao='Conferir ordem limitada no book';
         } else if(zonaAtiva<=2){
             dColor='var(--alta)';
-            dTexto='💠 Rumo ao pó. Seguro. Deixe a ordem limitada atuar.';
+            dTitulo='💠 Rumo ao pó';
+            dContexto='Opção desvalorizando com segurança';
+            dAcao='Manter estratégia';
         } else {
             dColor='var(--alta)';
-            dTexto='✅ OTM: Aguardando desvalorização.';
+            dTitulo='✅ Posição tranquila';
+            dContexto='Abaixo do strike, sem pressão';
+            dAcao='Aguardar desvalorização';
         }
-        secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTexto}</div></div>`;
+        secaoDecisao=`<div class="monitor-sep">── Decisão Estratégica ──</div><div class="obs-box ${dClasse}" style="border-left:3px solid ${dColor};text-align:center;"><div style="font-size:0.95em;font-weight:bold;color:${dColor};">${dTitulo}</div><div style="font-size:0.80em;color:#aaa;margin-top:3px;">${dContexto}</div><div style="font-size:0.80em;color:#aaa;margin-top:3px;">${dAcao}</div></div>`;
     }
 
     if (prem > 0 && cotacaoOpcao !== null) {
