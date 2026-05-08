@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_v5.1</title>
+    <title>TOURSO_v5.2</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -96,7 +96,7 @@
 <body>
 
 <div id="banner-install">
-    <span>📲 Instalar TOURSO_v5.1 como app</span>
+    <span>📲 Instalar TOURSO_v5.2 como app</span>
     <button onclick="instalarApp()">INSTALAR</button>
 </div>
 
@@ -170,8 +170,10 @@
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="pilar-label">Posição BBAS3</div>
     </div>
-    <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--ciano); margin:5px 0;">R$ 0,00</div>
-    <div id="rent-tag" style="font-weight:bold; font-size:0.9em; color:var(--alta);">0,00%</div>
+    <div style="display:flex; align-items:baseline; gap:10px; margin:5px 0;">
+        <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--ciano);">R$ 0,00</div>
+        <div id="rent-tag" style="font-weight:bold; font-size:0.9em; color:var(--alta);">0,00%</div>
+    </div>
     <div style="display:flex; justify-content:space-between; font-size:0.9em; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
         <span>Ações: <b id="qtd-total">0</b></span>
         <span>PM: <b id="pm-oficial">R$ 0,00</b></span>
@@ -207,9 +209,9 @@
             <div class="call-item-label">📅 Média mensal</div>
             <div class="call-item-val" id="call-media-mensal" style="font-size:0.85em;">—</div>
         </div>
-        <div class="call-item" style="background:rgba(0,230,118,0.07); border:1px solid rgba(0,230,118,0.2);">
-            <div class="call-item-label" style="display:flex; align-items:center; gap:4px;">🛡️ Escudo fiscal</div>
-            <div class="call-item-val" id="escudo-total-val" style="font-size:0.85em; color:var(--alta);">R$ 0,00</div>
+        <div class="call-item">
+            <div class="call-item-label">🛡️ Escudo fiscal</div>
+            <div class="call-item-val" id="escudo-total-val" style="font-size:0.85em;">R$ 0,00</div>
         </div>
     </div>
     <!-- Status CALL -->
@@ -226,7 +228,7 @@
 
 <!-- ═══ CARD 6: CONTA INVESTIMENTO ═══ -->
 <div class="card" style="border-left-color:var(--alta);">
-    <div class="pilar-label">Conta Investimento</div>
+    <div class="pilar-label">Caixa Operacional</div>
     <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
     <div style="border-top:1px dashed #444; margin:8px 0; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:0.75em; color:#aaa;">🔒 Reserva B3</span>
@@ -308,16 +310,6 @@
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
         <h3>⚙️ Configurações</h3>
-        <div class="modal-campo">
-            <label>Zona de Monitoramento — Call (%)</label>
-            <input type="number" inputmode="decimal" id="zona-monitor" step="0.1" min="0.1" max="10" placeholder="Ex: 1.0">
-            <small>Alerta quando a ação estiver a esta distância % do strike.</small>
-        </div>
-        <div class="modal-campo">
-            <label>Zona de Ação — Call (%)</label>
-            <input type="number" inputmode="decimal" id="zona-acao" step="0.1" min="0.1" max="10" placeholder="Ex: 0.5">
-            <small>Alerta crítico — preparar rolagem imediatamente.</small>
-        </div>
         <div class="modal-campo">
             <label>Meta de Saída da Operação — Call (%)</label>
             <input type="number" inputmode="numeric" id="zona-meta-saida" placeholder="Ex: 65" min="1" max="100" value="65">
@@ -491,11 +483,11 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_v5.1", short_name:"v5.1", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_v5.2", short_name:"v5.2", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v5.1';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
+    const sw = `const CACHE='tourso-v5.2';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 let deferredPrompt = null;
@@ -512,13 +504,11 @@ const CHAVE_ZONAS = 'dados_zonas_v26';
 const HIST_KEYS   = { troco:'hist_troco', aportes:'hist_aportes' };
 
 let zonas = (() => {
-    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { monitor:1.0, acao:0.5, metaSaida:65, reservaB3PorLote:50 }; }
-    catch(e) { return { monitor:1.0, acao:0.5, metaSaida:65, reservaB3PorLote:50 }; }
+    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { metaSaida:65, reservaB3PorLote:50 }; }
+    catch(e) { return { metaSaida:65, reservaB3PorLote:50 }; }
 })();
 if (!zonas.metaSaida)        zonas.metaSaida = 65;
 if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
-if (!zonas.monitor)          zonas.monitor = 1.0;
-if (!zonas.acao)             zonas.acao = 0.5;
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
@@ -626,8 +616,6 @@ function limparTudo() {
 // Configurações
 // ═══════════════════════════════════════════
 function abrirConfigZonas() {
-    document.getElementById('zona-monitor').value    = zonas.monitor;
-    document.getElementById('zona-acao').value       = zonas.acao;
     document.getElementById('zona-meta-saida').value = zonas.metaSaida || 65;
     document.getElementById('zona-reserva-b3').value = zonas.reservaB3PorLote || 50;
     atualizarHintMetaZona();
@@ -648,15 +636,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (msi) msi.addEventListener('input', atualizarHintMetaZona);
 });
 function salvarConfigZonas() {
-    const m  = parseFloat(document.getElementById('zona-monitor').value);
-    const a  = parseFloat(document.getElementById('zona-acao').value);
     const ms = parseInt(document.getElementById('zona-meta-saida').value);
     const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
-    if (isNaN(m)||isNaN(a)||m<=0||a<=0) { alert('Informe valores válidos maiores que zero.'); return; }
-    if (a >= m) { alert('A Zona de Ação deve ser menor que a Zona de Monitoramento.'); return; }
     if (isNaN(ms)||ms<=0||ms>100) { alert('Meta de Saída deve ser entre 1 e 100%.'); return; }
     if (isNaN(rb)||rb<0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
-    zonas = { monitor:m, acao:a, metaSaida:ms, reservaB3PorLote:rb };
+    zonas = { metaSaida:ms, reservaB3PorLote:rb };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
     dados.setup.metaSaida = ms;
     salvar(); fecharConfigZonas(); atualizarTela();
@@ -985,10 +969,12 @@ function atualizarMonitorCall() {
         card.style.borderLeftColor = '#444'; return;
     }
 
-    const zonaMonitorP = strike * (1 - zonas.monitor / 100);
-    const zonaAcaoP    = strike * (1 - zonas.acao    / 100);
-    const gap          = entrada > 0 ? (strike - entrada) : 0;
-    const precoAzul    = entrada > 0 ? (entrada - gap) : -Infinity;
+    const gap       = entrada > 0 ? (strike - entrada) : 0;
+    const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
+    // Divide o gap em 3 terços iguais para as zonas amarelo/laranja/vermelho claro
+    const t1 = entrada + gap / 3;        // entrada → t1: amarelo
+    const t2 = entrada + 2 * gap / 3;   // t1 → t2: laranja
+    // t2 → strike: vermelho claro
 
     let sColor, sLinha1, zonaAtiva=0, isGuerra=false, entAlerta=false;
     const distStrikePct = ((strike/preco) - 1) * 100;
@@ -999,10 +985,10 @@ function atualizarMonitorCall() {
     if (preco >= strike) {
         zonaAtiva=6; isGuerra=true; entAlerta=true; sColor='#c0392b';
         sLinha1=`🔴 ITM · ${acimaStr} acima do Strike`;
-    } else if (preco >= zonaAcaoP) {
+    } else if (preco >= t2) {
         zonaAtiva=5; isGuerra=true; entAlerta=true; sColor='#e05252';
         sLinha1=`🟠 Aproximação · ${distStr} abaixo do Strike`;
-    } else if (preco >= zonaMonitorP) {
+    } else if (preco >= t1) {
         zonaAtiva=4; entAlerta=true; sColor='#ff9900';
         sLinha1=`🟡 Monitorando · ${distStr} abaixo do Strike`;
     } else if (entrada > 0 && preco >= entrada) {
@@ -1019,12 +1005,12 @@ function atualizarMonitorCall() {
     dispararAlerta(entAlerta, isGuerra);
     card.style.borderLeftColor = sColor;
 
-    // Barra segmentada CALL
+    // Barra segmentada CALL — 6 segmentos baseados no gap/3
     const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
-    const _w4 = strike - zonaAcaoP;
+    const _overshoot = gap / 3;
     const segBounds = [
-        [2*precoAzul-entrada, precoAzul], [precoAzul, entrada], [entrada, zonaMonitorP],
-        [zonaMonitorP, zonaAcaoP], [zonaAcaoP, strike], [strike, strike+(_w4*3)]
+        [2*precoAzul-entrada, precoAzul], [precoAzul, entrada], [entrada, t1],
+        [t1, t2], [t2, strike], [strike, strike+_overshoot*3]
     ];
     let bolinhaLeft = 0;
     for (let si=0; si<6; si++) {
@@ -1114,38 +1100,63 @@ function atualizarMonitorPut() {
         card.style.borderLeftColor = '#f39c12'; return;
     }
 
-    // PUT: barra invertida — vermelho (strike, esquerda) → azul (direita = segurança)
-    const zonaMonitorP = strike * (1 + zonas.monitor / 100);
-    const zonaAcaoP    = strike * (1 + zonas.acao    / 100);
-    const gap          = Math.abs(entrada - strike);
-    const precoAzul    = entrada + gap;
+    // PUT v5.2 — azul (esquerda=rumo exercício) → vermelho (direita=pó)
+    // gap = entrada - strike (entrada > strike para put OTM)
+    const gapPut  = entrada - strike;          // positivo
+    const t1put   = strike - gapPut / 3;       // 1/3 abaixo do strike (azul extremo)
+    const t2put   = strike - gapPut * 2 / 3;  // 2/3 abaixo do strike (não usado, t1put > t2put seria negativo se muito longe)
+    // Corrige: t1put = strike - gap/3, t2put vai para cima: entrada - gap/3*2
+    // Faixas (esquerda→direita = azul→vermelho):
+    // Seg1 azul:    preco <= strike - gap/3        → Rumo ao exercício
+    // Seg2 verde:   strike - gap/3 < preco <= strike → Zona de exercício
+    // Seg3 amarelo: strike < preco <= strike + gap/3 → Exercício próximo
+    // Seg4 laranja: strike + gap/3 < preco <= strike + 2*gap/3 → Exercício distante
+    // Seg5 verm cl: strike + 2*gap/3 < preco <= entrada       → Rumo ao pó
+    // Seg6 verm esc: preco > entrada                           → Pó praticamente certo
+    const p1 = strike - gapPut / 3;
+    const p2 = strike;
+    const p3 = strike + gapPut / 3;
+    const p4 = strike + 2 * gapPut / 3;
+    // p5 = entrada
 
     let sColorPut, sLinha1Put, zonaAtivaPut = 0;
-    const distStrike   = ((preco - strike) / strike * 100);
-    const distAbs      = Math.abs(distStrike).toFixed(1).replace('.',',') + '%';
+    const distStrikeAbs = Math.abs(((preco - strike) / strike) * 100).toFixed(1).replace('.',',') + '%';
+    const abaixoStr = (((strike - preco) / strike) * 100).toFixed(1).replace('.',',') + '%';
+    const acimaStr2 = (((preco - strike) / strike) * 100).toFixed(1).replace('.',',') + '%';
 
-    if (preco < strike) {
-        zonaAtivaPut=1; sColorPut='#c0392b'; sLinha1Put=`🔴 ITM · ${distAbs} abaixo do Strike`;
-    } else if (preco < zonaAcaoP) {
-        zonaAtivaPut=2; sColorPut='#e05252'; sLinha1Put=`🟠 Aproximação · ${distAbs} acima do Strike`;
-    } else if (preco < zonaMonitorP) {
-        zonaAtivaPut=3; sColorPut='#ff9900'; sLinha1Put=`🟡 Monitorando · ${distAbs} acima do Strike`;
-    } else if (preco < entrada) {
-        zonaAtivaPut=4; sColorPut='#f1c40f'; sLinha1Put=`🟢 Abaixo da entrada · ${distAbs} acima do Strike`;
-    } else if (preco < precoAzul) {
-        zonaAtivaPut=5; sColorPut='#00e676'; sLinha1Put=`🟢 Acima da entrada · ${distAbs} acima do Strike`;
+    if (preco <= p1) {
+        zonaAtivaPut=1; sColorPut='#00bcd4';
+        sLinha1Put=`🔵 Rumo ao exercício · ${abaixoStr} abaixo do Strike`;
+    } else if (preco <= p2) {
+        zonaAtivaPut=2; sColorPut='#00e676';
+        sLinha1Put=`🟢 Zona de exercício · ${abaixoStr} abaixo do Strike`;
+    } else if (preco <= p3) {
+        zonaAtivaPut=3; sColorPut='#f1c40f';
+        sLinha1Put=`🟡 Exercício próximo · ${acimaStr2} acima do Strike`;
+    } else if (preco <= p4) {
+        zonaAtivaPut=4; sColorPut='#ff9900';
+        sLinha1Put=`🟠 Exercício distante · ${acimaStr2} acima do Strike`;
+    } else if (preco <= entrada) {
+        zonaAtivaPut=5; sColorPut='#e05252';
+        sLinha1Put=`🔴 Rumo ao pó · ${acimaStr2} acima do Strike`;
     } else {
-        zonaAtivaPut=6; sColorPut='#00bcd4'; sLinha1Put=`🔵 Rumo ao pó · ${distAbs} acima do Strike`;
+        zonaAtivaPut=6; sColorPut='#c0392b';
+        sLinha1Put=`🔴 Pó praticamente certo · ${acimaStr2} acima do Strike`;
     }
 
     card.style.borderLeftColor = sColorPut;
 
-    // Barra invertida (vermelho→azul)
-    const segCoresPut = ['#c0392b','#e05252','#ff9900','#f1c40f','#00e676','#00bcd4'];
-    const _w4p = zonaAcaoP - strike;
+    // Barra PUT v5.2 — azul→vermelho (esquerda=exercício, direita=pó)
+    // Marcas: Strike entre seg2 e seg3 (vermelho), Entrada entre seg5 e seg6 (branco)
+    const segCoresPut = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
+    const _overshootPut = gapPut / 3;
     const segBoundsPut = [
-        [strike-(_w4p*3), strike], [strike, zonaAcaoP], [zonaAcaoP, zonaMonitorP],
-        [zonaMonitorP, entrada], [entrada, precoAzul], [precoAzul, precoAzul+gap*2]
+        [p1 - _overshootPut*3, p1],   // seg1 azul
+        [p1, p2],                      // seg2 verde (até strike)
+        [p2, p3],                      // seg3 amarelo
+        [p3, p4],                      // seg4 laranja
+        [p4, entrada],                 // seg5 verm claro
+        [entrada, entrada+_overshootPut*3] // seg6 verm escuro
     ];
     let bolinhaLP = 0;
     for (let si=0; si<6; si++) {
@@ -1157,8 +1168,10 @@ function atualizarMonitorPut() {
     for (let i=0; i<6; i++) {
         const ativo=(i+1===zonaAtivaPut);
         segHtmlP+=`<div style="flex:1;height:14px;background:${segCoresPut[i]};opacity:${ativo?'1':'0.18'};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};transition:opacity 0.5s;"></div>`;
-        if (i===0) segHtmlP+=`<div style="width:3px;height:14px;background:#c0392b;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Strike R$\u00a0${strike.toFixed(2).replace('.',',')}</span></div>`;
-        if (i===3) segHtmlP+=`<div style="width:2px;height:14px;background:#fff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}</span></div>`;
+        // Strike: entre seg2 e seg3 (i===1)
+        if (i===1) segHtmlP+=`<div style="width:3px;height:14px;background:#c0392b;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Strike R$\u00a0${strike.toFixed(2).replace('.',',')}</span></div>`;
+        // Entrada: entre seg5 e seg6 (i===4)
+        if (i===4) segHtmlP+=`<div style="width:2px;height:14px;background:#fff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}</span></div>`;
     }
     segHtmlP+=`<div style="position:absolute;top:50%;left:${bolinhaLP.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bColorP};border:2px solid #fff;box-shadow:0 0 6px ${bColorP};z-index:10;pointer-events:none;transition:left 0.4s ease;"></div>`;
 
@@ -1449,7 +1462,7 @@ function abrirCompra() {
 function exportar() {
     const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v51_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v52_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function importar(input) {
     const r=new FileReader();
@@ -1468,7 +1481,7 @@ function importar(input) {
             }
             if(payload.histTroco){salvarHistorico('troco',payload.histTroco);delete payload.histTroco;}
             if(payload.histAportes){salvarHistorico('aportes',payload.histAportes);delete payload.histAportes;}
-            if(payload.zonasConfig){zonas=payload.zonasConfig;if(!zonas.metaSaida)zonas.metaSaida=65;if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));delete payload.zonasConfig;}
+            if(payload.zonasConfig){zonas=payload.zonasConfig;if(!zonas.metaSaida)zonas.metaSaida=65;if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;delete zonas.monitor;delete zonas.acao;localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));delete payload.zonasConfig;}
             dados=payload;
             if(!dados.troco)dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)dados.aportes={cofre:0,transferido:0};
