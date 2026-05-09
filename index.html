@@ -1484,29 +1484,39 @@ function confirmarAcao() {
 // Tela principal
 // ═══════════════════════════════════════════
 function atualizarTela() {
-    const q=dados.acoes.reduce((a,x)=>a+x.qtd,0);
-    const c=dados.acoes.reduce((a,x)=>a+(x.qtd*x.preco),0);
-    const pm=q>0?c/q:0;
-    const val=(cotacaoAcao!==null&&q>0)?parseFloat((q*cotacaoAcao).toFixed(2)):0;
-    const rent=(pm>0&&cotacaoAcao!==null)?((cotacaoAcao-pm)/pm)*100:0;
-    document.getElementById('total-acoes-valor').innerText = val>0?fmt(val):'R$ 0,00';
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const c = dados.acoes.reduce((a, x) => a + (x.qtd * x.preco), 0);
+    const pm = q > 0 ? c / q : 0;
+    const val = (cotacaoAcao !== null && q > 0) ? parseFloat((q * cotacaoAcao).toFixed(2)) : 0;
+    const rent = (pm > 0 && cotacaoAcao !== null) ? ((cotacaoAcao - pm) / pm) * 100 : 0;
+
+    document.getElementById('total-acoes-valor').innerText = val > 0 ? fmt(val) : 'R$ 0,00';
     document.getElementById('qtd-total').innerText = q;
     document.getElementById('pm-oficial').innerText = fmt(pm);
     document.getElementById('rent-tag').innerText = fmtP(rent);
-    document.getElementById('rent-tag').style.color = rent>=0?'var(--alta)':'var(--queda)';
-    document.getElementById('saldo-caixa').innerText = fmt(dados.caixaDisponivel);
+    document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-    const rb=zonas.reservaB3PorLote||0, lotes=Math.floor(q/100);
-    const rbTotal=parseFloat((lotes*rb).toFixed(2));
-    document.getElementById('reserva-b3-valor').innerText=`- ${fmt(rbTotal)}`;
-    const ctp=(cotacaoAcao!==null&&cotacaoAcao>0)?cotacaoAcao:1;
-    const saldoDisp=Math.max(0,dados.caixaDisponivel-rbTotal);
-    document.getElementById('pode-comprar').innerHTML=`<span style="color:#ccc;">Pode comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp/ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+    // Reserva B3
+    const rb = zonas.reservaB3PorLote || 0;
+    const lotes = Math.floor(q / 100);
+    const rbTotal = parseFloat((lotes * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
 
-    document.getElementById('troco-cofre').innerText=fmt(dados.troco.cofre);
-    document.getElementById('troco-transferido').innerText=fmt(dados.troco.transferido);
-    document.getElementById('aportes-cofre').innerText=fmt(dados.aportes.cofre);
-    document.getElementById('aportes-transferido').innerText=fmt(dados.aportes.transferido);
+    // Caixa agora exibe o saldo líquido (já descontada a reserva)
+    document.getElementById('saldo-caixa').innerText = fmt(saldoDisp);
+
+    // Reserva B3 permanece apenas como informação
+    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
+
+    // Pode comprar com base no saldo líquido
+    const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
+    document.getElementById('pode-comprar').innerHTML =
+        `<span style="color:#ccc;">Pode comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+
+    document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
+    document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
+    document.getElementById('aportes-cofre').innerText = fmt(dados.aportes.cofre);
+    document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
 
     atualizarHeader();
     atualizarMonitorCall();
