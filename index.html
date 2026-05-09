@@ -821,9 +821,18 @@ function acaoBotaoCall() { if (ops.operacaoAtual?.aberta) { abrirFinOp(); } else
 
 function abrirNovaOp() {
     document.getElementById('nop-data').value   = hoje();
-    ['nop-preco','nop-strike','nop-qtd','nop-premio','nop-venc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('nop-preco').value = '';
+    document.getElementById('nop-strike').value = '';
+    document.getElementById('nop-qtd').value = '';
+    document.getElementById('nop-premio').value = '';
+    document.getElementById('nop-venc').value = '';
     document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
-    document.getElementById('nop-hint').innerText = '';
+
+    // pré‑preenche com o máximo de ações disponíveis na carteira
+    const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
+    document.getElementById('nop-qtd').value = totalAcoes;
+    document.getElementById('nop-hint').innerText = `Máximo disponível: ${totalAcoes} ações (sua posição atual).`;
+
     document.getElementById('modal-nova-op').classList.add('ativo');
 }
 function fecharNovaOp() { document.getElementById('modal-nova-op').classList.remove('ativo'); }
@@ -840,6 +849,14 @@ function confirmarNovaOp() {
           premio=toNum(document.getElementById('nop-premio').value), venc=document.getElementById('nop-venc').value,
           codigo=document.getElementById('nop-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
+
+    // trava se quantidade > ações disponíveis
+    const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
+    if (qtd > totalAcoes) {
+        alert(`Você possui apenas ${totalAcoes} ações BBAS3. Ajuste a quantidade.`);
+        return;
+    }
+
     const otm = ((strike-preco)/preco)*100;
     ops.operacaoAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, otm, codigoOpcao:codigo };
     dados.setup = { ...dados.setup, precoEntrada:preco, strike, qtdAcoes:qtd, premioRecebido:premio, vencimento:venc, codigoOpcao:codigo, metaSaida:zonas.metaSaida };
@@ -914,8 +931,27 @@ function acaoBotaoPut() { if (ops.putAtual?.aberta) { abrirFinPut(); } else { ab
 
 function abrirNovaPut() {
     document.getElementById('nput-data').value = hoje();
-    ['nput-preco','nput-strike','nput-qtd','nput-premio','nput-venc','nput-codigo'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('nput-hint').innerText = '';
+    document.getElementById('nput-preco').value = '';
+    document.getElementById('nput-strike').value = '';
+    document.getElementById('nput-qtd').value = '';
+    document.getElementById('nput-premio').value = '';
+    document.getElementById('nput-venc').value = '';
+    document.getElementById('nput-codigo').value = '';
+
+    // calcula quantas ações o caixa consegue comprar com o saldo líquido
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const tesouro = dados.tesouroDireto || 0;
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - tesouro);
+    const cotacao = cotacaoAcao || 0;
+    const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
+
+    document.getElementById('nput-qtd').value = maxAcoes;
+    document.getElementById('nput-hint').innerText = cotacao > 0
+        ? `Com o saldo atual (${fmt(saldoDisp)}) você garante até ${maxAcoes} ações.`
+        : 'Cotação indisponível no momento.';
+
     document.getElementById('modal-nova-put').classList.add('ativo');
 }
 function fecharNovaPut() { document.getElementById('modal-nova-put').classList.remove('ativo'); }
@@ -932,6 +968,21 @@ function confirmarNovaPut() {
           premio=toNum(document.getElementById('nput-premio').value), venc=document.getElementById('nput-venc').value,
           codigo=document.getElementById('nput-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
+
+    // trava se o caixa não cobre a quantidade desejada
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const tesouro = dados.tesouroDireto || 0;
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - tesouro);
+    const cotacao = cotacaoAcao || 0;
+    const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
+
+    if (qtd > maxAcoes) {
+        alert(`Saldo insuficiente. Com ${fmt(saldoDisp)} você garante no máximo ${maxAcoes} ações BBAS3.`);
+        return;
+    }
+
     ops.putAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, codigoOpcao:codigo };
     fecharNovaPut(); salvarOp(); atualizarTela();
 }
