@@ -249,37 +249,43 @@
     <div class="pilar-label">Caixa Operacional</div>
     <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
 
+    <!-- linha fina após saldo -->
+    <div style="border-top:1px solid #3d3d3d; margin:6px 0;"></div>
+
     <!-- Reserva B3 -->
-    <div style="border-top:1px dashed #5a5a5a; margin:8px 0; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
         <span style="font-size:0.75em; color:#aaa;">🔒 Reserva B3</span>
         <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
     </div>
 
-    <!-- Separador fino -->
+    <!-- linha fina após Reserva B3 -->
     <div style="border-top:1px solid #3d3d3d; margin:6px 0;"></div>
 
-    <!-- Tesouro Direto -->
+    <!-- Tesouro Direto Investido -->
     <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
         <span style="font-size:0.75em; color:#aaa;">🔒 Tesouro Direto Investido</span>
         <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
     </div>
 
-    <!-- Comprar BBAS3 -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid #3d3d3d; padding-top:8px;">
-        <div id="comprar" style="font-size:0.85em;">Comprar +0 ações BBAS3</div>
-        <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
-    </div>
-
-    <!-- Comprar Tesouro -->
+    <!-- Comprar Tesouro (botão azul) -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
         <div id="comprar-tesouro" style="font-size:0.85em;">Comprar +0 fração Tesouro</div>
-        <button onclick="abrirCompraTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
+        <button onclick="abrirCompraTesouro()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
 
-    <!-- Resgatar Tesouro -->
+    <!-- Resgatar Tesouro (botão laranja) -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
         <div id="resgatar-tesouro" style="font-size:0.85em;">Resgatar +R$ 0,00 Tesouro</div>
         <button onclick="abrirResgateTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Resgate</button>
+    </div>
+
+    <!-- linha fina antes de Comprar BBAS3 -->
+    <div style="border-top:1px solid #3d3d3d; margin:6px 0;"></div>
+
+    <!-- Comprar BBAS3 (última linha) -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
+        <div id="comprar" style="font-size:0.85em;">Comprar +0 ações BBAS3</div>
+        <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
 </div>
 
