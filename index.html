@@ -1246,7 +1246,8 @@ function atualizarMonitorPut() {
         <div style="font-size:0.90em;font-weight:bold;color:${sColorPut};">${sLinha1Put}</div>
         <div style="font-size:0.85em;color:#aaa;margin-top:5px;">Prêmio: ${fmt(prem)}/ação &nbsp;•&nbsp; Total: ${fmt(premTotal)}</div>
     </div>`;
-
+    
+    el.style.textAlign = 'left';
     el.innerHTML = secaoStrikePut + notifPut;
 }
 
