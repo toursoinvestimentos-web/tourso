@@ -948,20 +948,22 @@ function abrirNovaPut() {
     document.getElementById('nput-venc').value = '';
     document.getElementById('nput-codigo').value = '';
 
-    // usa APENAS o valor já líquido do Caixa Operacional
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - (zonas.reservaB3PorLote||0) * Math.floor(dados.acoes.reduce((a, x) => a + x.qtd, 0) / 100));
+    // usa o saldo líquido real (caixa - reserva B3) – Tesouro já foi descontado do caixa
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
     const cotacao = cotacaoAcao || 0;
     const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
-    // arredonda para múltiplo de 100
     const maxAcoes = Math.floor(maxAcoesBruto / 100) * 100;
 
     document.getElementById('nput-qtd').value = maxAcoes;
 
-    // mensagem abaixo do campo de quantidade (small adjacente)
+    // mensagem abaixo do campo quantidade (small adjacente)
     const hintQtd = document.getElementById('nput-qtd').nextElementSibling;
     if (hintQtd) {
         hintQtd.innerText = cotacao > 0
-            ? `Com o saldo atual (${fmt(saldoDisp)}) você garante até ${maxAcoes} ações (${Math.floor(maxAcoes/100)} lote(s)).`
+            ? `Máximo disponível: ${maxAcoes} ações (${Math.floor(maxAcoes/100)} lote(s)).`
             : 'Cotação indisponível no momento.';
     }
 
@@ -989,8 +991,11 @@ function confirmarNovaPut() {
         return;
     }
 
-    // trava se o caixa não cobre a quantidade desejada (usa saldo líquido do Caixa)
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - (zonas.reservaB3PorLote||0) * Math.floor(dados.acoes.reduce((a, x) => a + x.qtd, 0) / 100));
+    // trava se o caixa não cobre a quantidade desejada (saldo líquido real)
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
     const cotacao = cotacaoAcao || 0;
     const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
 
