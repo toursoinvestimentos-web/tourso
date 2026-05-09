@@ -1059,9 +1059,9 @@ function atualizarMonitorCall() {
         dispararMeta(metaAtingida);
 
         notifHtml = `<div class="obs-box" style="border-left:3px solid ${sColor};">
-            <div style="font-size:0.83em;font-weight:bold;color:${sColor};">${sLinha1}</div>
-            <div style="font-size:0.80em;color:#aaa;margin-top:4px;">Prêmio: ${fmt(prem)}/ação</div>
-            <div style="font-size:0.80em;color:#aaa;margin-top:2px;">Total: ${fmt(premTotal)} • Meta: ${fmt(metaValor)}</div>
+            <div style="font-size:0.90em;font-weight:bold;color:${sColor};">${sLinha1}</div>
+            <div style="font-size:0.85em;color:#aaa;margin-top:4px;">Prêmio: ${fmt(prem)}/ação</div>
+            <div style="font-size:0.85em;color:#aaa;margin-top:2px;">Total: ${fmt(premTotal)} • Meta: ${fmt(metaValor)}</div>
             <div style="margin-top:5px;">${linhaResultado}</div>
         </div>`;
     } else {
@@ -1181,8 +1181,8 @@ function atualizarMonitorPut() {
     // Notificações PUT — 2 linhas apenas
     const premTotal = parseFloat((prem * qtd).toFixed(2));
     const notifPut = `<div class="obs-box" style="border-left:3px solid ${sColorPut};">
-        <div style="font-size:0.83em;font-weight:bold;color:${sColorPut};">${sLinha1Put}</div>
-        <div style="font-size:0.80em;color:#aaa;margin-top:5px;">Prêmio: ${fmt(prem)}/ação &nbsp;•&nbsp; Total: ${fmt(premTotal)}</div>
+        <div style="font-size:0.90em;font-weight:bold;color:${sColorPut};">${sLinha1Put}</div>
+        <div style="font-size:0.85em;color:#aaa;margin-top:5px;">Prêmio: ${fmt(prem)}/ação &nbsp;•&nbsp; Total: ${fmt(premTotal)}</div>
     </div>`;
 
     el.innerHTML = secaoDias + secaoStrikePut + notifPut;
