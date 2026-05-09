@@ -1646,23 +1646,22 @@ function atualizarTela() {
     document.getElementById('saldo-caixa').innerText = fmt(saldoDisp);
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
 
-    // ══ NOVO: Tesouro Direto ══
+    // Tesouro Direto (única definição)
     const tdVal = dados.tesouroDireto || 0;
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
-    // Comprar BBAS3 — usa saldoDisp
+    // Comprar BBAS3
     const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
-       // Comprar Tesouro — calcula frações pelo saldoDisp
+    // Comprar Tesouro
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
     document.getElementById('comprar-tesouro').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:#f39c12;">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
 
-    // Resgatar Tesouro — calcula valor que pode ser transformado em lotes de BBAS3
-    const tdVal = dados.tesouroDireto || 0;
+    // Resgatar Tesouro
     document.getElementById('resgatar-tesouro').innerHTML =
         `<span style="color:#ccc;">Resgatar</span> <span style="color:#f39c12;">${fmt(tdVal)}</span> <span style="color:#ccc;">Tesouro</span>`;
 
