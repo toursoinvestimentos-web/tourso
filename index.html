@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_v5.3</title>
+    <title>TOURSO_v5.4</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -96,7 +96,7 @@
 <body>
 
 <div id="banner-install">
-    <span>📲 Instalar TOURSO_v5.3 como app</span>
+    <span>📲 Instalar TOURSO_v5.4 como app</span>
     <button onclick="instalarApp()">INSTALAR</button>
 </div>
 
@@ -193,7 +193,6 @@
         <div class="pilar-label">Operações Call | Put</div>
         <span style="font-size:1.1em; cursor:pointer;" title="Ver histórico de ciclos" onclick="abrirExtratoCiclos()">📊</span>
     </div>
-    <!-- Grade 2x2 para métricas principais -->
     <div class="call-grid">
         <div class="call-item">
             <div class="call-item-label">Resultado Bruto</div>
@@ -211,7 +210,6 @@
             <div class="call-item-label">⏱️ Tempo médio</div>
             <div class="call-item-val" id="call-tempo-medio">—</div>
         </div>
-        <!-- Média Mensal e Escudo na mesma linha, menores -->
         <div class="call-item">
             <div class="call-item-label">📅 Média mensal</div>
             <div class="call-item-val" id="call-media-mensal" style="font-size:0.85em;">—</div>
@@ -221,12 +219,10 @@
             <div class="call-item-val" id="escudo-total-val" style="font-size:0.85em;">R$ 0,00</div>
         </div>
     </div>
-    <!-- Status CALL -->
     <div class="call-status-row" style="border-top:1px solid #333;">
         <span class="call-status-txt" id="call-status-txt">⚪ Sem call aberta</span>
         <button class="btn-call btn-call-nova" id="btn-call-acao" onclick="acaoBotaoCall()">Lançar Call</button>
     </div>
-    <!-- Status PUT -->
     <div class="call-status-row" style="margin-top:6px; padding-top:6px; border-top:1px solid #5a5a5a;">
         <span class="call-status-txt" id="put-status-txt">⚪ Sem put aberta</span>
         <button class="btn-call btn-call-nova" id="btn-put-acao" onclick="acaoBotaoPut()" style="background:#f39c12;">Lançar Put</button>
@@ -252,13 +248,32 @@
 <div class="card" style="border-left-color:var(--alta);">
     <div class="pilar-label">Caixa Operacional</div>
     <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
+
+    <!-- Reserva B3 -->
     <div style="border-top:1px dashed #5a5a5a; margin:8px 0; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:0.75em; color:#aaa;">🔒 Reserva B3</span>
         <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
     </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+
+    <!-- Separador fino -->
+    <div style="border-top:1px solid #3d3d3d; margin:6px 0;"></div>
+
+    <!-- Tesouro Direto -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
+        <span style="font-size:0.75em; color:#aaa;">🔒 Tesouro Direto</span>
+        <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+    </div>
+
+    <!-- Comprar BBAS3 -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid #3d3d3d; padding-top:8px;">
         <div id="comprar" style="font-size:0.85em;">Comprar +0 ações BBAS3</div>
         <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
+    </div>
+
+    <!-- Comprar Tesouro -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <div id="comprar-tesouro" style="font-size:0.85em;">Comprar +0 fração Tesouro</div>
+        <button onclick="abrirCompraTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
 </div>
 
@@ -328,7 +343,7 @@
     </div>
 </div>
 
-<!-- Modal Configurações (meta saída + reserva B3) -->
+<!-- Modal Configurações (meta saída + reserva B3 + fração Tesouro) -->
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
         <h3>⚙️ Configurações</h3>
@@ -341,6 +356,12 @@
             <label>Reserva B3 por Lote (R$)</label>
             <input type="number" inputmode="decimal" id="zona-reserva-b3" step="1" min="0" placeholder="Ex: 50">
             <small>Valor reservado a cada 100 ações em carteira.</small>
+        </div>
+        <!-- ══ NOVO: fração Tesouro ══ -->
+        <div class="modal-campo">
+            <label>Valor da Fração do Tesouro Direto (R$)</label>
+            <input type="number" inputmode="decimal" id="zona-fracao-tesouro" step="1" min="0" placeholder="Ex: 180">
+            <small>Quando o caixa atingir esse valor, será sugerida a compra de 1 fração.</small>
         </div>
         <div class="modal-btns">
             <button class="btn-cancelar" onclick="fecharConfigZonas()">Cancelar</button>
@@ -498,6 +519,26 @@
     </div>
 </div>
 
+<!-- ══ NOVO: Modal Comprar Tesouro Direto ══ -->
+<div class="modal-overlay" id="modal-compra-tesouro">
+    <div class="modal-box" style="border-top-color:#f39c12;">
+        <h3 style="color:#f39c12;">🏦 Comprar Tesouro Direto</h3>
+        <div id="tesouro-modal-info" style="background:rgba(243,156,18,0.08); border:1px solid #f39c12; border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no caixa</div>
+            <div id="tesouro-modal-saldo" style="font-size:1.3em; font-weight:bold; color:#f39c12;">R$ 0,00</div>
+        </div>
+        <div class="modal-campo">
+            <label>Valor investido (R$)</label>
+            <input type="text" inputmode="decimal" id="tesouro-valor-input" placeholder="Ex: 180,00">
+            <small>Esse valor será subtraído do caixa operacional e registrado como Tesouro Direto.</small>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharCompraTesouro()">Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#f39c12; color:var(--fundo); font-size:0.9em;" onclick="confirmarCompraTesouro()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════
 // PWA
@@ -505,11 +546,11 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_v5.3", short_name:"v5.3", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_v5.4", short_name:"v5.4", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v5.3';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
+    const sw = `const CACHE='tourso-v5.4';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 let deferredPrompt = null;
@@ -526,15 +567,17 @@ const CHAVE_ZONAS = 'dados_zonas_v26';
 const HIST_KEYS   = { troco:'hist_troco', aportes:'hist_aportes' };
 
 let zonas = (() => {
-    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { metaSaida:65, reservaB3PorLote:50 }; }
-    catch(e) { return { metaSaida:65, reservaB3PorLote:50 }; }
+    try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { metaSaida:65, reservaB3PorLote:50, valorFracaoTesouro:180 }; }
+    catch(e) { return { metaSaida:65, reservaB3PorLote:50, valorFracaoTesouro:180 }; }
 })();
-if (!zonas.metaSaida)        zonas.metaSaida = 65;
-if (!zonas.reservaB3PorLote) zonas.reservaB3PorLote = 50;
+if (!zonas.metaSaida)           zonas.metaSaida = 65;
+if (!zonas.reservaB3PorLote)    zonas.reservaB3PorLote = 50;
+if (!zonas.valorFracaoTesouro)  zonas.valorFracaoTesouro = 180; // ← NOVO
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
     troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
+    tesouroDireto:0, // ← NOVO
     setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0 }
 };
 const BASE_OP = {
@@ -549,9 +592,10 @@ let dados = (() => {
     if (saved) return JSON.parse(saved);
     return JSON.parse(JSON.stringify(BASE));
 })();
-if (!dados.setup)   dados.setup   = {...BASE.setup};
-if (!dados.troco)   dados.troco   = {cofre:0,transferido:0};
-if (!dados.aportes) dados.aportes = {cofre:0,transferido:0};
+if (!dados.setup)         dados.setup   = {...BASE.setup};
+if (!dados.troco)         dados.troco   = {cofre:0,transferido:0};
+if (!dados.aportes)       dados.aportes = {cofre:0,transferido:0};
+if (!dados.tesouroDireto) dados.tesouroDireto = 0; // ← NOVO
 
 let ops = (() => {
     try {
@@ -574,7 +618,6 @@ ops.historico.forEach(c => { if (!c.tipo) c.tipo = 'call'; });
 let cotacaoAcao  = null;
 let cotacaoOpcao = null;
 
-// Cache offline
 (function() {
     const ca = localStorage.getItem('cache_cot_acao');
     const co = localStorage.getItem('cache_cot_opcao');
@@ -638,8 +681,9 @@ function limparTudo() {
 // Configurações
 // ═══════════════════════════════════════════
 function abrirConfigZonas() {
-    document.getElementById('zona-meta-saida').value = zonas.metaSaida || 65;
-    document.getElementById('zona-reserva-b3').value = zonas.reservaB3PorLote || 50;
+    document.getElementById('zona-meta-saida').value      = zonas.metaSaida || 65;
+    document.getElementById('zona-reserva-b3').value      = zonas.reservaB3PorLote || 50;
+    document.getElementById('zona-fracao-tesouro').value  = zonas.valorFracaoTesouro || 180; // ← NOVO
     atualizarHintMetaZona();
     document.getElementById('modal-zonas').classList.add('ativo');
 }
@@ -660,12 +704,44 @@ document.addEventListener('DOMContentLoaded', () => {
 function salvarConfigZonas() {
     const ms = parseInt(document.getElementById('zona-meta-saida').value);
     const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
+    const ft = parseFloat(document.getElementById('zona-fracao-tesouro').value); // ← NOVO
     if (isNaN(ms)||ms<=0||ms>100) { alert('Meta de Saída deve ser entre 1 e 100%.'); return; }
     if (isNaN(rb)||rb<0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
-    zonas = { metaSaida:ms, reservaB3PorLote:rb };
+    if (isNaN(ft)||ft<0) { alert('Valor da fração do Tesouro deve ser zero ou maior.'); return; }
+    zonas = { metaSaida:ms, reservaB3PorLote:rb, valorFracaoTesouro:ft }; // ← NOVO campo
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
     dados.setup.metaSaida = ms;
     salvar(); fecharConfigZonas(); atualizarTela();
+}
+
+// ═══════════════════════════════════════════
+// ══ NOVO: Tesouro Direto ══
+// ═══════════════════════════════════════════
+function abrirCompraTesouro() {
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    document.getElementById('tesouro-modal-saldo').innerText = fmt(saldoDisp);
+    document.getElementById('tesouro-valor-input').value = '';
+    document.getElementById('modal-compra-tesouro').classList.add('ativo');
+}
+function fecharCompraTesouro() { document.getElementById('modal-compra-tesouro').classList.remove('ativo'); }
+function confirmarCompraTesouro() {
+    const val = toNum(document.getElementById('tesouro-valor-input').value);
+    if (!val || val <= 0) { fecharCompraTesouro(); return; }
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    if (val > saldoDisp + 0.001) {
+        alert(`Saldo insuficiente.\nDisponível: ${fmt(saldoDisp)}`);
+        return;
+    }
+    dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - val).toFixed(2));
+    dados.tesouroDireto   = parseFloat(((dados.tesouroDireto || 0) + val).toFixed(2));
+    fecharCompraTesouro();
+    atualizarTela();
 }
 
 // ═══════════════════════════════════════════
@@ -809,7 +885,6 @@ function confirmarFinOp() {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = tipo==='po' ? 'Virou pó' : 'Exercida';
         if (tipo==='exercida') {
-            // Libera escudo bloqueado (ações exercidas)
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel||0) + (ops.resumo.escudoBloqueado||0)).toFixed(2));
             ops.resumo.escudoBloqueado  = 0;
         }
@@ -883,7 +958,6 @@ function confirmarFinPut() {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
     } else if (tipo==='exercida') {
-        // prejuízo = (precoEntrada - strike) * qtd, descontando o prêmio recebido
         const prejBruto = parseFloat(((op.precoAcao - op.strike) * op.quantidade).toFixed(2));
         const premTotal = parseFloat((op.premio * op.quantidade).toFixed(2));
         escudoNovo = Math.max(0, parseFloat((prejBruto - premTotal).toFixed(2)));
@@ -919,13 +993,11 @@ function atualizarCardCall() {
     document.getElementById('call-total-op').innerText = r.totalOps || 0;
     document.getElementById('call-media-op').innerText = r.totalOps > 0 ? fmt(resLiq / r.totalOps) : 'R$ 0,00';
 
-    // Tempo médio
     const tmEl = document.getElementById('call-tempo-medio');
     const ciclosD = ops.historico.filter(c => c.duracaoUteis > 0);
     if (ciclosD.length > 0) { tmEl.innerText = Math.round(ciclosD.reduce((s,c)=>s+c.duracaoUteis,0)/ciclosD.length) + ' d.u.'; }
     else { tmEl.innerText = '—'; }
 
-    // Média mensal
     const mmEl = document.getElementById('call-media-mensal');
     const mesesU = [...new Set(ops.historico.map(c=>(c.dataFechamento||'').slice(0,7)).filter(Boolean))].sort();
     if (mesesU.length > 0) {
@@ -944,24 +1016,21 @@ function atualizarCardCall() {
         else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
     } else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
 
-    // Escudo
     const escDisp = ops.resumo.escudoDisponivel || 0;
     const escBloc = ops.resumo.escudoBloqueado  || 0;
     document.getElementById('escudo-total-val').innerText = fmt(escDisp + escBloc);
 
-    // Botão CALL
     const btnC = document.getElementById('btn-call-acao'), txtC = document.getElementById('call-status-txt');
     if (ops.operacaoAtual?.aberta) { txtC.innerText='🟡 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-fin'; }
     else { txtC.innerText='⚪ Sem call aberta'; btnC.textContent='Lançar Call'; btnC.className='btn-call btn-call-nova'; }
 
-    // Botão PUT
     const btnP = document.getElementById('btn-put-acao'), txtP = document.getElementById('put-status-txt');
     if (ops.putAtual?.aberta) { txtP.innerText='🟡 Put em operação'; btnP.textContent='Finalizar Put'; btnP.className='btn-call btn-call-fin'; btnP.style.background=''; }
     else { txtP.innerText='⚪ Sem put aberta'; btnP.textContent='Lançar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
 }
 
 // ═══════════════════════════════════════════
-// Monitor CALL — barra + notificações 4 linhas
+// Monitor CALL
 // ═══════════════════════════════════════════
 function atualizarMonitorCall() {
     const s    = dados.setup;
@@ -979,7 +1048,6 @@ function atualizarMonitorCall() {
     const preco  = cotacaoAcao;
     const strike = s.strike, entrada = s.precoEntrada, prem = s.premioRecebido, qtd = s.qtdAcoes || 0;
 
-    // Anel de vencimento CALL
     const ringWrapC = document.getElementById('ring-call-wrap');
     const ringArcoC = document.getElementById('ring-call-arco');
     const ringNumC  = document.getElementById('ring-call-num');
@@ -1011,10 +1079,8 @@ function atualizarMonitorCall() {
 
     const gap       = entrada > 0 ? (strike - entrada) : 0;
     const precoAzul = entrada > 0 ? (entrada - gap)    : -Infinity;
-    // Divide o gap em 3 terços iguais para as zonas amarelo/laranja/vermelho claro
-    const t1 = entrada + gap / 3;        // entrada → t1: amarelo
-    const t2 = entrada + 2 * gap / 3;   // t1 → t2: laranja
-    // t2 → strike: vermelho claro
+    const t1 = entrada + gap / 3;
+    const t2 = entrada + 2 * gap / 3;
 
     let sColor, sLinha1, zonaAtiva=0, isGuerra=false, entAlerta=false;
     const distStrikePct = ((strike/preco) - 1) * 100;
@@ -1045,7 +1111,6 @@ function atualizarMonitorCall() {
     dispararAlerta(entAlerta, isGuerra);
     card.style.borderLeftColor = sColor;
 
-    // Barra segmentada CALL — 6 segmentos baseados no gap/3
     const segCores = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
     const _overshoot = gap / 3;
     const segBounds = [
@@ -1072,20 +1137,16 @@ function atualizarMonitorCall() {
     + `<div class="monitor-sep">── Monitor de Strike ──</div>`
     + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtml}</div>`;
     
-    // Notificações CALL — 4 linhas
     let notifHtml = '';
     if (prem > 0) {
         const metaPct   = zonas.metaSaida || 65;
         const premTotal = parseFloat((prem * qtd).toFixed(2));
         const metaValor = parseFloat((premTotal * (metaPct / 100)).toFixed(2));
 
-        // Resultado atual usando cotação da opção se disponível
         let resultadoAtual = 0;
         if (cotacaoOpcao !== null && cotacaoOpcao >= 0) {
-            // Ganho = prêmio recebido - valor atual da opção (quanto ela desvalorizou)
             resultadoAtual = parseFloat(((prem - cotacaoOpcao) * qtd).toFixed(2));
         } else {
-            // Sem cotação da opção: resultado = prêmio total (ainda não fechou)
             resultadoAtual = premTotal;
         }
 
@@ -1114,7 +1175,7 @@ function atualizarMonitorCall() {
 }
 
 // ═══════════════════════════════════════════
-// Monitor PUT — barra invertida + 2 linhas
+// Monitor PUT
 // ═══════════════════════════════════════════
 function atualizarMonitorPut() {
     const el   = document.getElementById('monitor-put-conteudo');
@@ -1132,13 +1193,11 @@ function atualizarMonitorPut() {
     const preco  = cotacaoAcao;
     const strike = op.strike, entrada = op.precoAcao, prem = op.premio, qtd = op.quantidade;
 
-    // Anel de vencimento PUT
     const ringWrapP = document.getElementById('ring-put-wrap');
     const ringArcoP = document.getElementById('ring-put-arco');
     const ringNumP  = document.getElementById('ring-put-num');
-    let dias = null;
     if (op.vencimento && ringWrapP) {
-        dias = diasUteisAteVenc(op.vencimento);
+        const dias = diasUteisAteVenc(op.vencimento);
         const totalDias = op.dataAbertura ? calcularDiasUteis(op.dataAbertura, op.vencimento) : 21;
         const circ = 113.1;
         let corRing = '#00e676';
@@ -1161,27 +1220,13 @@ function atualizarMonitorPut() {
         card.style.borderLeftColor = '#f39c12'; return;
     }
 
-    // PUT v5.3 — azul (esquerda=rumo exercício) → vermelho (direita=pó)
-    // gap = entrada - strike (entrada > strike para put OTM)
-    const gapPut  = entrada - strike;          // positivo
-    const t1put   = strike - gapPut / 3;       // 1/3 abaixo do strike (azul extremo)
-    const t2put   = strike - gapPut * 2 / 3;  // 2/3 abaixo do strike (não usado, t1put > t2put seria negativo se muito longe)
-    // Corrige: t1put = strike - gap/3, t2put vai para cima: entrada - gap/3*2
-    // Faixas (esquerda→direita = azul→vermelho):
-    // Seg1 azul:    preco <= strike - gap/3        → Rumo ao exercício
-    // Seg2 verde:   strike - gap/3 < preco <= strike → Zona de exercício
-    // Seg3 amarelo: strike < preco <= strike + gap/3 → Exercício próximo
-    // Seg4 laranja: strike + gap/3 < preco <= strike + 2*gap/3 → Exercício distante
-    // Seg5 verm cl: strike + 2*gap/3 < preco <= entrada       → Rumo ao pó
-    // Seg6 verm esc: preco > entrada                           → Pó praticamente certo
+    const gapPut  = entrada - strike;
     const p1 = strike - gapPut / 3;
     const p2 = strike;
     const p3 = strike + gapPut / 3;
     const p4 = strike + 2 * gapPut / 3;
-    // p5 = entrada
 
     let sColorPut, sLinha1Put, zonaAtivaPut = 0;
-    const distStrikeAbs = Math.abs(((preco - strike) / strike) * 100).toFixed(1).replace('.',',') + '%';
     const abaixoStr = (((strike - preco) / strike) * 100).toFixed(1).replace('.',',') + '%';
     const acimaStr2 = (((preco - strike) / strike) * 100).toFixed(1).replace('.',',') + '%';
 
@@ -1207,17 +1252,15 @@ function atualizarMonitorPut() {
 
     card.style.borderLeftColor = sColorPut;
 
-    // Barra PUT v5.3 — azul→vermelho (esquerda=exercício, direita=pó)
-    // Marcas: Strike entre seg2 e seg3 (vermelho), Entrada entre seg5 e seg6 (branco)
     const segCoresPut = ['#00bcd4','#00e676','#f1c40f','#ff9900','#e05252','#c0392b'];
     const _overshootPut = gapPut / 3;
     const segBoundsPut = [
-        [p1 - _overshootPut*3, p1],   // seg1 azul
-        [p1, p2],                      // seg2 verde (até strike)
-        [p2, p3],                      // seg3 amarelo
-        [p3, p4],                      // seg4 laranja
-        [p4, entrada],                 // seg5 verm claro
-        [entrada, entrada+_overshootPut*3] // seg6 verm escuro
+        [p1 - _overshootPut*3, p1],
+        [p1, p2],
+        [p2, p3],
+        [p3, p4],
+        [p4, entrada],
+        [entrada, entrada+_overshootPut*3]
     ];
     let bolinhaLP = 0;
     for (let si=0; si<6; si++) {
@@ -1229,9 +1272,7 @@ function atualizarMonitorPut() {
     for (let i=0; i<6; i++) {
         const ativo=(i+1===zonaAtivaPut);
         segHtmlP+=`<div style="flex:1;height:14px;background:${segCoresPut[i]};opacity:${ativo?'1':'0.18'};border-radius:${i===0?'8px 0 0 8px':i===5?'0 8px 8px 0':'0'};transition:opacity 0.5s;"></div>`;
-        // Strike: entre seg2 e seg3 (i===1)
         if (i===1) segHtmlP+=`<div style="width:3px;height:14px;background:#c0392b;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Strike R$\u00a0${strike.toFixed(2).replace('.',',')}</span></div>`;
-        // Entrada: entre seg5 e seg6 (i===4)
         if (i===4) segHtmlP+=`<div style="width:2px;height:14px;background:#fff;border-radius:1px;margin:0 -2px;position:relative;flex-shrink:0;"><span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.72em;color:#ccc;margin-top:3px;">Entrada R$\u00a0${entrada.toFixed(2).replace('.',',')}</span></div>`;
     }
     segHtmlP+=`<div style="position:absolute;top:50%;left:${bolinhaLP.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bColorP};border:2px solid #fff;box-shadow:0 0 6px ${bColorP};z-index:10;pointer-events:none;transition:left 0.4s ease;"></div>`;
@@ -1240,7 +1281,6 @@ function atualizarMonitorPut() {
     + `<div class="monitor-sep">── Monitor de Strike ──</div>`
     + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtmlP}</div>`;
 
-    // Notificações PUT — 2 linhas apenas
     const premTotal = parseFloat((prem * qtd).toFixed(2));
     const notifPut = `<div class="obs-box" style="border-left:3px solid ${sColorPut};">
         <div style="font-size:0.90em;font-weight:bold;color:${sColorPut};">${sLinha1Put}</div>
@@ -1502,16 +1542,23 @@ function atualizarTela() {
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
 
-    // Caixa agora exibe o saldo líquido (já descontada a reserva)
     document.getElementById('saldo-caixa').innerText = fmt(saldoDisp);
-
-    // Reserva B3 permanece apenas como informação
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
 
-    // Comprar com base no saldo líquido
+    // ══ NOVO: Tesouro Direto ══
+    const tdVal = dados.tesouroDireto || 0;
+    document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
+
+    // Comprar BBAS3 — usa saldoDisp
     const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+
+    // ══ NOVO: Comprar Tesouro — calcula frações pelo saldoDisp ══
+    const valorFracao = zonas.valorFracaoTesouro || 180;
+    const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
+    document.getElementById('comprar-tesouro').innerHTML =
+        `<span style="color:#ccc;">Comprar</span> <span style="color:#f39c12;">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
 
     document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
@@ -1535,7 +1582,7 @@ function abrirCompra() {
 function exportar() {
     const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v53_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v54_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function importar(input) {
     const r=new FileReader();
@@ -1554,11 +1601,20 @@ function importar(input) {
             }
             if(payload.histTroco){salvarHistorico('troco',payload.histTroco);delete payload.histTroco;}
             if(payload.histAportes){salvarHistorico('aportes',payload.histAportes);delete payload.histAportes;}
-            if(payload.zonasConfig){zonas=payload.zonasConfig;if(!zonas.metaSaida)zonas.metaSaida=65;if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;delete zonas.monitor;delete zonas.acao;localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));delete payload.zonasConfig;}
+            if(payload.zonasConfig){
+                zonas=payload.zonasConfig;
+                if(!zonas.metaSaida)zonas.metaSaida=65;
+                if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;
+                if(!zonas.valorFracaoTesouro)zonas.valorFracaoTesouro=180; // ← NOVO
+                delete zonas.monitor;delete zonas.acao;
+                localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));
+                delete payload.zonasConfig;
+            }
             dados=payload;
             if(!dados.troco)dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)dados.aportes={cofre:0,transferido:0};
             if(!dados.setup)dados.setup={...BASE.setup};
+            if(!dados.tesouroDireto)dados.tesouroDireto=0; // ← NOVO
             cotacaoOpcao=null;
             document.getElementById('txt-cotacao-opcao').innerText='—';
             atualizarTela();alert("Backup restaurado com sucesso, TOURSO!");
@@ -1655,13 +1711,11 @@ buscarCotacao();
 setInterval(buscarCotacao, 300000);
 tornarPermanente();
 
-// Lembrete backup
 const _DIAS_BKP=5, _K_BKP='tourso_ult_backup';
 function _chkBkp(){ const d=(Date.now()-parseInt(localStorage.getItem(_K_BKP)||0))/86400000; document.querySelector('[onclick="exportar()"]').classList.toggle('piscante-amarelo',d>=_DIAS_BKP); }
 document.querySelector('[onclick="exportar()"]').addEventListener('click',()=>{localStorage.setItem(_K_BKP,Date.now());setTimeout(_chkBkp,200);});
 _chkBkp();
 
-// IR pisca em maio
 const _K_IR='tourso_ult_ir';
 function _chkIR(){ const m=new Date().getMonth(); const d=(Date.now()-parseInt(localStorage.getItem(_K_IR)||0))/86400000; document.querySelector('[onclick="abrirResumoAnual()"]').classList.toggle('piscante-amarelo',m===4&&d>=5); }
 document.querySelector('[onclick="abrirResumoAnual()"]').addEventListener('click',()=>{localStorage.setItem(_K_IR,Date.now());setTimeout(_chkIR,200);});
