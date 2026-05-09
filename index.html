@@ -1656,20 +1656,23 @@ function atualizarTela() {
     const tdVal = dados.tesouroDireto || 0;
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
-    // Comprar BBAS3
+       // Comprar BBAS3 (verde se >0, cinza se 0)
     const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
+    const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
-        `<span style="color:#ccc;">Comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+        `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
-    // Comprar Tesouro
+    // Comprar Tesouro (verde se >0, cinza se 0)
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
     document.getElementById('comprar-tesouro').innerHTML =
-        `<span style="color:#ccc;">Comprar</span> <span style="color:#f39c12;">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
+        `<span style="color:#ccc;">Comprar</span> <span style="color:${fracoes > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${fracoes > 0 ? 'bold' : 'normal'};">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
 
-    // Resgatar Tesouro
+    // Resgatar Tesouro (só aparece se ≥ 1 lote de ações, verde se disponível)
+    const umLoteValor = ctp * 100;
+    const podeResgatar = tdVal >= umLoteValor && umLoteValor > 0;
     document.getElementById('resgatar-tesouro').innerHTML =
-        `<span style="color:#ccc;">Resgatar</span> <span style="color:#f39c12;">${fmt(tdVal)}</span> <span style="color:#ccc;">Tesouro</span>`;
+        `<span style="color:#ccc;">Resgatar</span> <span style="color:${podeResgatar ? 'var(--alta)' : '#aaa'}; font-weight:${podeResgatar ? 'bold' : 'normal'};">${podeResgatar ? fmt(tdVal) : 'R$ 0,00'}</span> <span style="color:#ccc;">Tesouro</span>`;
 
     document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
