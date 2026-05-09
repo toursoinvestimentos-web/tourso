@@ -275,6 +275,12 @@
         <div id="comprar-tesouro" style="font-size:0.85em;">Comprar +0 fração Tesouro</div>
         <button onclick="abrirCompraTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
+
+    <!-- Resgatar Tesouro -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <div id="resgatar-tesouro" style="font-size:0.85em;">Resgatar +R$ 0,00 Tesouro</div>
+        <button onclick="abrirResgateTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Resgate</button>
+    </div>
 </div>
 
 <!-- ═══ PILARES ═══ -->
@@ -741,6 +747,29 @@ function confirmarCompraTesouro() {
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - val).toFixed(2));
     dados.tesouroDireto   = parseFloat(((dados.tesouroDireto || 0) + val).toFixed(2));
     fecharCompraTesouro();
+    atualizarTela();
+}
+
+    // ══ NOVO: Resgate Tesouro Direto ══
+function abrirResgateTesouro() {
+    const tdVal = dados.tesouroDireto || 0;
+    if (tdVal <= 0) {
+        alert('Você não possui Tesouro Direto Investido para resgatar.');
+        return;
+    }
+    const input = prompt(`Valor a resgatar do Tesouro Direto (máximo ${fmt(tdVal)}):`, tdVal);
+    if (input === null) return;
+    const valor = toNum(input);
+    if (isNaN(valor) || valor <= 0) {
+        alert('Valor inválido.');
+        return;
+    }
+    if (valor > tdVal + 0.001) {
+        alert(`Saldo insuficiente.\nDisponível no Tesouro: ${fmt(tdVal)}`);
+        return;
+    }
+    dados.tesouroDireto = parseFloat((tdVal - valor).toFixed(2));
+    dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valor).toFixed(2));
     atualizarTela();
 }
 
@@ -1626,11 +1655,16 @@ function atualizarTela() {
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
-    // ══ NOVO: Comprar Tesouro — calcula frações pelo saldoDisp ══
+       // Comprar Tesouro — calcula frações pelo saldoDisp
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
     document.getElementById('comprar-tesouro').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:#f39c12;">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
+
+    // Resgatar Tesouro — calcula valor que pode ser transformado em lotes de BBAS3
+    const tdVal = dados.tesouroDireto || 0;
+    document.getElementById('resgatar-tesouro').innerHTML =
+        `<span style="color:#ccc;">Resgatar</span> <span style="color:#f39c12;">${fmt(tdVal)}</span> <span style="color:#ccc;">Tesouro</span>`;
 
     document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
