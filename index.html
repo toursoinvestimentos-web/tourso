@@ -1068,9 +1068,10 @@ function atualizarMonitorCall() {
     }
     segHtml+=`<div style="position:absolute;top:50%;left:${bolinhaLeft.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bColor};border:2px solid #fff;box-shadow:0 0 6px ${bColor};z-index:10;pointer-events:none;transition:left 0.4s ease;${bAnim}"></div>`;
 
-    const secaoStrike = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-        + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtml}</div>`;
-
+   const secaoStrike = `<div style="border-top:1px solid #5a5a5a; margin: 0 0 6px 0;"></div>`
+    + `<div class="monitor-sep">── Monitor de Strike ──</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtml}</div>`;
+    
     // Notificações CALL — 4 linhas
     let notifHtml = '';
     if (prem > 0) {
@@ -1140,7 +1141,7 @@ function atualizarMonitorPut() {
         dias = diasUteisAteVenc(op.vencimento);
         const totalDias = op.dataAbertura ? calcularDiasUteis(op.dataAbertura, op.vencimento) : 21;
         const circ = 113.1;
-        let corRing = '#f39c12';
+        let corRing = '#00e676';
         if (dias <= 0) corRing = '#ff6b6b';
         else if (dias <= 2) corRing = '#ff6b6b';
         else if (dias <= 7) corRing = '#f1c40f';
@@ -1235,8 +1236,9 @@ function atualizarMonitorPut() {
     }
     segHtmlP+=`<div style="position:absolute;top:50%;left:${bolinhaLP.toFixed(2)}%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:${bColorP};border:2px solid #fff;box-shadow:0 0 6px ${bColorP};z-index:10;pointer-events:none;transition:left 0.4s ease;"></div>`;
 
-    const secaoStrikePut = `<div class="monitor-sep">── Monitor de Strike ──</div>`
-        + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtmlP}</div>`;
+    const secaoStrikePut = `<div style="border-top:1px solid #5a5a5a; margin: 0 0 6px 0;"></div>`
+    + `<div class="monitor-sep">── Monitor de Strike ──</div>`
+    + `<div style="display:flex;gap:2px;height:14px;border-radius:8px;overflow:visible;margin:8px 0 28px;position:relative;">${segHtmlP}</div>`;
 
     // Notificações PUT — 2 linhas apenas
     const premTotal = parseFloat((prem * qtd).toFixed(2));
