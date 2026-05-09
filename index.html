@@ -257,7 +257,7 @@
         <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-        <div id="pode-comprar" style="font-size:0.85em;">Pode comprar +0 ações BBAS3</div>
+        <div id="comprar" style="font-size:0.85em;">Comprar +0 ações BBAS3</div>
         <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
     </div>
 </div>
@@ -1508,10 +1508,10 @@ function atualizarTela() {
     // Reserva B3 permanece apenas como informação
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
 
-    // Pode comprar com base no saldo líquido
+    // Comprar com base no saldo líquido
     const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
-    document.getElementById('pode-comprar').innerHTML =
-        `<span style="color:#ccc;">Pode comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+    document.getElementById('comprar').innerHTML =
+        `<span style="color:#ccc;">Comprar</span> <span style="color:var(--alta);">+${Math.floor(saldoDisp / ctp)}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
     document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
