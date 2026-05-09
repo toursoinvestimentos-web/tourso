@@ -828,10 +828,14 @@ function abrirNovaOp() {
     document.getElementById('nop-venc').value = '';
     document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
 
-    // pré‑preenche com o máximo de ações disponíveis na carteira
+    // pré‑preenche com o máximo de lotes inteiros (múltiplos de 100)
     const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
-    document.getElementById('nop-qtd').value = totalAcoes;
-    document.getElementById('nop-hint').innerText = `Máximo disponível: ${totalAcoes} ações (sua posição atual).`;
+    const maxLotes = Math.floor(totalAcoes / 100) * 100;
+    document.getElementById('nop-qtd').value = maxLotes;
+
+    // mensagem abaixo do campo de quantidade (small adjacente)
+    const hintQtd = document.getElementById('nop-qtd').nextElementSibling;
+    if (hintQtd) hintQtd.innerText = `Máximo disponível: ${maxLotes} ações (${Math.floor(maxLotes/100)} lote(s)).`;
 
     document.getElementById('modal-nova-op').classList.add('ativo');
 }
@@ -849,6 +853,12 @@ function confirmarNovaOp() {
           premio=toNum(document.getElementById('nop-premio').value), venc=document.getElementById('nop-venc').value,
           codigo=document.getElementById('nop-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
+
+    // valida se é múltiplo de 100
+    if (qtd % 100 !== 0) {
+        alert('A quantidade deve ser em lotes de 100 ações (ex: 100, 200, 300).');
+        return;
+    }
 
     // trava se quantidade > ações disponíveis
     const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
@@ -938,22 +948,26 @@ function abrirNovaPut() {
     document.getElementById('nput-venc').value = '';
     document.getElementById('nput-codigo').value = '';
 
-    // calcula quantas ações o caixa consegue comprar com o saldo líquido
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const tesouro = dados.tesouroDireto || 0;
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - tesouro);
+    // usa APENAS o valor já líquido do Caixa Operacional
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - (zonas.reservaB3PorLote||0) * Math.floor(dados.acoes.reduce((a, x) => a + x.qtd, 0) / 100));
     const cotacao = cotacaoAcao || 0;
-    const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
+    const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
+    // arredonda para múltiplo de 100
+    const maxAcoes = Math.floor(maxAcoesBruto / 100) * 100;
 
     document.getElementById('nput-qtd').value = maxAcoes;
-    document.getElementById('nput-hint').innerText = cotacao > 0
-        ? `Com o saldo atual (${fmt(saldoDisp)}) você garante até ${maxAcoes} ações.`
-        : 'Cotação indisponível no momento.';
+
+    // mensagem abaixo do campo de quantidade (small adjacente)
+    const hintQtd = document.getElementById('nput-qtd').nextElementSibling;
+    if (hintQtd) {
+        hintQtd.innerText = cotacao > 0
+            ? `Com o saldo atual (${fmt(saldoDisp)}) você garante até ${maxAcoes} ações (${Math.floor(maxAcoes/100)} lote(s)).`
+            : 'Cotação indisponível no momento.';
+    }
 
     document.getElementById('modal-nova-put').classList.add('ativo');
 }
+    
 function fecharNovaPut() { document.getElementById('modal-nova-put').classList.remove('ativo'); }
 
 ['nput-qtd','nput-premio'].forEach(id => document.getElementById(id).addEventListener('input', () => {
@@ -969,12 +983,14 @@ function confirmarNovaPut() {
           codigo=document.getElementById('nput-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
 
-    // trava se o caixa não cobre a quantidade desejada
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const tesouro = dados.tesouroDireto || 0;
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - tesouro);
+    // valida se é múltiplo de 100
+    if (qtd % 100 !== 0) {
+        alert('A quantidade deve ser em lotes de 100 ações (ex: 100, 200, 300).');
+        return;
+    }
+
+    // trava se o caixa não cobre a quantidade desejada (usa saldo líquido do Caixa)
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - (zonas.reservaB3PorLote||0) * Math.floor(dados.acoes.reduce((a, x) => a + x.qtd, 0) / 100));
     const cotacao = cotacaoAcao || 0;
     const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
 
