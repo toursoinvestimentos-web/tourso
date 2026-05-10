@@ -1013,16 +1013,35 @@ function abrirNovaPut() {
             : 'Cotação indisponível no momento.';
     }
 
+    atualizarHintStrike();
     document.getElementById('modal-nova-put').classList.add('ativo');
 }
     
 function fecharNovaPut() { document.getElementById('modal-nova-put').classList.remove('ativo'); }
 
+function atualizarHintStrike() {
+    const qtd = parseInt(document.getElementById('nput-qtd').value) || 0;
+    const strikeAtual = toNum(document.getElementById('nput-strike').value);
+    const hint = document.getElementById('nput-strike-hint');
+    if (!hint) return;
+    if (qtd <= 0) { hint.innerText = ''; return; }
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
+    const maxStrike = (saldoDisp / qtd);
+    hint.innerText = `Strike máximo: R$ ${maxStrike.toFixed(2).replace('.', ',')} por ação`;
+    const inputStrike = document.getElementById('nput-strike');
+    inputStrike.style.borderColor = (strikeAtual > maxStrike) ? 'var(--queda)' : '#555';
+}
+
 ['nput-qtd','nput-premio'].forEach(id => document.getElementById(id).addEventListener('input', () => {
     const qtd = parseInt(document.getElementById('nput-qtd').value)||0;
     const prem = toNum(document.getElementById('nput-premio').value);
     document.getElementById('nput-hint').innerText = (qtd&&prem) ? `Total: ${fmt(qtd*prem)} (${qtd} × ${fmt(prem)})` : '';
+    atualizarHintStrike();
 }));
+document.getElementById('nput-strike').addEventListener('input', atualizarHintStrike);
 
 function confirmarNovaPut() {
     const dataAb=document.getElementById('nput-data').value, preco=toNum(document.getElementById('nput-preco').value),
