@@ -1720,18 +1720,20 @@ function atualizarTela() {
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-       // Reserva B3
+           // Reserva B3
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
 
-    // Reserva Venda Put
+    // Reserva Venda Put (apenas exibição)
     const reservaPut = dados.reservaVendaPut || 0;
 
-    // Saldo líquido real (caixa - reserva B3 - reserva Put)
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - reservaPut);
+    // Saldo exibido: dinheiro real em caixa (sem descontar reservas que já saíram)
+    const saldoExibicao = dados.caixaDisponivel;
+    // Saldo disponível para compras (desconta apenas Reserva B3)
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
 
-    document.getElementById('saldo-caixa').innerText = fmt(saldoDisp);
+    document.getElementById('saldo-caixa').innerText = fmt(saldoExibicao);
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
 
     // Exibe Reserva Venda Put
