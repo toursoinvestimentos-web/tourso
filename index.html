@@ -234,9 +234,21 @@
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="pilar-label">Cobertura BBAS3</div>
     </div>
-    <div style="display:flex; align-items:baseline; gap:10px; margin:5px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin:5px 0;">
         <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--ciano);">R$ 0,00</div>
-        <div id="rent-tag" style="font-weight:bold; font-size:0.9em; color:var(--alta);">0,00%</div>
+        <div style="background:rgba(0,0,0,.28); border-radius:8px; padding:7px 10px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; min-width:112px;">
+            <div style="font-size:0.6em; color:var(--ciano); font-weight:bold; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:4px; white-space:nowrap;">Venda Coberta Call</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                <span style="font-size:0.68em; color:#aaa; white-space:nowrap;">Strike mín.:</span>
+                <span id="rent-tag" style="font-weight:bold; font-size:0.78em; color:var(--alta);">0,00%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                <span style="font-size:0.68em; color:#aaa;">Prêmio:</span>
+                <div id="premio-badge" style="border-radius:4px; padding:2px 7px; background:#444;">
+                    <span id="premio-badge-txt" style="font-size:0.7em; font-weight:bold; color:#aaa;">—</span>
+                </div>
+            </div>
+        </div>
     </div>
     <div style="display:flex; justify-content:space-between; font-size:0.9em; margin-top:10px; border-top:1px solid #5a5a5a; padding-top:10px;">
         <span>Ações: <b id="qtd-total">0</b></span>
@@ -393,7 +405,6 @@
             <input type="number" inputmode="decimal" id="zona-reserva-b3" step="1" min="0" placeholder="Ex: 50">
             <small>Valor reservado a cada 100 ações em carteira.</small>
         </div>
-        <!-- ══ NOVO: fração Tesouro ══ -->
         <div class="modal-campo">
             <label>Valor da Fração do Tesouro Direto (R$)</label>
             <input type="number" inputmode="decimal" id="zona-fracao-tesouro" step="1" min="0" placeholder="Ex: 180">
@@ -628,7 +639,7 @@ let zonas = (() => {
 })();
 if (!zonas.metaSaida)           zonas.metaSaida = 65;
 if (!zonas.reservaB3PorLote)    zonas.reservaB3PorLote = 50;
-if (!zonas.valorFracaoTesouro)  zonas.valorFracaoTesouro = 180; // ← NOVO
+if (!zonas.valorFracaoTesouro)  zonas.valorFracaoTesouro = 180;
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
@@ -742,7 +753,7 @@ function limparTudo() {
 function abrirConfigZonas() {
     document.getElementById('zona-meta-saida').value      = zonas.metaSaida || 65;
     document.getElementById('zona-reserva-b3').value      = zonas.reservaB3PorLote || 50;
-    document.getElementById('zona-fracao-tesouro').value  = zonas.valorFracaoTesouro || 180; // ← NOVO
+    document.getElementById('zona-fracao-tesouro').value  = zonas.valorFracaoTesouro || 180;
     atualizarHintMetaZona();
     document.getElementById('modal-zonas').classList.add('ativo');
 }
@@ -763,18 +774,18 @@ document.addEventListener('DOMContentLoaded', () => {
 function salvarConfigZonas() {
     const ms = parseInt(document.getElementById('zona-meta-saida').value);
     const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
-    const ft = parseFloat(document.getElementById('zona-fracao-tesouro').value); // ← NOVO
+    const ft = parseFloat(document.getElementById('zona-fracao-tesouro').value);
     if (isNaN(ms)||ms<=0||ms>100) { alert('Meta de Saída deve ser entre 1 e 100%.'); return; }
     if (isNaN(rb)||rb<0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
     if (isNaN(ft)||ft<0) { alert('Valor da fração do Tesouro deve ser zero ou maior.'); return; }
-    zonas = { metaSaida:ms, reservaB3PorLote:rb, valorFracaoTesouro:ft }; // ← NOVO campo
+    zonas = { metaSaida:ms, reservaB3PorLote:rb, valorFracaoTesouro:ft };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
     dados.setup.metaSaida = ms;
     salvar(); fecharConfigZonas(); atualizarTela();
 }
 
 // ═══════════════════════════════════════════
-// ══ NOVO: Tesouro Direto ══
+// Tesouro Direto
 // ═══════════════════════════════════════════
 function abrirCompraTesouro() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
@@ -803,7 +814,6 @@ function confirmarCompraTesouro() {
     atualizarTela();
 }
 
-    // ══ NOVO: Resgate Tesouro Direto ══
 function abrirResgateTesouro() {
     const tdVal = dados.tesouroDireto || 0;
     if (tdVal <= 0) { alert('Você não possui Tesouro Direto para resgatar.'); return; }
@@ -907,12 +917,10 @@ function abrirNovaOp() {
     document.getElementById('nop-venc').value = '';
     document.getElementById('nop-codigo').value = dados.setup.codigoOpcao || '';
 
-    // pré‑preenche com o máximo de lotes inteiros (múltiplos de 100)
     const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
     const maxLotes = Math.floor(totalAcoes / 100) * 100;
     document.getElementById('nop-qtd').value = maxLotes;
 
-    // mensagem abaixo do campo de quantidade (small adjacente)
     const hintQtd = document.getElementById('nop-qtd').nextElementSibling;
     if (hintQtd) hintQtd.innerText = `Máximo disponível: ${maxLotes} ações (${Math.floor(maxLotes/100)} lote(s)).`;
 
@@ -933,13 +941,11 @@ function confirmarNovaOp() {
           codigo=document.getElementById('nop-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
 
-    // valida se é múltiplo de 100
     if (qtd % 100 !== 0) {
         alert('A quantidade deve ser em lotes de 100 ações (ex: 100, 200, 300).');
         return;
     }
 
-    // trava se quantidade > ações disponíveis
     const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
     if (qtd > totalAcoes) {
         alert(`Você possui apenas ${totalAcoes} ações BBAS3. Ajuste a quantidade.`);
@@ -1027,7 +1033,6 @@ function abrirNovaPut() {
     document.getElementById('nput-venc').value = '';
     document.getElementById('nput-codigo').value = '';
 
-    // usa o saldo líquido real (caixa - reserva B3) – Tesouro já foi descontado do caixa
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
@@ -1038,7 +1043,6 @@ function abrirNovaPut() {
 
     document.getElementById('nput-qtd').value = maxAcoes;
 
-    // mensagem abaixo do campo quantidade (small adjacente)
     const hintQtd = document.getElementById('nput-qtd').nextElementSibling;
     if (hintQtd) {
         hintQtd.innerText = cotacao > 0
@@ -1083,13 +1087,11 @@ function confirmarNovaPut() {
           codigo=document.getElementById('nput-codigo').value.toUpperCase().trim();
     if (!dataAb||!preco||!strike||!qtd||!premio||!venc||!codigo) { alert('Preencha todos os campos.'); return; }
 
-    // valida se é múltiplo de 100
     if (qtd % 100 !== 0) {
         alert('A quantidade deve ser em lotes de 100 ações (ex: 100, 200, 300).');
         return;
     }
 
-      // trava se o caixa não cobre a quantidade desejada (saldo líquido real)
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
@@ -1102,14 +1104,12 @@ function confirmarNovaPut() {
         return;
     }
 
-    // trava se o strike ultrapassa o máximo permitido por ação
     const maxStrike = qtd > 0 ? (saldoDisp / qtd) : 0;
     if (strike > maxStrike) {
         alert(`Strike acima do permitido. Com saldo de ${fmt(saldoDisp)} e ${qtd} ações, o strike máximo é R$ ${maxStrike.toFixed(2).replace('.', ',')}.`);
         return;
     }
 
-    // reserva o valor da obrigação (strike × quantidade)
     const valorReserva = parseFloat((strike * qtd).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorReserva).toFixed(2));
     dados.reservaVendaPut = parseFloat(((dados.reservaVendaPut || 0) + valorReserva).toFixed(2));
@@ -1161,7 +1161,7 @@ function confirmarFinPut() {
         statusNome = 'Liquidada';
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
-       } else if (tipo === 'rolada') {
+    } else if (tipo === 'rolada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
@@ -1750,8 +1750,33 @@ function atualizarTela() {
     document.getElementById('total-acoes-valor').innerText = val > 0 ? fmt(val) : 'R$ 0,00';
     document.getElementById('qtd-total').innerText = q;
     document.getElementById('pm-oficial').innerText = fmt(pm);
+
+    // ── Strike mínimo (dentro do widget Venda Coberta Call) ──
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
+
+    // ── Badge Prêmio ──
+    const _badgeEl = document.getElementById('premio-badge');
+    const _badgeTxtEl = document.getElementById('premio-badge-txt');
+    if (_badgeEl && _badgeTxtEl) {
+        let _bb, _bc, _bw;
+        if (pm <= 0 || cotacaoAcao === null) {
+            _bb = '#444'; _bc = '#aaa'; _bw = '—';
+        } else if (rent >= 5) {
+            _bb = '#00bcd4'; _bc = '#002f36'; _bw = 'Gordo';
+        } else if (rent >= 0) {
+            _bb = '#00e676'; _bc = '#003d1a'; _bw = 'Razoável';
+        } else if (rent > -8) {
+            _bb = '#f1c40f'; _bc = '#3d2f00'; _bw = 'Magro';
+        } else if (rent > -12) {
+            _bb = '#ff9900'; _bc = '#3d2200'; _bw = 'Residual';
+        } else {
+            _bb = '#ff6b6b'; _bc = '#3d0000'; _bw = 'Nulo';
+        }
+        _badgeEl.style.background = _bb;
+        _badgeTxtEl.style.color = _bc;
+        _badgeTxtEl.innerText = _bw;
+    }
 
     // Reserva B3 (suga dinheiro do caixa)
     const rb = zonas.reservaB3PorLote || 0;
@@ -1866,7 +1891,7 @@ function importar(input) {
                 zonas=payload.zonasConfig;
                 if(!zonas.metaSaida)zonas.metaSaida=65;
                 if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;
-                if(!zonas.valorFracaoTesouro)zonas.valorFracaoTesouro=180; // ← NOVO
+                if(!zonas.valorFracaoTesouro)zonas.valorFracaoTesouro=180;
                 delete zonas.monitor;delete zonas.acao;
                 localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));
                 delete payload.zonasConfig;
@@ -1875,7 +1900,7 @@ function importar(input) {
             if(!dados.troco)dados.troco={cofre:0,transferido:0};
             if(!dados.aportes)dados.aportes={cofre:0,transferido:0};
             if(!dados.setup)dados.setup={...BASE.setup};
-            if(!dados.tesouroDireto)dados.tesouroDireto=0; // ← NOVO
+            if(!dados.tesouroDireto)dados.tesouroDireto=0;
             cotacaoOpcao=null;
             document.getElementById('txt-cotacao-opcao').innerText='—';
             atualizarTela();alert("Backup restaurado com sucesso, TOURSO!");
