@@ -555,22 +555,22 @@
     </div>
 </div>
 
-<!-- ══ NOVO: Modal Comprar Tesouro Direto ══ -->
-<div class="modal-overlay" id="modal-compra-tesouro">
+<!-- Modal Resgatar Tesouro -->
+<div class="modal-overlay" id="modal-resgate-tesouro">
     <div class="modal-box" style="border-top-color:#f39c12;">
-        <h3 style="color:#f39c12;">🏦 Comprar Tesouro Direto</h3>
-        <div id="tesouro-modal-info" style="background:rgba(243,156,18,0.08); border:1px solid #f39c12; border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
-            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no caixa</div>
-            <div id="tesouro-modal-saldo" style="font-size:1.3em; font-weight:bold; color:#f39c12;">R$ 0,00</div>
+        <h3 style="color:#f39c12;">🏦 Resgatar Tesouro Direto</h3>
+        <div style="background:rgba(243,156,18,0.08); border:1px solid #f39c12; border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Tesouro investido</div>
+            <div id="resgate-modal-saldo" style="font-size:1.3em; font-weight:bold; color:#f39c12;">R$ 0,00</div>
         </div>
         <div class="modal-campo">
-            <label>Valor investido (R$)</label>
-            <input type="text" inputmode="decimal" id="tesouro-valor-input" placeholder="Ex: 180,00">
-            <small>Esse valor será subtraído do caixa operacional e registrado como Tesouro Direto.</small>
+            <label>Valor a resgatar (R$)</label>
+            <input type="text" inputmode="decimal" id="resgate-valor-input" placeholder="Ex: 701,00">
+            <small>Esse valor voltará para o caixa operacional.</small>
         </div>
         <div class="modal-btns">
-            <button class="btn-cancelar" onclick="fecharCompraTesouro()">Cancelar</button>
-            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#f39c12; color:var(--fundo); font-size:0.9em;" onclick="confirmarCompraTesouro()">Confirmar</button>
+            <button class="btn-cancelar" onclick="fecharResgateTesouro()">Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#f39c12; color:var(--fundo); font-size:0.9em;" onclick="confirmarResgateTesouro()">Confirmar</button>
         </div>
     </div>
 </div>
@@ -786,23 +786,20 @@ function confirmarCompraTesouro() {
     // ══ NOVO: Resgate Tesouro Direto ══
 function abrirResgateTesouro() {
     const tdVal = dados.tesouroDireto || 0;
-    if (tdVal <= 0) {
-        alert('Você não possui Tesouro Direto Investido para resgatar.');
-        return;
-    }
-    const input = prompt(`Valor a resgatar do Tesouro Direto (máximo ${fmt(tdVal)}):`, tdVal);
-    if (input === null) return;
-    const valor = toNum(input);
-    if (isNaN(valor) || valor <= 0) {
-        alert('Valor inválido.');
-        return;
-    }
-    if (valor > tdVal + 0.001) {
-        alert(`Saldo insuficiente.\nDisponível no Tesouro: ${fmt(tdVal)}`);
-        return;
-    }
+    if (tdVal <= 0) { alert('Você não possui Tesouro Direto para resgatar.'); return; }
+    document.getElementById('resgate-modal-saldo').innerText = fmt(tdVal);
+    document.getElementById('resgate-valor-input').value = '';
+    document.getElementById('modal-resgate-tesouro').classList.add('ativo');
+}
+function fecharResgateTesouro() { document.getElementById('modal-resgate-tesouro').classList.remove('ativo'); }
+function confirmarResgateTesouro() {
+    const tdVal = dados.tesouroDireto || 0;
+    const valor = toNum(document.getElementById('resgate-valor-input').value);
+    if (!valor || valor <= 0) { fecharResgateTesouro(); return; }
+    if (valor > tdVal + 0.001) { alert(`Saldo insuficiente.\nDisponível: ${fmt(tdVal)}`); return; }
     dados.tesouroDireto = parseFloat((tdVal - valor).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valor).toFixed(2));
+    fecharResgateTesouro();
     atualizarTela();
 }
 
