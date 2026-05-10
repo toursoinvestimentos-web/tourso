@@ -600,6 +600,7 @@ const BASE = {
     troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
     tesouroDireto:0,
     reservaVendaPut:0,
+    reservaB3Acumulada:0,
     setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0 }
 };
 const BASE_OP = {
@@ -1720,21 +1721,32 @@ function atualizarTela() {
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-           // Reserva B3
+    // Reserva B3 (suga dinheiro do caixa)
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
+    if (dados.reservaB3Acumulada === undefined) dados.reservaB3Acumulada = 0;
+    const atual = dados.reservaB3Acumulada;
+    if (atual < rbTotal) {
+        const diff = parseFloat((rbTotal - atual).toFixed(2));
+        const valorSugar = Math.min(diff, dados.caixaDisponivel);
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorSugar).toFixed(2));
+        dados.reservaB3Acumulada = parseFloat((atual + valorSugar).toFixed(2));
+    } else if (atual > rbTotal) {
+        const diff = parseFloat((atual - rbTotal).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + diff).toFixed(2));
+        dados.reservaB3Acumulada = rbTotal;
+    }
 
     // Reserva Venda Put (apenas exibição)
     const reservaPut = dados.reservaVendaPut || 0;
 
-    // Saldo exibido: dinheiro real em caixa (sem descontar reservas que já saíram)
+    // Saldo exibido: dinheiro real em caixa
     const saldoExibicao = dados.caixaDisponivel;
-    // Saldo disponível para compras (desconta apenas Reserva B3)
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
 
     document.getElementById('saldo-caixa').innerText = fmt(saldoExibicao);
-    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
+    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(dados.reservaB3Acumulada)}`;
 
     // Exibe Reserva Venda Put
     const elReservaPut = document.getElementById('reserva-put-valor');
@@ -1745,19 +1757,19 @@ function atualizarTela() {
     const tdVal = dados.tesouroDireto || 0;
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
-       // Comprar BBAS3 (verde se >0, cinza se 0)
+    // Comprar BBAS3
     const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
     const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
-    // Comprar Tesouro (verde se >0, cinza se 0)
+    // Comprar Tesouro
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
     document.getElementById('comprar-tesouro').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:${fracoes > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${fracoes > 0 ? 'bold' : 'normal'};">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
 
-    // Resgatar Tesouro (só aparece se ≥ 1 lote de ações, verde se disponível)
+    // Resgatar Tesouro
     const umLoteValor = ctp * 100;
     const podeResgatar = tdVal >= umLoteValor && umLoteValor > 0;
     document.getElementById('resgatar-tesouro').innerHTML =
