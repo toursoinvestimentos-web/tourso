@@ -1773,7 +1773,7 @@ function atualizarTela() {
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
     // Arc widget — progresso Tesouro → 1 lote BBAS3
-    const _arcTotal = 113.1;
+    const _arcTotal = 131.95;
     const _alvoLote = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao * 100 : 0;
     const _tdProg = _alvoLote > 0 ? Math.min(1, tdVal / _alvoLote) : 0;
     const _arcOffset = parseFloat((_arcTotal * (1 - _tdProg)).toFixed(2));
