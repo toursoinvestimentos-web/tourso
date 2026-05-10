@@ -251,10 +251,10 @@
             <div class="pilar-label">Caixa Operacional</div>
             <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
         </div>
-        <div style="position:relative; width:72px; flex-shrink:0; margin-top:2px;">
-            <svg width="72" height="46" viewBox="0 0 72 46" fill="none">
-                <path d="M8 40 A28 28 0 0 1 64 40" stroke="#333" stroke-width="7" stroke-linecap="round"/>
-                <path id="tesouro-arc" d="M8 40 A28 28 0 0 1 64 40" stroke="#f1c40f" stroke-width="7"
+        <div style="position:relative; width:90px; flex-shrink:0; margin-top:2px;">
+            <svg width="90" height="56" viewBox="0 0 90 56" fill="none">
+                <path d="M9 50 A36 36 0 0 1 81 50" stroke="#333" stroke-width="7" stroke-linecap="round"/>
+                <path id="tesouro-arc" d="M9 50 A36 36 0 0 1 81 50" stroke="#f1c40f" stroke-width="7"
                     stroke-linecap="round" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
             </svg>
             <div style="position:absolute; bottom:4px; left:0; right:0; text-align:center;">
@@ -1773,7 +1773,7 @@ function atualizarTela() {
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
     // Arc widget — progresso Tesouro → 1 lote BBAS3
-    const _arcTotal = 87.96;
+    const _arcTotal = 113.1;
     const _alvoLote = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao * 100 : 0;
     const _tdProg = _alvoLote > 0 ? Math.min(1, tdVal / _alvoLote) : 0;
     const _arcOffset = parseFloat((_arcTotal * (1 - _tdProg)).toFixed(2));
