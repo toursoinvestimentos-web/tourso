@@ -1100,34 +1100,67 @@ function atualizarFinPutTipo() {
 
 function confirmarFinPut() {
     const op = ops.putAtual; if (!op?.aberta) return;
-    const dataFech=document.getElementById('fin-put-data').value, tipo=document.getElementById('fin-put-tipo').value;
+    const dataFech = document.getElementById('fin-put-data').value;
+    const tipo = document.getElementById('fin-put-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
+
     let resultadoBruto, statusNome, escudoNovo = 0;
-    if (tipo==='po') {
+    const reservaAtual = dados.reservaVendaPut || 0;
+
+    if (tipo === 'po') {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
-    } else if (tipo==='exercida') {
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
+        dados.reservaVendaPut = 0;
+    } else if (tipo === 'exercida') {
         const prejBruto = parseFloat(((op.precoAcao - op.strike) * op.quantidade).toFixed(2));
         const premTotal = parseFloat((op.premio * op.quantidade).toFixed(2));
         escudoNovo = Math.max(0, parseFloat((prejBruto - premTotal).toFixed(2)));
         resultadoBruto = parseFloat((premTotal - prejBruto).toFixed(2));
         statusNome = 'Exercida';
-    } else {
+        dados.acoes.push({ qtd: op.quantidade, preco: op.strike });
+        dados.reservaVendaPut = 0;
+    } else if (tipo === 'liquidada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
         if (resultadoBruto < 0) escudoNovo = Math.abs(resultadoBruto);
-        statusNome = tipo==='liquidada' ? 'Liquidada' : 'Rolada';
+        statusNome = 'Liquidada';
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
+        dados.reservaVendaPut = 0;
+    } else if (tipo === 'rolada') {
+        const recompra = toNum(document.getElementById('fin-put-recompra').value);
+        if (!recompra) { alert('Informe o preço de recompra.'); return; }
+        resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
+        if (resultadoBruto < 0) escudoNovo = Math.abs(resultadoBruto);
+        statusNome = 'Rolada';
     }
+
     if (escudoNovo > 0) {
-        ops.resumo.escudoBloqueado = parseFloat(((ops.resumo.escudoBloqueado||0) + escudoNovo).toFixed(2));
+        ops.resumo.escudoBloqueado = parseFloat(((ops.resumo.escudoBloqueado || 0) + escudoNovo).toFixed(2));
     }
-    ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido||0) + resultadoBruto).toFixed(2));
+    ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido || 0) + resultadoBruto).toFixed(2));
     ops.resumo.totalOps++;
     const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
-    ops.historico.unshift({ tipo:'put', dataAbertura:op.dataAbertura, dataFechamento:dataFech, codigoOpcao:op.codigoOpcao||'', precoAcao:op.precoAcao, strike:op.strike, quantidade:op.quantidade, premioPorAcao:op.premio, resultadoBruto, resultadoLiquido:resultadoBruto, status:statusNome, escudoGerado:escudoNovo, duracaoUteis });
+    ops.historico.unshift({
+        tipo: 'put',
+        dataAbertura: op.dataAbertura,
+        dataFechamento: dataFech,
+        codigoOpcao: op.codigoOpcao || '',
+        precoAcao: op.precoAcao,
+        strike: op.strike,
+        quantidade: op.quantidade,
+        premioPorAcao: op.premio,
+        resultadoBruto,
+        resultadoLiquido: resultadoBruto,
+        status: statusNome,
+        escudoGerado: escudoNovo,
+        duracaoUteis
+    });
     ops.putAtual = null;
-    fecharFinPut(); salvarOp(); atualizarTela();
+    fecharFinPut();
+    salvarOp();
+    atualizarTela();
 }
 
 // ═══════════════════════════════════════════
