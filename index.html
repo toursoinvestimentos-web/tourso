@@ -261,6 +261,15 @@
     <!-- linha fina após Reserva B3 -->
     <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
 
+        <!-- Reserva Venda Put -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
+        <span style="font-size:0.75em; color:#aaa;">🔒 Reserva Venda Put</span>
+        <span id="reserva-put-valor" style="font-size:0.82em; font-weight:bold; color:var(--queda);">- R$ 0,00</span>
+    </div>
+
+    <!-- linha fina após Reserva Venda Put -->
+    <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
+
     <!-- Tesouro Direto Investido -->
     <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
         <span style="font-size:0.75em; color:#aaa;">🔒 Tesouro Direto Investido</span>
@@ -589,7 +598,8 @@ if (!zonas.valorFracaoTesouro)  zonas.valorFracaoTesouro = 180; // ← NOVO
 const BASE = {
     acoes:[], caixaDisponivel:0,
     troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
-    tesouroDireto:0, // ← NOVO
+    tesouroDireto:0,
+    reservaVendaPut:0,
     setup:{ codigoOpcao:'', qtdAcoes:0, precoEntrada:0, strike:0, vencimento:'', premioRecebido:0 }
 };
 const BASE_OP = {
@@ -607,8 +617,9 @@ let dados = (() => {
 if (!dados.setup)         dados.setup   = {...BASE.setup};
 if (!dados.troco)         dados.troco   = {cofre:0,transferido:0};
 if (!dados.aportes)       dados.aportes = {cofre:0,transferido:0};
-if (!dados.tesouroDireto) dados.tesouroDireto = 0; // ← NOVO
-
+if (!dados.tesouroDireto) dados.tesouroDireto = 0; 
+if (dados.reservaVendaPut === undefined) dados.reservaVendaPut = 0;
+    
 let ops = (() => {
     try {
         const raw = localStorage.getItem(CHAVE_OP) || localStorage.getItem('dados_call_ops');
@@ -987,7 +998,7 @@ function abrirNovaPut() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
     const cotacao = cotacaoAcao || 0;
     const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
     const maxAcoes = Math.floor(maxAcoesBruto / 100) * 100;
@@ -1030,14 +1041,19 @@ function confirmarNovaPut() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
     const cotacao = cotacaoAcao || 0;
     const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
 
-    if (qtd > maxAcoes) {
+        if (qtd > maxAcoes) {
         alert(`Saldo insuficiente. Com ${fmt(saldoDisp)} você garante no máximo ${maxAcoes} ações BBAS3.`);
         return;
     }
+
+    // reserva o valor da obrigação (strike × quantidade)
+    const valorReserva = parseFloat((strike * qtd).toFixed(2));
+    dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorReserva).toFixed(2));
+    dados.reservaVendaPut = parseFloat(((dados.reservaVendaPut || 0) + valorReserva).toFixed(2));
 
     ops.putAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, codigoOpcao:codigo };
     fecharNovaPut(); salvarOp(); atualizarTela();
@@ -1643,16 +1659,26 @@ function atualizarTela() {
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-    // Reserva B3
+       // Reserva B3
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+
+    // Reserva Venda Put
+    const reservaPut = dados.reservaVendaPut || 0;
+
+    // Saldo líquido real (caixa - reserva B3 - reserva Put)
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - reservaPut);
 
     document.getElementById('saldo-caixa').innerText = fmt(saldoDisp);
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(rbTotal)}`;
 
-    // Tesouro Direto (única definição)
+    // Exibe Reserva Venda Put
+    const elReservaPut = document.getElementById('reserva-put-valor');
+    elReservaPut.innerText = `- ${fmt(reservaPut)}`;
+    elReservaPut.style.color = reservaPut > 0 ? 'var(--queda)' : '#aaa';
+
+    // Tesouro Direto
     const tdVal = dados.tesouroDireto || 0;
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
