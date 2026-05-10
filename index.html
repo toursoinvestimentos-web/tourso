@@ -1056,7 +1056,7 @@ function confirmarNovaPut() {
         return;
     }
 
-    // trava se o caixa não cobre a quantidade desejada (saldo líquido real)
+      // trava se o caixa não cobre a quantidade desejada (saldo líquido real)
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
@@ -1064,8 +1064,15 @@ function confirmarNovaPut() {
     const cotacao = cotacaoAcao || 0;
     const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
 
-        if (qtd > maxAcoes) {
+    if (qtd > maxAcoes) {
         alert(`Saldo insuficiente. Com ${fmt(saldoDisp)} você garante no máximo ${maxAcoes} ações BBAS3.`);
+        return;
+    }
+
+    // trava se o strike ultrapassa o máximo permitido por ação
+    const maxStrike = qtd > 0 ? (saldoDisp / qtd) : 0;
+    if (strike > maxStrike) {
+        alert(`Strike acima do permitido. Com saldo de ${fmt(saldoDisp)} e ${qtd} ações, o strike máximo é R$ ${maxStrike.toFixed(2).replace('.', ',')}.`);
         return;
     }
 
