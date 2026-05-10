@@ -1128,12 +1128,14 @@ function confirmarFinPut() {
         statusNome = 'Liquidada';
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
-    } else if (tipo === 'rolada') {
+       } else if (tipo === 'rolada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
         if (resultadoBruto < 0) escudoNovo = Math.abs(resultadoBruto);
         statusNome = 'Rolada';
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
+        dados.reservaVendaPut = 0;
     }
 
     if (escudoNovo > 0) {
