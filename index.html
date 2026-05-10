@@ -545,7 +545,27 @@
         <button class="btn-extrato-fechar" onclick="fecharExtrato()">Fechar</button>
     </div>
 </div>
-
+    
+<!-- Modal Comprar Tesouro Direto -->
+<div class="modal-overlay" id="modal-compra-tesouro">
+    <div class="modal-box" style="border-top-color:#f39c12;">
+        <h3 style="color:#f39c12;">🏦 Comprar Tesouro Direto</h3>
+        <div id="tesouro-modal-info" style="background:rgba(243,156,18,0.08); border:1px solid #f39c12; border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no caixa</div>
+            <div id="tesouro-modal-saldo" style="font-size:1.3em; font-weight:bold; color:#f39c12;">R$ 0,00</div>
+        </div>
+        <div class="modal-campo">
+            <label>Valor investido (R$)</label>
+            <input type="text" inputmode="decimal" id="tesouro-valor-input" placeholder="Ex: 180,00">
+            <small>Esse valor será subtraído do caixa operacional e registrado como Tesouro Direto.</small>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharCompraTesouro()">Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#f39c12; color:var(--fundo); font-size:0.9em;" onclick="confirmarCompraTesouro()">Confirmar</button>
+        </div>
+    </div>
+</div>
+    
 <!-- Modal Resumo Anual -->
 <div class="modal-overlay" id="modal-resumo-anual">
     <div class="modal-box">
