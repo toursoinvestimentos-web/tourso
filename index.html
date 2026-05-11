@@ -1178,8 +1178,8 @@ function confirmarFinPut() {
     }
 
     if (escudoNovo > 0) {
-        ops.resumo.escudoBloqueado = parseFloat(((ops.resumo.escudoBloqueado || 0) + escudoNovo).toFixed(2));
-    }
+    ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + escudoNovo).toFixed(2));
+}
     ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido || 0) + resultadoBruto).toFixed(2));
     ops.resumo.totalOps++;
     const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
