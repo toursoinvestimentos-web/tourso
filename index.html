@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" id="manifest-link">
-    <title>TOURSO_v5.4</title>
+    <title>TOURSO_v5.5</title>
     <style>
         :root { --fundo: #2c2f33; --card: #36393f; --ciano: #00bcd4; --branco: #ffffff; --alta: #00e676; --queda: #ff6b6b; }
         * { box-sizing: border-box; }
@@ -91,12 +91,26 @@
         .cot-box { background: rgba(0,0,0,0.22); padding: 12px; border-radius: 8px; text-align: center; flex: 1; }
         .cot-box-label { font-size: 0.63em; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
         .cot-box-val { font-size: 1.15em; font-weight: bold; color: #aaa; }
+
+        /* ══ Caixa Operacional — novo layout ══ */
+        .caixa-bloco { background: rgba(0,0,0,0.2); border: 1px solid #444; border-radius: 10px; margin-top: 12px; overflow: hidden; }
+        .caixa-bloco-header { padding: 8px 14px; border-bottom: 1px solid #444; }
+        .caixa-bloco-titulo { font-size: 0.68em; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; }
+        .caixa-linha { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; }
+        .caixa-linha + .caixa-linha { border-top: 1px solid #3a3a3a; }
+        .caixa-linha-esq { display: flex; align-items: center; gap: 10px; font-size: 0.84em; color: #ccc; }
+        .caixa-linha-icone { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .caixa-linha-valor { font-size: 0.82em; font-weight: bold; }
+        .caixa-btn { border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.8em; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .caixa-btn-ciano  { background: var(--ciano); color: var(--fundo); }
+        .caixa-btn-laranja { background: #f39c12; color: var(--fundo); }
+        .caixa-btn-vender  { background: var(--queda); color: var(--branco); }
     </style>
 </head>
 <body>
 
 <div id="banner-install">
-    <span>📲 Instalar TOURSO_v5.4 como app</span>
+    <span>📲 Instalar TOURSO_v5.5 como app</span>
     <button onclick="instalarApp()">INSTALAR</button>
 </div>
 
@@ -258,7 +272,8 @@
 
 <!-- ═══ CARD 6: CAIXA OPERACIONAL ═══ -->
 <div class="card" style="border-left-color:var(--alta);">
-    <!-- Topo: título + gauge lado a lado com divisória -->
+
+    <!-- Topo: título + gauge — NÃO ALTERADO -->
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
             <div class="pilar-label" style="font-size:0.85em; text-transform:uppercase; letter-spacing:0.08em; color:#aaa; margin-top:-18px;">Caixa Operacional</div>
@@ -281,54 +296,112 @@
         </div>
     </div>
 
-    <!-- Sub-quadro: Reservas / Bloqueios -->
-    <div style="background:rgba(0,0,0,0.2); border:1px solid #444; border-radius:10px; margin-top:14px; overflow:hidden;">
-        <!-- Cabeçalho -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 14px; border-bottom:1px solid #444;">
-            <span style="font-size:0.68em; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.07em;">Reservas / Bloqueios</span>
-            <span style="font-size:0.68em; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.07em;">Valor</span>
-        </div>
-        <!-- Reserva B3 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #3a3a3a;">
-            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
-                <span style="font-size:1em;">🔒</span> Reserva B3
-            </span>
-            <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
-        </div>
-        <!-- Reserva Venda Put -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #3a3a3a;">
-            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
-                <span style="font-size:1em;">🔒</span> Reserva Venda PUT
-            </span>
-            <span id="reserva-put-valor" style="font-size:0.82em; font-weight:bold; color:var(--queda);">- R$ 0,00</span>
+    <!-- ══ BLOCO 1: TESOURO DIRETO ══ -->
+    <div class="caixa-bloco">
+        <div class="caixa-bloco-header">
+            <span class="caixa-bloco-titulo">Tesouro Direto</span>
         </div>
         <!-- Tesouro Direto Investido -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px;">
-            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
-                <span style="font-size:1em;">🔒</span> Tesouro Direto Investido
-            </span>
-            <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone">
+                    <svg width="20" height="20" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(0,512) scale(0.1,-0.1)" fill="#f1c40f" stroke="none">
+                            <path d="M2515 4093 c-465 -22 -1115 -124 -1494 -234 -157 -46 -194 -68 -225 -131 -64 -132 -107 -467 -73 -568 8 -24 19 -36 34 -38 12 -2 106 37 213 88 248 117 426 193 630 268 572 208 1188 308 1590 258 346 -44 527 -125 652 -294 38 -51 39 -52 66 -38 40 21 112 86 112 100 0 30 -64 137 -115 193 -127 141 -329 254 -581 326 -219 63 -483 86 -809 70z"/>
+                            <path d="M3910 2928 c-56 -187 -179 -455 -288 -631 -246 -399 -617 -723 -1069 -934 -52 -24 -96 -50 -99 -58 -24 -63 178 -236 325 -279 88 -26 113 -21 230 39 270 141 532 385 716 668 194 298 340 706 362 1008 5 77 3 92 -16 132 -23 48 -101 127 -125 127 -9 0 -22 -27 -36 -72z"/>
+                        </g>
+                    </svg>
+                </div>
+                Tesouro Direto Investido
+            </div>
+            <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#f39c12;">- R$ 0,00</span>
+        </div>
+        <!-- Comprar Tesouro -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8.5" stroke="#00e676" stroke-width="1"/>
+                        <line x1="9" y1="4.5" x2="9" y2="13.5" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="4.5" y1="9" x2="13.5" y2="9" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div id="comprar-tesouro" style="font-size:0.87em; color:#ccc;">Comprar +0 fração Tesouro</div>
+            </div>
+            <button onclick="abrirCompraTesouro()" class="caixa-btn caixa-btn-ciano">Comprar</button>
+        </div>
+        <!-- Resgatar Tesouro -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8.5" stroke="#ff6b6b" stroke-width="1"/>
+                        <line x1="4.5" y1="9" x2="13.5" y2="9" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div id="resgatar-tesouro" style="font-size:0.87em; color:#ccc;">Resgatar R$ 0,00 Tesouro</div>
+            </div>
+            <button onclick="abrirResgateTesouro()" class="caixa-btn caixa-btn-laranja">Resgate</button>
         </div>
     </div>
 
-    <!-- Sub-quadro: Ações -->
-    <div style="background:rgba(0,0,0,0.2); border:1px solid #444; border-radius:10px; margin-top:12px; overflow:hidden;">
-        <!-- Comprar Tesouro -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid #3a3a3a;">
-            <div id="comprar-tesouro" style="font-size:0.87em; color:#ccc;">Comprar +0 fração Tesouro</div>
-            <button onclick="abrirCompraTesouro()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Comprar</button>
+    <!-- ══ BLOCO 2: RESERVAS / BLOQUEIOS ══ -->
+    <div class="caixa-bloco">
+        <div class="caixa-bloco-header">
+            <span class="caixa-bloco-titulo">Reservas / Bloqueios</span>
         </div>
-        <!-- Resgatar Tesouro -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid #3a3a3a;">
-            <div id="resgatar-tesouro" style="font-size:0.87em; color:#ccc;">Resgatar +R$ 0,00 Tesouro</div>
-            <button onclick="abrirResgateTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Resgate</button>
+        <!-- Reserva B3 -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone" style="font-size:1.1em;">🔒</div>
+                Reserva B3
+            </div>
+            <span id="reserva-b3-valor" class="caixa-linha-valor" style="color:#ff9900;">- R$ 0,00</span>
         </div>
-        <!-- Comprar BBAS3 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px;">
-            <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 ações BBAS3</div>
-            <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Comprar</button>
+        <!-- Reserva Venda Put -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone" style="font-size:1.1em;">🔒</div>
+                Reserva Venda PUT
+            </div>
+            <span id="reserva-put-valor" class="caixa-linha-valor" style="color:var(--queda);">- R$ 0,00</span>
         </div>
     </div>
+
+    <!-- ══ BLOCO 3: COMPRA / VENDA DE AÇÕES ══ -->
+    <div class="caixa-bloco">
+        <div class="caixa-bloco-header">
+            <span class="caixa-bloco-titulo">Compra / Venda de Ações</span>
+        </div>
+        <!-- Comprar BBAS3 -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8.5" stroke="#00e676" stroke-width="1"/>
+                        <line x1="9" y1="4.5" x2="9" y2="13.5" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="4.5" y1="9" x2="13.5" y2="9" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 ações BBAS3</div>
+            </div>
+            <button onclick="abrirCompra()" class="caixa-btn caixa-btn-ciano">Comprar</button>
+        </div>
+        <!-- Vender BBAS3 -->
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <div class="caixa-linha-icone">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="9" cy="9" r="8.5" stroke="#ff6b6b" stroke-width="1"/>
+                        <line x1="4.5" y1="9" x2="13.5" y2="9" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div id="vender-bbas3" style="font-size:0.87em; color:#ccc;">Vender -0 ações BBAS3</div>
+            </div>
+            <button onclick="abrirVenda()" class="caixa-btn caixa-btn-vender">Vender</button>
+        </div>
+    </div>
+
 </div>
 
 <!-- ═══ PILARES ═══ -->
@@ -397,7 +470,7 @@
     </div>
 </div>
 
-<!-- Modal Configurações (meta saída + reserva B3 + fração Tesouro) -->
+<!-- Modal Configurações -->
 <div class="modal-overlay" id="modal-zonas">
     <div class="modal-box">
         <h3>⚙️ Configurações</h3>
@@ -612,6 +685,30 @@
     </div>
 </div>
 
+<!-- Modal Vender BBAS3 -->
+<div class="modal-overlay" id="modal-venda">
+    <div class="modal-box" style="border-top-color:var(--queda);">
+        <h3 style="color:var(--queda);">📉 Vender Ações BBAS3</h3>
+        <div style="background:rgba(255,107,107,0.08); border:1px solid var(--queda); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Ações disponíveis</div>
+            <div id="venda-modal-qtd" style="font-size:1.3em; font-weight:bold; color:var(--queda);">0 ações</div>
+        </div>
+        <div class="modal-campo">
+            <label>Quantidade a vender</label>
+            <input type="number" inputmode="numeric" id="venda-qtd-input" placeholder="Ex: 100">
+            <small>1 lote = 100 ações</small>
+        </div>
+        <div class="modal-campo">
+            <label>Preço de venda por ação (R$)</label>
+            <input type="text" inputmode="decimal" id="venda-preco-input" placeholder="Ex: 25,50">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharVenda()">Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:var(--queda); color:var(--branco); font-size:0.9em;" onclick="confirmarVenda()">Confirmar Venda</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════
 // PWA
@@ -619,11 +716,11 @@
 (function() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#2c2f33"/><rect x="80" y="130" width="240" height="15" fill="#00bcd4"/><polygon points="200,150 170,200 230,200" fill="#00bcd4"/><text x="200" y="255" font-family="Arial" font-size="65" font-weight="bold" fill="white" text-anchor="middle">TOURSO</text><text x="200" y="290" font-family="Arial" font-size="28" fill="#00bcd4" text-anchor="middle">Investimentos</text></svg>`;
     const icon = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    const mf = { name:"TOURSO_v5.4", short_name:"v5.4", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
+    const mf = { name:"TOURSO_v5.5", short_name:"v5.5", start_url:"./", scope:"./", display:"standalone", background_color:"#2c2f33", theme_color:"#00bcd4", icons:[{src:icon,sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"},{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}] };
     document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
 })();
 if ('serviceWorker' in navigator) {
-    const sw = `const CACHE='tourso-v5.4';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
+    const sw = `const CACHE='tourso-v5.5';\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add('./')));self.skipWaiting();});\nself.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});\nself.addEventListener('fetch',e=>{e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});`;
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{});
 }
 let deferredPrompt = null;
@@ -658,7 +755,7 @@ const BASE = {
 const BASE_OP = {
     operacaoAtual: null,
     putAtual: null,
-    resumo: { resultadoLiquido:0, totalOps:0, somaOtm:0, escudoDisponivel:0, escudoBloqueado:0 },
+    resumo: { resultadoLiquido:0, totalOps:0, somaOtm:0, escudoDisponivel:0 },
     historico: []
 };
 
@@ -688,7 +785,8 @@ if (ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === 
 }
 if (!ops.resumo.resultadoLiquido) ops.resumo.resultadoLiquido = 0;
 if (!ops.resumo.escudoDisponivel) ops.resumo.escudoDisponivel = 0;
-if (!ops.resumo.escudoBloqueado)  ops.resumo.escudoBloqueado  = 0;
+// Migração: remover escudoBloqueado legado
+if (ops.resumo.escudoBloqueado !== undefined) delete ops.resumo.escudoBloqueado;
 ops.historico.forEach(c => { if (!c.tipo) c.tipo = 'call'; });
 
 let cotacaoAcao  = null;
@@ -836,6 +934,37 @@ function confirmarResgateTesouro() {
     dados.tesouroDireto = parseFloat((tdVal - valor).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valor).toFixed(2));
     fecharResgateTesouro();
+    atualizarTela();
+}
+
+// ═══════════════════════════════════════════
+// Venda BBAS3
+// ═══════════════════════════════════════════
+function abrirVenda() {
+    const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    document.getElementById('venda-modal-qtd').innerText = qtdTotal + ' ações';
+    document.getElementById('venda-qtd-input').value = qtdTotal;
+    document.getElementById('venda-preco-input').value = cotacaoAcao ? cotacaoAcao.toFixed(2).replace('.',',') : '';
+    document.getElementById('modal-venda').classList.add('ativo');
+}
+function fecharVenda() { document.getElementById('modal-venda').classList.remove('ativo'); }
+function confirmarVenda() {
+    const qtdVenda = parseInt(document.getElementById('venda-qtd-input').value) || 0;
+    const precoVenda = toNum(document.getElementById('venda-preco-input').value);
+    if (!qtdVenda || qtdVenda <= 0) { alert('Informe a quantidade a vender.'); return; }
+    if (!precoVenda || precoVenda <= 0) { alert('Informe o preço de venda.'); return; }
+    const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    if (qtdVenda > qtdTotal) { alert(`Você possui apenas ${qtdTotal} ações.`); return; }
+    // Reduz ações: FIFO
+    let restante = qtdVenda;
+    while (restante > 0 && dados.acoes.length > 0) {
+        const lote = dados.acoes[0];
+        if (lote.qtd <= restante) { restante -= lote.qtd; dados.acoes.shift(); }
+        else { lote.qtd -= restante; restante = 0; }
+    }
+    const valorRecebido = parseFloat((qtdVenda * precoVenda).toFixed(2));
+    dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valorRecebido).toFixed(2));
+    fecharVenda();
     atualizarTela();
 }
 
@@ -1002,14 +1131,11 @@ function confirmarFinOp() {
     if (tipo==='po'||tipo==='exercida') {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = tipo==='po' ? 'Virou pó' : 'Exercida';
-        if (tipo==='exercida') {
-            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel||0) + (ops.resumo.escudoBloqueado||0)).toFixed(2));
-            ops.resumo.escudoBloqueado  = 0;
-        }
     } else {
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
+        // Prejuízo em rolagem/liquidação gera escudo disponível
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel||0) + Math.abs(resultadoBruto)).toFixed(2));
         }
@@ -1143,19 +1269,19 @@ function confirmarFinPut() {
     const tipo = document.getElementById('fin-put-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
 
-    let resultadoBruto, statusNome, escudoNovo = 0;
+    let resultadoBruto, statusNome;
     const reservaAtual = dados.reservaVendaPut || 0;
 
     if (tipo === 'po') {
+        // Virou pó: prêmio total, devolve reserva ao caixa
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     } else if (tipo === 'exercida') {
-        const prejBruto = parseFloat(((op.precoAcao - op.strike) * op.quantidade).toFixed(2));
-        const premTotal = parseFloat((op.premio * op.quantidade).toFixed(2));
-        escudoNovo = Math.max(0, parseFloat((prejBruto - premTotal).toFixed(2)));
-        resultadoBruto = parseFloat((premTotal - prejBruto).toFixed(2));
+        // Exercida: compra ações ao strike, prêmio compensa parcialmente
+        // Resultado = apenas o prêmio recebido (sem gerar escudo bloqueado)
+        resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         dados.acoes.push({ qtd: op.quantidade, preco: op.strike });
         dados.reservaVendaPut = 0;
@@ -1163,7 +1289,10 @@ function confirmarFinPut() {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
-        if (resultadoBruto < 0) escudoNovo = Math.abs(resultadoBruto);
+        // Prejuízo em liquidação gera escudo disponível
+        if (resultadoBruto < 0) {
+            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
+        }
         statusNome = 'Liquidada';
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
@@ -1171,15 +1300,15 @@ function confirmarFinPut() {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
-        if (resultadoBruto < 0) escudoNovo = Math.abs(resultadoBruto);
+        // Prejuízo em rolagem gera escudo disponível
+        if (resultadoBruto < 0) {
+            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
+        }
         statusNome = 'Rolada';
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     }
 
-    if (escudoNovo > 0) {
-    ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + escudoNovo).toFixed(2));
-}
     ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido || 0) + resultadoBruto).toFixed(2));
     ops.resumo.totalOps++;
     const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
@@ -1195,12 +1324,12 @@ function confirmarFinPut() {
         resultadoBruto,
         resultadoLiquido: resultadoBruto,
         status: statusNome,
-        escudoGerado: escudoNovo,
         duracaoUteis
     });
     ops.putAtual = null;
     fecharFinPut();
     salvarOp();
+    salvar();
     atualizarTela();
 }
 
@@ -1240,8 +1369,7 @@ function atualizarCardCall() {
     } else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
 
     const escDisp = ops.resumo.escudoDisponivel || 0;
-    const escBloc = ops.resumo.escudoBloqueado  || 0;
-    document.getElementById('escudo-total-val').innerText = fmt(escDisp + escBloc);
+    document.getElementById('escudo-total-val').innerText = fmt(escDisp);
 
     const btnC = document.getElementById('btn-call-acao'), txtC = document.getElementById('call-status-txt');
     if (ops.operacaoAtual?.aberta) { txtC.innerText='🟡 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-fin'; }
@@ -1556,21 +1684,18 @@ function abrirExtratoCiclos() {
     const totalBruto = hist.reduce((s,c)=>s+(c.resultadoBruto||0),0);
     const meses = _chavesMes(hist), mesesAsc=[...meses].reverse();
     const darfPorMes={};
-    let escDisp=0, escBloc=0;
+    let escDisp=0;
 
     for (const mes of mesesAsc) {
         const cm = hist.filter(c=>(c.dataFechamento||'').startsWith(mes));
-        cm.filter(c=>c.tipo==='put'&&c.escudoGerado>0).forEach(c=>{ escBloc=parseFloat((escBloc+c.escudoGerado).toFixed(2)); });
         const lm = cm.reduce((s,c)=>s+(c.resultadoBruto||0),0);
         if (lm<=0) { escDisp=parseFloat((escDisp+Math.abs(lm)).toFixed(2)); darfPorMes[mes]={darf:0,escudoUsado:0,escDisp,baseTribt:0,lm}; }
         else { const eu=Math.min(escDisp,lm); const bt=parseFloat((lm-eu).toFixed(2)); const df=parseFloat((bt*0.15).toFixed(2)); escDisp=parseFloat((escDisp-eu).toFixed(2)); darfPorMes[mes]={darf:df,escudoUsado:eu,escDisp,baseTribt:bt,lm}; }
     }
     ops.resumo.escudoDisponivel = escDisp;
-    ops.resumo.escudoBloqueado  = escBloc;
-    ops.resumo.darfPago = Object.values(darfPorMes).reduce((s,m)=>s+m.darf,0);
     salvarOp();
 
-    const totalDarf = ops.resumo.darfPago;
+    const totalDarf = Object.values(darfPorMes).reduce((s,m)=>s+m.darf,0);
     const totalLiq  = parseFloat((totalBruto-totalDarf).toFixed(2));
 
     let html = `<div style="background:rgba(0,188,212,0.08);border:1px solid #00bcd4;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
@@ -1579,9 +1704,7 @@ function abrirExtratoCiclos() {
             <div><div style="font-size:0.63em;color:#aaa;">💰 Bruto total</div><div style="font-weight:bold;">${fmt(totalBruto)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">🧾 DARF total</div><div style="font-weight:bold;color:var(--queda);">- ${fmt(totalDarf)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">💵 Líquido total</div><div style="font-weight:bold;color:${totalLiq>=0?'var(--alta)':'var(--queda)'};">${fmt(totalLiq)}</div></div>
-            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo total</div><div style="font-weight:bold;color:var(--alta);">${fmt(escDisp+escBloc)}</div></div>
-            <div><div style="font-size:0.63em;color:#aaa;">✅ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(escDisp)}</div></div>
-            <div><div style="font-size:0.63em;color:#aaa;">🔒 Escudo bloqueado</div><div style="font-weight:bold;color:#f39c12;">${fmt(escBloc)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(escDisp)}</div></div>
         </div>
     </div>`;
 
@@ -1610,7 +1733,6 @@ function abrirExtratoCiclos() {
                 : `<span style="background:rgba(0,188,212,0.15);color:var(--ciano);font-size:0.65em;padding:2px 6px;border-radius:10px;font-weight:bold;">CALL</span>`;
             const corSt = (c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada') ? 'var(--alta)' : (c.resultadoBruto<0?'var(--queda)':'#f1c40f');
             const bgSt  = (c.status==='Virou pó'||c.status==='Exercida'||c.status==='Liquidada') ? 'rgba(0,230,118,0.15)' : (c.resultadoBruto<0?'rgba(255,107,107,0.15)':'rgba(241,196,15,0.15)');
-            const escLn = c.escudoGerado>0 ? `<div class="ciclo-linha"><span class="ciclo-label">🔒 Escudo gerado (put)</span><span class="ciclo-valor" style="color:#f39c12;">${fmt(c.escudoGerado)}</span></div>` : '';
             const durLn = c.duracaoUteis>0 ? `<div class="ciclo-linha"><span class="ciclo-label">Duração</span><span class="ciclo-valor">${c.duracaoUteis} d.u.</span></div>` : '';
             const codLn = c.codigoOpcao ? `<div class="ciclo-linha"><span class="ciclo-label">Código</span><span class="ciclo-valor" style="color:var(--ciano);">${c.codigoOpcao}</span></div>` : '';
 
@@ -1625,7 +1747,6 @@ function abrirExtratoCiclos() {
                 <div class="ciclo-linha"><span class="ciclo-label">Prêmio</span><span class="ciclo-valor">${fmt(c.premioPorAcao)}/ação × ${c.quantidade}</span></div>
                 ${durLn}
                 <div class="ciclo-linha"><span class="ciclo-label">Resultado bruto</span><span class="ciclo-valor" style="color:${(c.resultadoBruto||0)>=0?'var(--alta)':'var(--queda)'};">${fmt(c.resultadoBruto||0)}</span></div>
-                ${escLn}
                 <span class="ciclo-status" style="background:${bgSt};color:${corSt};">${c.status}</span>
             </div>`;
         }
@@ -1757,11 +1878,9 @@ function atualizarTela() {
     document.getElementById('qtd-total').innerText = q;
     document.getElementById('pm-oficial').innerText = fmt(pm);
 
-    // ── Strike mínimo (dentro do widget Venda Coberta Call) ──
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-  // ── Badge Prêmio ──
     const _badgeEl = document.getElementById('premio-badge');
     const _badgeTxtEl = document.getElementById('premio-badge-txt');
     if (_badgeEl && _badgeTxtEl) {
@@ -1784,7 +1903,7 @@ function atualizarTela() {
         _badgeTxtEl.innerText = _bw;
     }
     
-    // Reserva B3 (suga dinheiro do caixa)
+    // Reserva B3
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
@@ -1801,28 +1920,24 @@ function atualizarTela() {
         dados.reservaB3Acumulada = rbTotal;
     }
 
-    // Reserva Venda Put (apenas exibição)
     const reservaPut = dados.reservaVendaPut || 0;
-
-    // Saldo exibido: dinheiro real em caixa
     const saldoExibicao = dados.caixaDisponivel;
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
 
     document.getElementById('saldo-caixa').innerText = fmt(saldoExibicao);
     document.getElementById('reserva-b3-valor').innerText = `- ${fmt(dados.reservaB3Acumulada)}`;
 
-    // Exibe Reserva Venda Put
     const elReservaPut = document.getElementById('reserva-put-valor');
     elReservaPut.innerText = `- ${fmt(reservaPut)}`;
     elReservaPut.style.color = reservaPut > 0 ? 'var(--queda)' : '#aaa';
 
-    // Tesouro Direto
     const tdVal = dados.tesouroDireto || 0;
     document.getElementById('tesouro-direto-valor').innerText = `- ${fmt(tdVal)}`;
 
-    // Arc widget — progresso Tesouro → 1 lote BBAS3
+    // Arc Tesouro
     const _arcTotal = 131.95;
-    const _alvoLote = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao * 100 : 0;
+    const ctp = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao : 1;
+    const _alvoLote = ctp * 100;
     const _tdProg = _alvoLote > 0 ? Math.min(1, tdVal / _alvoLote) : 0;
     const _arcOffset = parseFloat((_arcTotal * (1 - _tdProg)).toFixed(2));
     const _arcPct = Math.round(_tdProg * 100);
@@ -1835,10 +1950,14 @@ function atualizarTela() {
     if (_arcPctEl) { _arcPctEl.innerText = _arcPct + '%'; _arcPctEl.style.color = _arcColor; }
 
     // Comprar BBAS3
-    const ctp = (cotacaoAcao !== null && cotacaoAcao > 0) ? cotacaoAcao : 1;
     const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+
+    // Vender BBAS3 — quantidade exata em carteira
+    const qtdParaVender = q;
+    document.getElementById('vender-bbas3').innerHTML =
+        `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">ações BBAS3</span>`;
 
     // Comprar Tesouro
     const valorFracao = zonas.valorFracaoTesouro || 180;
@@ -1874,7 +1993,7 @@ function abrirCompra() {
 function exportar() {
     const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v54_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v55_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function importar(input) {
     const r=new FileReader();
@@ -1886,7 +2005,8 @@ function importar(input) {
                 if(ops.resumo&&ops.resumo.premiosLiquidos!==undefined){ops.resumo.resultadoLiquido=ops.resumo.premiosLiquidos;delete ops.resumo.premiosLiquidos;}
                 if(!ops.resumo.resultadoLiquido)ops.resumo.resultadoLiquido=0;
                 if(!ops.resumo.escudoDisponivel)ops.resumo.escudoDisponivel=0;
-                if(!ops.resumo.escudoBloqueado)ops.resumo.escudoBloqueado=0;
+                // Migração: remover escudoBloqueado legado do backup
+                if(ops.resumo.escudoBloqueado!==undefined)delete ops.resumo.escudoBloqueado;
                 if(ops.putAtual===undefined)ops.putAtual=null;
                 ops.historico.forEach(c=>{if(!c.tipo)c.tipo='call';});
                 delete payload.opsCall; salvarOp();
