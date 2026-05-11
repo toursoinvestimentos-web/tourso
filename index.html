@@ -955,6 +955,15 @@ function confirmarVenda() {
     if (!precoVenda || precoVenda <= 0) { alert('Informe o preço de venda.'); return; }
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     if (qtdVenda > qtdTotal) { alert(`Você possui apenas ${qtdTotal} ações.`); return; }
+       const custoTotalCart = dados.acoes.reduce((s, x) => s + x.qtd * x.preco, 0);
+    const qtdTotalCart   = dados.acoes.reduce((s, x) => s + x.qtd, 0);
+    const pmAtual        = qtdTotalCart > 0 ? custoTotalCart / qtdTotalCart : 0;
+    if (pmAtual > 0 && precoVenda < pmAtual) {
+        const prejuizo = parseFloat(((pmAtual - precoVenda) * qtdVenda).toFixed(2));
+        ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + prejuizo).toFixed(2));
+        salvarOp();
+    }
+
     // Reduz ações: FIFO
     let restante = qtdVenda;
     while (restante > 0 && dados.acoes.length > 0) {
@@ -1283,7 +1292,7 @@ function confirmarFinPut() {
         // Resultado = apenas o prêmio recebido (sem gerar escudo bloqueado)
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
-        dados.acoes.push({ qtd: op.quantidade, preco: op.strike });
+        dados.acoes.push({ qtd: op.quantidade, preco: parseFloat((op.strike - op.premio).toFixed(2)) });
         dados.reservaVendaPut = 0;
     } else if (tipo === 'liquidada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
