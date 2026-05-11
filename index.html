@@ -1761,7 +1761,7 @@ function atualizarTela() {
     document.getElementById('rent-tag').innerText = fmtP(rent);
     document.getElementById('rent-tag').style.color = rent >= 0 ? 'var(--alta)' : 'var(--queda)';
 
-    // ── Badge Prêmio ──
+  // ── Badge Prêmio ──
     const _badgeEl = document.getElementById('premio-badge');
     const _badgeTxtEl = document.getElementById('premio-badge-txt');
     if (_badgeEl && _badgeTxtEl) {
@@ -1772,9 +1772,9 @@ function atualizarTela() {
             _bb = '#00bcd4'; _bc = '#002f36'; _bw = 'Gordo';
         } else if (rent >= 0) {
             _bb = '#00e676'; _bc = '#003d1a'; _bw = 'Razoável';
-        } else if (rent > -8) {
+        } else if (rent >= -5) {
             _bb = '#f1c40f'; _bc = '#3d2f00'; _bw = 'Magro';
-        } else if (rent > -12) {
+        } else if (rent >= -11) {
             _bb = '#ff9900'; _bc = '#3d2200'; _bw = 'Residual';
         } else {
             _bb = '#ff6b6b'; _bc = '#3d0000'; _bw = 'Nulo';
@@ -1783,7 +1783,7 @@ function atualizarTela() {
         _badgeTxtEl.style.color = _bc;
         _badgeTxtEl.innerText = _bw;
     }
-
+    
     // Reserva B3 (suga dinheiro do caixa)
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
