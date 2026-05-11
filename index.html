@@ -258,70 +258,76 @@
 
 <!-- ═══ CARD 6: CAIXA OPERACIONAL ═══ -->
 <div class="card" style="border-left-color:var(--alta);">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <!-- Topo: título + gauge lado a lado com divisória -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-            <div class="pilar-label">Caixa Operacional</div>
-            <div id="saldo-caixa" style="font-size:1.5em; font-weight:bold; margin:5px 0;">R$ 0,00</div>
+            <div class="pilar-label" style="font-size:0.72em; text-transform:uppercase; letter-spacing:0.08em; color:#aaa;">Caixa Operacional</div>
+            <div id="saldo-caixa" style="font-size:1.7em; font-weight:bold; margin:4px 0 0;">R$ 0,00</div>
         </div>
-        <div style="position:relative; width:100px; flex-shrink:0; margin-top:2px;">
-    <svg width="100" height="58" viewBox="0 0 100 58" fill="none">
-        <path d="M8 52 A42 42 0 0 1 92 52" stroke="#333" stroke-width="8" stroke-linecap="round"/>
-        <path id="tesouro-arc" d="M8 52 A42 42 0 0 1 92 52" stroke="#f1c40f" stroke-width="8"
-            stroke-linecap="round" stroke-dasharray="131.95" stroke-dashoffset="131.95"/>
-    </svg>
-    <div style="position:absolute; bottom:2px; left:0; right:0; text-align:center;">
-        <div id="tesouro-arc-pct" style="font-size:16px; font-weight:bold; color:#f1c40f; line-height:1;">0%</div>
-        <div style="font-size:11px; color:#aaa; margin-top:2px;">→ 1 lote</div>
-    </div>
-</div>
-    </div>
-
-    <!-- linha fina após saldo -->
-    <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
-
-    <!-- Reserva B3 -->
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
-        <span style="font-size:0.75em; color:#aaa;">🔒 Reserva B3</span>
-        <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+        <div style="width:1px; background:#444; align-self:stretch; margin:0 16px;"></div>
+        <div style="position:relative; width:90px; flex-shrink:0;">
+            <svg width="90" height="54" viewBox="0 0 100 58" fill="none">
+                <path d="M8 52 A42 42 0 0 1 92 52" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+                <path id="tesouro-arc" d="M8 52 A42 42 0 0 1 92 52" stroke="#f1c40f" stroke-width="8"
+                    stroke-linecap="round" stroke-dasharray="131.95" stroke-dashoffset="131.95"/>
+            </svg>
+            <div style="position:absolute; top:2px; left:0; right:0; text-align:center;">
+                <div style="font-size:9px; color:#aaa; text-transform:uppercase; letter-spacing:0.05em; line-height:1.2;">Tesouro Direto</div>
+            </div>
+            <div style="position:absolute; bottom:0px; left:0; right:0; text-align:center;">
+                <div id="tesouro-arc-pct" style="font-size:15px; font-weight:bold; color:#f1c40f; line-height:1;">0%</div>
+                <div style="font-size:10px; color:#aaa; margin-top:1px;">→ 1 lote</div>
+            </div>
+        </div>
     </div>
 
-    <!-- linha fina após Reserva B3 -->
-    <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
-
+    <!-- Sub-quadro: Reservas / Bloqueios -->
+    <div style="background:rgba(0,0,0,0.2); border:1px solid #444; border-radius:10px; margin-top:14px; overflow:hidden;">
+        <!-- Cabeçalho -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 14px; border-bottom:1px solid #444;">
+            <span style="font-size:0.68em; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.07em;">Reservas / Bloqueios</span>
+            <span style="font-size:0.68em; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.07em;">Valor</span>
+        </div>
+        <!-- Reserva B3 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #3a3a3a;">
+            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
+                <span style="font-size:1em;">🔒</span> Reserva B3
+            </span>
+            <span id="reserva-b3-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+        </div>
         <!-- Reserva Venda Put -->
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
-        <span style="font-size:0.75em; color:#aaa;">🔒 Reserva Venda PUT</span>
-        <span id="reserva-put-valor" style="font-size:0.82em; font-weight:bold; color:var(--queda);">- R$ 0,00</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #3a3a3a;">
+            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
+                <span style="font-size:1em;">🔒</span> Reserva Venda PUT
+            </span>
+            <span id="reserva-put-valor" style="font-size:0.82em; font-weight:bold; color:var(--queda);">- R$ 0,00</span>
+        </div>
+        <!-- Tesouro Direto Investido -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px;">
+            <span style="display:flex; align-items:center; gap:8px; font-size:0.82em; color:#ccc;">
+                <span style="font-size:1em;">🔒</span> Tesouro Direto Investido
+            </span>
+            <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
+        </div>
     </div>
 
-    <!-- linha fina após Reserva Venda Put -->
-    <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
-
-    <!-- Tesouro Direto Investido -->
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
-        <span style="font-size:0.75em; color:#aaa;">🔒 Tesouro Direto Investido</span>
-        <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#ff9900;">- R$ 0,00</span>
-    </div>
-
-    <!-- Comprar Tesouro (botão azul) -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-        <div id="comprar-tesouro" style="font-size:0.85em;">Comprar +0 fração Tesouro</div>
-        <button onclick="abrirCompraTesouro()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
-    </div>
-
-    <!-- Resgatar Tesouro (botão laranja) -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-        <div id="resgatar-tesouro" style="font-size:0.85em;">Resgatar +R$ 0,00 Tesouro</div>
-        <button onclick="abrirResgateTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Resgate</button>
-    </div>
-
-    <!-- linha fina antes de Comprar BBAS3 -->
-    <div style="border-top:1px solid #5d5d5d; margin:6px 0;"></div>
-
-    <!-- Comprar BBAS3 (última linha) -->
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 0;">
-        <div id="comprar" style="font-size:0.85em;">Comprar +0 ações BBAS3</div>
-        <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:6px; padding:5px 12px; font-size:0.75em; font-weight:bold; cursor:pointer;">Comprar</button>
+    <!-- Sub-quadro: Ações -->
+    <div style="background:rgba(0,0,0,0.2); border:1px solid #444; border-radius:10px; margin-top:12px; overflow:hidden;">
+        <!-- Comprar Tesouro -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid #3a3a3a;">
+            <div id="comprar-tesouro" style="font-size:0.87em; color:#ccc;">Comprar +0 fração Tesouro</div>
+            <button onclick="abrirCompraTesouro()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Comprar</button>
+        </div>
+        <!-- Resgatar Tesouro -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid #3a3a3a;">
+            <div id="resgatar-tesouro" style="font-size:0.87em; color:#ccc;">Resgatar +R$ 0,00 Tesouro</div>
+            <button onclick="abrirResgateTesouro()" style="background:#f39c12; color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Resgate</button>
+        </div>
+        <!-- Comprar BBAS3 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px;">
+            <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 ações BBAS3</div>
+            <button onclick="abrirCompra()" style="background:var(--ciano); color:var(--fundo); border:none; border-radius:8px; padding:8px 18px; font-size:0.8em; font-weight:bold; cursor:pointer; white-space:nowrap;">Comprar</button>
+        </div>
     </div>
 </div>
 
