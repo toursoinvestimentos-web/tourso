@@ -1147,21 +1147,30 @@ function calcPreviewRolagem() {
 }
 
 // ═══════════════════════════════════════════
-// confirmarFinOp — Call Exercida
-// Remove ações (FIFO) e credita strike × qtd no caixa.
-// resultadoBruto = apenas o prêmio (ganho da venda já no caixa).
+// confirmarFinOp – Call (encerramento)
+// Calcula o resultado bruto, atualiza caixa e escudo fiscal,
+// e registra o ciclo no histórico.
+//
+// Cenários:
+// • Virou pó → prêmio integral (lucro) entra no caixa.
+// • Exercida  → prêmio entra no caixa, ações do lote são
+//               removidas da carteira (FIFO) e o valor ao
+//               strike é creditado no caixa.
+// • Rolada / Liquidada → resultado (prêmio − recompra)
+//               afeta o caixa (positivo ou negativo); se for
+//               negativo, o prejuízo acumula no escudo fiscal.
 // ═══════════════════════════════════════════
 function confirmarFinOp() {
     const op = ops.operacaoAtual; if (!op?.aberta) return;
-    const dataFech=document.getElementById('fin-data').value, tipo=document.getElementById('fin-tipo').value;
+    const dataFech = document.getElementById('fin-data').value;
+    const tipo = document.getElementById('fin-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
     let resultadoBruto, statusNome;
-    if (tipo==='po') {
-        // Virou pó: prêmio integral, ações permanecem em carteira
+    if (tipo === 'po') {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
-    } else if (tipo==='exercida') {
-        // Call exercida: remove as ações (FIFO) e credita strike × qtd no caixa
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2));
+    } else if (tipo === 'exercida') {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         let restante = op.quantidade;
@@ -1170,20 +1179,20 @@ function confirmarFinOp() {
             if (lote.qtd <= restante) { restante -= lote.qtd; dados.acoes.shift(); }
             else { lote.qtd -= restante; restante = 0; }
         }
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + op.strike * op.quantidade).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + op.strike * op.quantidade + resultadoBruto).toFixed(2));
     } else {
-        // Rolada ou Liquidada: prêmio líquido (recebido − recompra)
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2));
         if (resultadoBruto < 0) {
-            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel||0) + Math.abs(resultadoBruto)).toFixed(2));
+            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
         }
-        statusNome = tipo==='liquidada' ? 'Liquidada' : 'Rolada';
+        statusNome = tipo === 'liquidada' ? 'Liquidada' : 'Rolada';
     }
-    ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido||0) + resultadoBruto).toFixed(2));
+    ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido || 0) + resultadoBruto).toFixed(2));
     ops.resumo.totalOps++;
-    ops.resumo.somaOtm = parseFloat(((ops.resumo.somaOtm||0) + op.otm).toFixed(4));
+    ops.resumo.somaOtm = parseFloat(((ops.resumo.somaOtm || 0) + op.otm).toFixed(4));
     const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
     ops.historico.unshift({ tipo:'call', dataAbertura:op.dataAbertura, dataFechamento:dataFech, codigoOpcao:op.codigoOpcao||'', precoAcao:op.precoAcao, strike:op.strike, quantidade:op.quantidade, premioPorAcao:op.premio, resultadoBruto, resultadoLiquido:resultadoBruto, status:statusNome, duracaoUteis });
     ops.operacaoAtual = null;
@@ -1317,46 +1326,59 @@ function atualizarFinPutTipo() {
     document.getElementById('fin-put-campo-recompra').style.display = (tipo==='rolada'||tipo==='liquidada') ? 'block' : 'none';
 }
 
-function confirmarFinPut() {
+// ═══════════════════════════════════════════
+// confirmarFinPut – Put (encerramento)
+// Calcula o resultado bruto, devolve ou consome a garantia,
+// atualiza caixa e escudo fiscal, e registra o ciclo.
+//
+// Cenários:
+// • Virou pó → prêmio (lucro) somado ao caixa; garantia
+//              retorna integralmente ao caixa.
+// • Exercida  → garantia é usada para adquirir as ações ao
+//               preço de strike (PM = strike). O prêmio entra
+//               no caixa como lucro. Nenhum escudo é gerado.
+// • Liquidada / Rolada → garantia retorna ao caixa,
+//               resultado (prêmio − recompra) também afeta
+//               o caixa; se negativo, gera escudo fiscal.
+// ═══════════════════════════════════════════
+    function confirmarFinPut() {
     const op = ops.putAtual; if (!op?.aberta) return;
     const dataFech = document.getElementById('fin-put-data').value;
     const tipo = document.getElementById('fin-put-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
-
     let resultadoBruto, statusNome;
     const reservaAtual = dados.reservaVendaPut || 0;
 
     if (tipo === 'po') {
-        // Virou pó: prêmio total, devolve reserva ao caixa
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual + resultadoBruto).toFixed(2));
         dados.reservaVendaPut = 0;
     } else if (tipo === 'exercida') {
-        // Put exercida: reserva vira ações ao PM líquido (strike − prêmio)
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
-        dados.acoes.push({ qtd: op.quantidade, preco: parseFloat((op.strike - op.premio).toFixed(2)) });
+        dados.acoes.push({ qtd: op.quantidade, preco: op.strike }); // custo real = strike
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2)); // prêmio volta ao caixa
         dados.reservaVendaPut = 0;
     } else if (tipo === 'liquidada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual + resultadoBruto).toFixed(2));
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
         }
         statusNome = 'Liquidada';
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     } else if (tipo === 'rolada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual + resultadoBruto).toFixed(2));
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
         }
         statusNome = 'Rolada';
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     }
 
@@ -1364,26 +1386,15 @@ function confirmarFinPut() {
     ops.resumo.totalOps++;
     const duracaoUteis = calcularDiasUteis(op.dataAbertura, dataFech);
     ops.historico.unshift({
-        tipo: 'put',
-        dataAbertura: op.dataAbertura,
-        dataFechamento: dataFech,
-        codigoOpcao: op.codigoOpcao || '',
-        precoAcao: op.precoAcao,
-        strike: op.strike,
-        quantidade: op.quantidade,
-        premioPorAcao: op.premio,
-        resultadoBruto,
-        resultadoLiquido: resultadoBruto,
-        status: statusNome,
-        duracaoUteis
+        tipo: 'put', dataAbertura: op.dataAbertura, dataFechamento: dataFech,
+        codigoOpcao: op.codigoOpcao || '', precoAcao: op.precoAcao, strike: op.strike,
+        quantidade: op.quantidade, premioPorAcao: op.premio,
+        resultadoBruto, resultadoLiquido: resultadoBruto, status: statusNome, duracaoUteis
     });
     ops.putAtual = null;
-    fecharFinPut();
-    salvarOp();
-    salvar();
-    atualizarTela();
+    fecharFinPut(); salvarOp(); salvar(); atualizarTela();
 }
-
+    
 // ═══════════════════════════════════════════
 // Card Operações
 // ═══════════════════════════════════════════
