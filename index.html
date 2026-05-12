@@ -780,8 +780,6 @@ if (ops.resumo.premiosLiquidos !== undefined && ops.resumo.resultadoLiquido === 
 }
 if (!ops.resumo.resultadoLiquido) ops.resumo.resultadoLiquido = 0;
 if (!ops.resumo.escudoDisponivel) ops.resumo.escudoDisponivel = 0;
-// Migração: remover escudoBloqueado legado
-if (ops.resumo.escudoBloqueado !== undefined) delete ops.resumo.escudoBloqueado;
 ops.historico.forEach(c => { if (!c.tipo) c.tipo = 'call'; });
 
 let cotacaoAcao  = null;
@@ -1284,7 +1282,6 @@ function confirmarFinPut() {
         dados.reservaVendaPut = 0;
     } else if (tipo === 'exercida') {
         // Exercida: compra ações ao strike, prêmio compensa parcialmente
-        // Resultado = apenas o prêmio recebido (sem gerar escudo bloqueado)
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         dados.acoes.push({ qtd: op.quantidade, preco: parseFloat((op.strike - op.premio).toFixed(2)) });
@@ -2042,17 +2039,15 @@ function importar(input) {
     r.onload=function(){
         try{
             const payload=JSON.parse(r.result);
-            if(payload.opsCall){
-                ops=payload.opsCall;
-                if(ops.resumo&&ops.resumo.premiosLiquidos!==undefined){ops.resumo.resultadoLiquido=ops.resumo.premiosLiquidos;delete ops.resumo.premiosLiquidos;}
-                if(!ops.resumo.resultadoLiquido)ops.resumo.resultadoLiquido=0;
-                if(!ops.resumo.escudoDisponivel)ops.resumo.escudoDisponivel=0;
-                // Migração: remover escudoBloqueado legado do backup
-                if(ops.resumo.escudoBloqueado!==undefined)delete ops.resumo.escudoBloqueado;
-                if(ops.putAtual===undefined)ops.putAtual=null;
-                ops.historico.forEach(c=>{if(!c.tipo)c.tipo='call';});
-                delete payload.opsCall; salvarOp();
-            }
+           if(payload.opsCall){
+               ops=payload.opsCall;
+               if(ops.resumo&&ops.resumo.premiosLiquidos!==undefined){ops.resumo.resultadoLiquido=ops.resumo.premiosLiquidos;delete ops.resumo.premiosLiquidos;}
+               if(!ops.resumo.resultadoLiquido)ops.resumo.resultadoLiquido=0;
+               if(!ops.resumo.escudoDisponivel)ops.resumo.escudoDisponivel=0;
+               if(ops.putAtual===undefined)ops.putAtual=null;
+               ops.historico.forEach(c=>{if(!c.tipo)c.tipo='call';});
+               delete payload.opsCall; salvarOp();
+        }
             if(payload.histTroco){salvarHistorico('troco',payload.histTroco);delete payload.histTroco;}
             if(payload.histAportes){salvarHistorico('aportes',payload.histAportes);delete payload.histAportes;}
             if(payload.zonasConfig){
