@@ -1991,8 +1991,46 @@ function atualizarTela() {
 // Compra / Backup
 // ═══════════════════════════════════════════
 function abrirCompra() {
-    const q=prompt("Quantidade comprada:"), p=prompt("Preço pago (ex: 25,50):");
-    if(q&&p){dados.acoes.push({qtd:parseInt(q),preco:toNum(p)});dados.caixaDisponivel=parseFloat((dados.caixaDisponivel-parseInt(q)*toNum(p)).toFixed(2));atualizarTela();}
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    
+    document.getElementById('compra-modal-saldo').innerText = fmt(saldoDisp);
+    
+    const ctp = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao : 1;
+    const maxAcoes = Math.floor(saldoDisp / ctp);
+    document.getElementById('compra-qtd-input').value = maxAcoes;
+    document.getElementById('compra-preco-input').value = cotacaoAcao ? cotacaoAcao.toFixed(2).replace('.',',') : '';
+    
+    document.getElementById('modal-compra').classList.add('ativo');
+}
+
+function fecharCompra() {
+    document.getElementById('modal-compra').classList.remove('ativo');
+}
+
+function confirmarCompra() {
+    const qtd = parseInt(document.getElementById('compra-qtd-input').value) || 0;
+    const preco = toNum(document.getElementById('compra-preco-input').value);
+    if (!qtd || qtd <= 0) { alert('Informe a quantidade a comprar.'); return; }
+    if (!preco || preco <= 0) { alert('Informe o preço de compra.'); return; }
+    
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const valorTotal = parseFloat((qtd * preco).toFixed(2));
+    
+    if (valorTotal > saldoDisp + 0.001) {
+        alert(`Saldo insuficiente.\nDisponível: ${fmt(saldoDisp)}`);
+        return;
+    }
+    
+    dados.acoes.push({ qtd, preco });
+    dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorTotal).toFixed(2));
+    fecharCompra();
+    atualizarTela();
 }
 function exportar() {
     const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
