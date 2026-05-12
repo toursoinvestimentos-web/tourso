@@ -819,11 +819,24 @@ let _alertaAtivo = false;
 let _metaAtiva   = false;
 
 // ═══════════════════════════════════════════
+// FIX A: toNum() — suporta pontos de milhar e vírgula decimal
+// Antes: .replace(',','.') substituía só a primeira ocorrência.
+// Agora: remove todos os pontos de milhar, depois troca vírgula por ponto.
+// ═══════════════════════════════════════════
+function toNum(v) {
+    if (!v && v !== 0) return 0;
+    const s = String(v).trim();
+    // Remove pontos de milhar, substitui vírgula decimal por ponto
+    const normalizado = s.replace(/\./g, '').replace(',', '.');
+    const resultado = parseFloat(normalizado);
+    return isNaN(resultado) ? 0 : resultado;
+}
+
+// ═══════════════════════════════════════════
 // Utils
 // ═══════════════════════════════════════════
 function fmt(n)    { return 'R$ ' + parseFloat(n).toFixed(2).replace('.',','); }
 function fmtP(n)   { return parseFloat(n).toFixed(2).replace('.',',') + '%'; }
-function toNum(v)  { return v ? parseFloat(String(v).replace(',','.')) : 0; }
 function salvar()  { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 function salvarOp(){ localStorage.setItem(CHAVE_OP, JSON.stringify(ops)); }
 function hoje()    { return new Date().toISOString().slice(0,10); }
@@ -903,7 +916,7 @@ function abrirCompraTesouro() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
     document.getElementById('tesouro-modal-saldo').innerText = fmt(saldoDisp);
     document.getElementById('tesouro-valor-input').value = '';
     document.getElementById('modal-compra-tesouro').classList.add('ativo');
@@ -915,7 +928,7 @@ function confirmarCompraTesouro() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
     if (val > saldoDisp + 0.001) {
         alert(`Saldo insuficiente.\nDisponível: ${fmt(saldoDisp)}`);
         return;
@@ -947,8 +960,7 @@ function confirmarResgateTesouro() {
 
 // ═══════════════════════════════════════════
 // Venda BBAS3
-// FIX 1: Removido o bloco que gerava escudo por venda de ações abaixo do PM.
-// Esse tipo de prejuízo não é rastreado no app conforme decisão de design.
+// Sem geração de escudo fiscal — apenas FIFO + crédito no caixa.
 // ═══════════════════════════════════════════
 function abrirVenda() {
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
@@ -966,7 +978,7 @@ function confirmarVenda() {
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     if (qtdVenda > qtdTotal) { alert(`Você possui apenas ${qtdTotal} ações.`); return; }
 
-    // Reduz ações: FIFO
+    // Remove ações: FIFO
     let restante = qtdVenda;
     while (restante > 0 && dados.acoes.length > 0) {
         const lote = dados.acoes[0];
@@ -1135,10 +1147,9 @@ function calcPreviewRolagem() {
 }
 
 // ═══════════════════════════════════════════
-// FIX 2: confirmarFinOp — Call Exercida
-// Agora remove as ações exercidas (FIFO) e credita strike × qtd no caixa.
-// O resultado bruto registrado é apenas o prêmio (o ganho da venda das ações
-// é um evento patrimonial separado, já refletido no caixa).
+// confirmarFinOp — Call Exercida
+// Remove ações (FIFO) e credita strike × qtd no caixa.
+// resultadoBruto = apenas o prêmio (ganho da venda já no caixa).
 // ═══════════════════════════════════════════
 function confirmarFinOp() {
     const op = ops.operacaoAtual; if (!op?.aberta) return;
@@ -1150,8 +1161,7 @@ function confirmarFinOp() {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Virou pó';
     } else if (tipo==='exercida') {
-        // Call exercida: remove as ações do lote operado (FIFO) e
-        // credita o valor ao strike no caixa operacional.
+        // Call exercida: remove as ações (FIFO) e credita strike × qtd no caixa
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         let restante = op.quantidade;
@@ -1162,7 +1172,7 @@ function confirmarFinOp() {
         }
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + op.strike * op.quantidade).toFixed(2));
     } else {
-        // Rolada ou Liquidada: prêmio líquido (prêmio recebido − recompra)
+        // Rolada ou Liquidada: prêmio líquido (recebido − recompra)
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
@@ -1198,7 +1208,7 @@ function abrirNovaPut() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
     const cotacao = cotacaoAcao || 0;
     const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
     const maxAcoes = Math.floor(maxAcoesBruto / 100) * 100;
@@ -1227,7 +1237,7 @@ function atualizarHintStrike() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
     const maxStrike = (saldoDisp / qtd);
     hint.innerText = `Strike máximo: R$ ${maxStrike.toFixed(2).replace('.', ',')} por ação`;
     const inputStrike = document.getElementById('nput-strike');
@@ -1242,6 +1252,13 @@ function atualizarHintStrike() {
 }));
 document.getElementById('nput-strike').addEventListener('input', atualizarHintStrike);
 
+// ═══════════════════════════════════════════
+// FIX B: confirmarNovaPut — reservaVendaPut usa = em vez de +=
+// Antes: acumulava com +=, criando risco de saldo fantasma se o estado
+// ficasse inconsistente. Como só existe uma PUT por vez, o correto é
+// simplesmente setar o valor da reserva desta operação.
+// FIX C: Mensagem de erro clara quando cotação está indisponível.
+// ═══════════════════════════════════════════
 function confirmarNovaPut() {
     const dataAb=document.getElementById('nput-data').value, preco=toNum(document.getElementById('nput-preco').value),
           strike=toNum(document.getElementById('nput-strike').value), qtd=parseInt(document.getElementById('nput-qtd').value)||0,
@@ -1254,12 +1271,17 @@ function confirmarNovaPut() {
         return;
     }
 
+    // FIX C: cotação indisponível → mensagem clara, não "saldo insuficiente"
+    if (!cotacaoAcao || cotacaoAcao <= 0) {
+        alert('Cotação de BBAS3 indisponível no momento.\nAguarde a cotação carregar para validar a garantia necessária.');
+        return;
+    }
+
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal - (dados.reservaVendaPut || 0));
-    const cotacao = cotacaoAcao || 0;
-    const maxAcoes = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
+    const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
+    const maxAcoes = Math.floor(Math.floor(saldoDisp / cotacaoAcao) / 100) * 100;
 
     if (qtd > maxAcoes) {
         alert(`Saldo insuficiente. Com ${fmt(saldoDisp)} você garante no máximo ${maxAcoes} ações BBAS3.`);
@@ -1274,10 +1296,12 @@ function confirmarNovaPut() {
 
     const valorReserva = parseFloat((strike * qtd).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorReserva).toFixed(2));
-    dados.reservaVendaPut = parseFloat(((dados.reservaVendaPut || 0) + valorReserva).toFixed(2));
+
+    // FIX B: = em vez de += — só uma PUT por vez, reserva é desta operação
+    dados.reservaVendaPut = valorReserva;
 
     ops.putAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, codigoOpcao:codigo };
-    fecharNovaPut(); salvarOp(); atualizarTela();
+    fecharNovaPut(); salvarOp(); salvar(); atualizarTela();
 }
 
 function abrirFinPut() {
@@ -1309,9 +1333,7 @@ function confirmarFinPut() {
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     } else if (tipo === 'exercida') {
-        // Put exercida: compra ações ao preço líquido (strike − prêmio).
-        // Nenhum escudo fiscal é gerado aqui — decisão de design do usuário.
-        // A reserva foi usada para adquirir as ações, por isso não volta ao caixa.
+        // Put exercida: reserva vira ações ao PM líquido (strike − prêmio)
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         dados.acoes.push({ qtd: op.quantidade, preco: parseFloat((op.strike - op.premio).toFixed(2)) });
@@ -1397,8 +1419,12 @@ function atualizarCardCall() {
         else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
     } else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
 
-    const escDisp = ops.resumo.escudoDisponivel || 0;
-    document.getElementById('escudo-total-val').innerText = fmt(escDisp);
+    // FIX D: Escudo do card sincronizado com o valor real recalculado
+    // Recalcula o escudo real a partir do histórico e atualiza o card corretamente.
+    // Isso corrige o bug onde o card mostrava escudo inflado após ciclos lucrativos
+    // consumirem parte do escudo.
+    const escudoReal = _calcularEscudoReal();
+    document.getElementById('escudo-total-val').innerText = fmt(escudoReal);
 
     const btnC = document.getElementById('btn-call-acao'), txtC = document.getElementById('call-status-txt');
     if (ops.operacaoAtual?.aberta) { txtC.innerText='🟡 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-fin'; }
@@ -1407,6 +1433,30 @@ function atualizarCardCall() {
     const btnP = document.getElementById('btn-put-acao'), txtP = document.getElementById('put-status-txt');
     if (ops.putAtual?.aberta) { txtP.innerText='🟡 Put em operação'; btnP.textContent='Finalizar Put'; btnP.className='btn-call btn-call-fin'; btnP.style.background=''; }
     else { txtP.innerText='⚪ Sem put aberta'; btnP.textContent='Lançar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
+}
+
+// ═══════════════════════════════════════════
+// FIX D: _calcularEscudoReal()
+// Recalcula o escudo disponível real a partir do histórico completo,
+// mês a mês em ordem cronológica. Garante que o card "Escudo fiscal"
+// mostre sempre o valor correto — consumido quando há lucros.
+// ═══════════════════════════════════════════
+function _calcularEscudoReal() {
+    const meses = [...new Set(ops.historico.map(c=>(c.dataFechamento||'').slice(0,7)).filter(Boolean))].sort();
+    let escDisp = 0;
+    for (const mes of meses) {
+        const cm = ops.historico.filter(c=>(c.dataFechamento||'').startsWith(mes));
+        const lm = cm.reduce((s,c)=>s+(c.resultadoBruto||0),0);
+        if (lm <= 0) {
+            escDisp = parseFloat((escDisp + Math.abs(lm)).toFixed(2));
+        } else {
+            const eu = Math.min(escDisp, lm);
+            escDisp = parseFloat(Math.max(0, escDisp - eu).toFixed(2));
+        }
+    }
+    // Atualiza o estado persistido para manter consistência
+    ops.resumo.escudoDisponivel = escDisp;
+    return escDisp;
 }
 
 // ═══════════════════════════════════════════
@@ -1714,23 +1764,18 @@ function abrirExtratoCiclos() {
     const meses = _chavesMes(hist), mesesAsc=[...meses].reverse();
     const darfPorMes={};
 
-    // ─── FIX 1 (complemento): O escudo recalculado aqui é só o escudo
-    // derivado dos ciclos de opções. Para não sobrescrever escudos de outras
-    // origens, salvamos apenas se o valor calculado for MAIOR que o atual.
-    // Assim, o escudo acumulado nunca diminui ao abrir o histórico.
+    // Recalcula escudo cronologicamente (valor correto para os modais)
     let escDisp=0;
-
     for (const mes of mesesAsc) {
         const cm = hist.filter(c=>(c.dataFechamento||'').startsWith(mes));
         const lm = cm.reduce((s,c)=>s+(c.resultadoBruto||0),0);
         if (lm<=0) { escDisp=parseFloat((escDisp+Math.abs(lm)).toFixed(2)); darfPorMes[mes]={darf:0,escudoUsado:0,escDisp,baseTribt:0,lm}; }
         else { const eu=Math.min(escDisp,lm); const bt=parseFloat((lm-eu).toFixed(2)); const df=parseFloat((bt*0.15).toFixed(2)); escDisp=parseFloat((escDisp-eu).toFixed(2)); darfPorMes[mes]={darf:df,escudoUsado:eu,escDisp,baseTribt:bt,lm}; }
     }
-    // Protege escudo: só atualiza se o valor recalculado for >= ao armazenado
-    if (escDisp >= (ops.resumo.escudoDisponivel || 0)) {
-        ops.resumo.escudoDisponivel = escDisp;
-        salvarOp();
-    }
+
+    // FIX D (complemento): Atualiza o escudoDisponivel com o valor recalculado correto
+    ops.resumo.escudoDisponivel = escDisp;
+    salvarOp();
 
     const totalDarf = Object.values(darfPorMes).reduce((s,m)=>s+m.darf,0);
     const totalLiq  = parseFloat((totalBruto-totalDarf).toFixed(2));
@@ -1741,7 +1786,7 @@ function abrirExtratoCiclos() {
             <div><div style="font-size:0.63em;color:#aaa;">💰 Bruto total</div><div style="font-weight:bold;">${fmt(totalBruto)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">🧾 DARF total</div><div style="font-weight:bold;color:var(--queda);">- ${fmt(totalDarf)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">💵 Líquido total</div><div style="font-weight:bold;color:${totalLiq>=0?'var(--alta)':'var(--queda)'};">${fmt(totalLiq)}</div></div>
-            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(ops.resumo.escudoDisponivel)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(escDisp)}</div></div>
         </div>
     </div>`;
 
@@ -1898,7 +1943,7 @@ function confirmarAcao() {
     const{tipo,acao}=_acaoAtiva;
     if(acao==='guardar'){dados[tipo].cofre=parseFloat((dados[tipo].cofre+val).toFixed(2));registrarLancamento(tipo,val);}
     else{if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente.\nGuardado: ${fmt(dados[tipo].cofre)}`);return;}dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));}
-    fecharAcao(); atualizarTela();
+    fecharAcao(); salvar(); atualizarTela();
 }
 
 // ═══════════════════════════════════════════
@@ -1940,7 +1985,7 @@ function atualizarTela() {
         _badgeTxtEl.innerText = _bw;
     }
     
-    // Reserva B3
+    // Reserva B3 — idempotente: ajusta só a diferença
     const rb = zonas.reservaB3PorLote || 0;
     const lotes = Math.floor(q / 100);
     const rbTotal = parseFloat((lotes * rb).toFixed(2));
@@ -2027,7 +2072,7 @@ function abrirCompra() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
     
     document.getElementById('compra-modal-saldo').innerText = fmt(saldoDisp);
     
@@ -2052,7 +2097,7 @@ function confirmarCompra() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const rb = zonas.reservaB3PorLote || 0;
     const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - rbTotal);
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
     const valorTotal = parseFloat((qtd * preco).toFixed(2));
     
     if (valorTotal > saldoDisp + 0.001) {
