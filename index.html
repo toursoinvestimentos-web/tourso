@@ -389,42 +389,50 @@
 
 </div>
 
-<!-- ═══ PILARES ═══ -->
-<div class="pilar-grid">
-    <div class="pilar-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div class="pilar-label">Troco/Troca</div>
+<!-- ═══ FORMAÇÃO DE CAPITAL ═══ -->
+<div class="card" style="border-left-color:var(--ciano);">
+    <div class="caixa-bloco" style="margin-top:0;">
+        <div class="caixa-bloco-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="caixa-bloco-titulo">Troco/Troca</span>
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('troco')">📄</span>
         </div>
-        <div class="camada-row">
-            <span class="camada-label-small">🪙 Guardado</span>
-            <span class="camada-valor-small" id="troco-cofre" style="color:var(--alta);">R$ 0,00</span>
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <span style="font-size:1em;">🪙</span> Guardado
+            </div>
+            <span class="caixa-linha-valor" id="troco-cofre" style="color:var(--alta);">R$ 0,00</span>
         </div>
-        <div class="camada-row">
-            <span class="camada-label-small">📈 Investido</span>
-            <span class="camada-valor-small" id="troco-transferido" style="color:var(--ciano);">R$ 0,00</span>
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <span style="font-size:1em;">📈</span> Investido
+            </div>
+            <span class="caixa-linha-valor" id="troco-transferido" style="color:var(--ciano);">R$ 0,00</span>
         </div>
-        <div class="pilar-btns">
-            <button class="pilar-btn-mini btn-guardar"    onclick="abrirAcao('troco','guardar')">Guardar</button>
-            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('troco','enviar')">Investir</button>
+        <div class="caixa-linha" style="justify-content:center; gap:10px;">
+            <button class="caixa-btn caixa-btn-ciano" style="background:#444;" onclick="abrirAcao('troco','guardar')">Guardar</button>
+            <button class="caixa-btn caixa-btn-ciano" onclick="abrirAcao('troco','enviar')">Investir</button>
         </div>
     </div>
-    <div class="pilar-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div class="pilar-label">Aportes</div>
+    <div class="caixa-bloco">
+        <div class="caixa-bloco-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="caixa-bloco-titulo">Aportes</span>
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('aportes')">📄</span>
         </div>
-        <div class="camada-row">
-            <span class="camada-label-small">🪙 Guardado</span>
-            <span class="camada-valor-small" id="aportes-cofre" style="color:var(--alta);">R$ 0,00</span>
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <span style="font-size:1em;">🪙</span> Guardado
+            </div>
+            <span class="caixa-linha-valor" id="aportes-cofre" style="color:var(--alta);">R$ 0,00</span>
         </div>
-        <div class="camada-row">
-            <span class="camada-label-small">📈 Investido</span>
-            <span class="camada-valor-small" id="aportes-transferido" style="color:var(--ciano);">R$ 0,00</span>
+        <div class="caixa-linha">
+            <div class="caixa-linha-esq">
+                <span style="font-size:1em;">📈</span> Investido
+            </div>
+            <span class="caixa-linha-valor" id="aportes-transferido" style="color:var(--ciano);">R$ 0,00</span>
         </div>
-        <div class="pilar-btns">
-            <button class="pilar-btn-mini btn-guardar"    onclick="abrirAcao('aportes','guardar')">Guardar</button>
-            <button class="pilar-btn-mini btn-transferir" onclick="abrirAcao('aportes','enviar')">Investir</button>
+        <div class="caixa-linha" style="justify-content:center; gap:10px;">
+            <button class="caixa-btn caixa-btn-ciano" style="background:#444;" onclick="abrirAcao('aportes','guardar')">Guardar</button>
+            <button class="caixa-btn caixa-btn-ciano" onclick="abrirAcao('aportes','enviar')">Investir</button>
         </div>
     </div>
 </div>
