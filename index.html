@@ -273,7 +273,6 @@
 <!-- ═══ CARD 6: CAIXA OPERACIONAL ═══ -->
 <div class="card" style="border-left-color:var(--alta);">
 
-    <!-- Topo: título + gauge — NÃO ALTERADO -->
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
             <div class="pilar-label" style="font-size:0.85em; text-transform:uppercase; letter-spacing:0.08em; color:#aaa; margin-top:-18px;">Caixa Operacional</div>
@@ -296,22 +295,18 @@
         </div>
     </div>
 
-    <!-- ══ BLOCO 1: TESOURO DIRETO ══ -->
+    <!-- BLOCO 1: TESOURO DIRETO -->
     <div class="caixa-bloco">
         <div class="caixa-bloco-header">
             <span class="caixa-bloco-titulo">Tesouro Direto</span>
         </div>
-        <!-- Tesouro Selic -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
-                <div class="caixa-linha-icone">
-                   <span style="font-size:16px;">🏦</span>
-                </div>
+                <div class="caixa-linha-icone"><span style="font-size:16px;">🏦</span></div>
                 Tesouro Selic
             </div>
             <span id="tesouro-direto-valor" style="font-size:0.82em; font-weight:bold; color:#f39c12;">- R$ 0,00</span>
         </div>
-        <!-- Comprar Tesouro -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone">
@@ -325,7 +320,6 @@
             </div>
             <button onclick="abrirCompraTesouro()" class="caixa-btn caixa-btn-ciano">Comprar</button>
         </div>
-        <!-- Resgatar Selic -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone">
@@ -340,12 +334,11 @@
         </div>
     </div>
 
-    <!-- ══ BLOCO 2: RESERVAS / BLOQUEIOS ══ -->
+    <!-- BLOCO 2: RESERVAS / BLOQUEIOS -->
     <div class="caixa-bloco">
         <div class="caixa-bloco-header">
             <span class="caixa-bloco-titulo">Reservas / Bloqueios</span>
         </div>
-        <!-- Reserva B3 -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone" style="font-size:1.1em;">🔒</div>
@@ -353,7 +346,6 @@
             </div>
             <span id="reserva-b3-valor" class="caixa-linha-valor" style="color:#ff9900;">- R$ 0,00</span>
         </div>
-        <!-- Garantia Venda Put -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone" style="font-size:1.1em;">🔒</div>
@@ -363,12 +355,11 @@
         </div>
     </div>
 
-    <!-- ══ BLOCO 3: COMPRA / VENDA DE AÇÕES ══ -->
+    <!-- BLOCO 3: COMPRA / VENDA DE AÇÕES -->
     <div class="caixa-bloco">
         <div class="caixa-bloco-header">
             <span class="caixa-bloco-titulo">Compra / Venda de Ações</span>
         </div>
-        <!-- Comprar BBAS3 -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone">
@@ -382,7 +373,6 @@
             </div>
             <button onclick="abrirCompra()" class="caixa-btn caixa-btn-ciano">Comprar</button>
         </div>
-        <!-- Vender BBAS3 -->
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone">
@@ -704,7 +694,6 @@
     </div>
 </div>
 
-
 <!-- Modal Comprar BBAS3 -->
 <div class="modal-overlay" id="modal-compra">
     <div class="modal-box" style="border-top-color:var(--alta);">
@@ -958,6 +947,8 @@ function confirmarResgateTesouro() {
 
 // ═══════════════════════════════════════════
 // Venda BBAS3
+// FIX 1: Removido o bloco que gerava escudo por venda de ações abaixo do PM.
+// Esse tipo de prejuízo não é rastreado no app conforme decisão de design.
 // ═══════════════════════════════════════════
 function abrirVenda() {
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
@@ -974,14 +965,6 @@ function confirmarVenda() {
     if (!precoVenda || precoVenda <= 0) { alert('Informe o preço de venda.'); return; }
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     if (qtdVenda > qtdTotal) { alert(`Você possui apenas ${qtdTotal} ações.`); return; }
-       const custoTotalCart = dados.acoes.reduce((s, x) => s + x.qtd * x.preco, 0);
-    const qtdTotalCart   = dados.acoes.reduce((s, x) => s + x.qtd, 0);
-    const pmAtual        = qtdTotalCart > 0 ? custoTotalCart / qtdTotalCart : 0;
-    if (pmAtual > 0 && precoVenda < pmAtual) {
-        const prejuizo = parseFloat(((pmAtual - precoVenda) * qtdVenda).toFixed(2));
-        ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + prejuizo).toFixed(2));
-        salvarOp();
-    }
 
     // Reduz ações: FIFO
     let restante = qtdVenda;
@@ -1151,19 +1134,38 @@ function calcPreviewRolagem() {
         : `<b style="color:var(--queda);">Resultado da rolagem</b><br>Prejuízo total: ${fmt(rTotal)}`;
 }
 
+// ═══════════════════════════════════════════
+// FIX 2: confirmarFinOp — Call Exercida
+// Agora remove as ações exercidas (FIFO) e credita strike × qtd no caixa.
+// O resultado bruto registrado é apenas o prêmio (o ganho da venda das ações
+// é um evento patrimonial separado, já refletido no caixa).
+// ═══════════════════════════════════════════
 function confirmarFinOp() {
     const op = ops.operacaoAtual; if (!op?.aberta) return;
     const dataFech=document.getElementById('fin-data').value, tipo=document.getElementById('fin-tipo').value;
     if (!dataFech) { alert('Informe a data de fechamento.'); return; }
     let resultadoBruto, statusNome;
-    if (tipo==='po'||tipo==='exercida') {
+    if (tipo==='po') {
+        // Virou pó: prêmio integral, ações permanecem em carteira
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
-        statusNome = tipo==='po' ? 'Virou pó' : 'Exercida';
+        statusNome = 'Virou pó';
+    } else if (tipo==='exercida') {
+        // Call exercida: remove as ações do lote operado (FIFO) e
+        // credita o valor ao strike no caixa operacional.
+        resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
+        statusNome = 'Exercida';
+        let restante = op.quantidade;
+        while (restante > 0 && dados.acoes.length > 0) {
+            const lote = dados.acoes[0];
+            if (lote.qtd <= restante) { restante -= lote.qtd; dados.acoes.shift(); }
+            else { lote.qtd -= restante; restante = 0; }
+        }
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + op.strike * op.quantidade).toFixed(2));
     } else {
+        // Rolada ou Liquidada: prêmio líquido (prêmio recebido − recompra)
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
-        // Prejuízo em rolagem/liquidação gera escudo disponível
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel||0) + Math.abs(resultadoBruto)).toFixed(2));
         }
@@ -1307,7 +1309,9 @@ function confirmarFinPut() {
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual).toFixed(2));
         dados.reservaVendaPut = 0;
     } else if (tipo === 'exercida') {
-        // Exercida: compra ações ao strike, prêmio compensa parcialmente
+        // Put exercida: compra ações ao preço líquido (strike − prêmio).
+        // Nenhum escudo fiscal é gerado aqui — decisão de design do usuário.
+        // A reserva foi usada para adquirir as ações, por isso não volta ao caixa.
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
         dados.acoes.push({ qtd: op.quantidade, preco: parseFloat((op.strike - op.premio).toFixed(2)) });
@@ -1316,7 +1320,6 @@ function confirmarFinPut() {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
-        // Prejuízo em liquidação gera escudo disponível
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
         }
@@ -1327,7 +1330,6 @@ function confirmarFinPut() {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
-        // Prejuízo em rolagem gera escudo disponível
         if (resultadoBruto < 0) {
             ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
         }
@@ -1711,6 +1713,11 @@ function abrirExtratoCiclos() {
     const totalBruto = hist.reduce((s,c)=>s+(c.resultadoBruto||0),0);
     const meses = _chavesMes(hist), mesesAsc=[...meses].reverse();
     const darfPorMes={};
+
+    // ─── FIX 1 (complemento): O escudo recalculado aqui é só o escudo
+    // derivado dos ciclos de opções. Para não sobrescrever escudos de outras
+    // origens, salvamos apenas se o valor calculado for MAIOR que o atual.
+    // Assim, o escudo acumulado nunca diminui ao abrir o histórico.
     let escDisp=0;
 
     for (const mes of mesesAsc) {
@@ -1719,8 +1726,11 @@ function abrirExtratoCiclos() {
         if (lm<=0) { escDisp=parseFloat((escDisp+Math.abs(lm)).toFixed(2)); darfPorMes[mes]={darf:0,escudoUsado:0,escDisp,baseTribt:0,lm}; }
         else { const eu=Math.min(escDisp,lm); const bt=parseFloat((lm-eu).toFixed(2)); const df=parseFloat((bt*0.15).toFixed(2)); escDisp=parseFloat((escDisp-eu).toFixed(2)); darfPorMes[mes]={darf:df,escudoUsado:eu,escDisp,baseTribt:bt,lm}; }
     }
-    ops.resumo.escudoDisponivel = escDisp;
-    salvarOp();
+    // Protege escudo: só atualiza se o valor recalculado for >= ao armazenado
+    if (escDisp >= (ops.resumo.escudoDisponivel || 0)) {
+        ops.resumo.escudoDisponivel = escDisp;
+        salvarOp();
+    }
 
     const totalDarf = Object.values(darfPorMes).reduce((s,m)=>s+m.darf,0);
     const totalLiq  = parseFloat((totalBruto-totalDarf).toFixed(2));
@@ -1731,7 +1741,7 @@ function abrirExtratoCiclos() {
             <div><div style="font-size:0.63em;color:#aaa;">💰 Bruto total</div><div style="font-weight:bold;">${fmt(totalBruto)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">🧾 DARF total</div><div style="font-weight:bold;color:var(--queda);">- ${fmt(totalDarf)}</div></div>
             <div><div style="font-size:0.63em;color:#aaa;">💵 Líquido total</div><div style="font-weight:bold;color:${totalLiq>=0?'var(--alta)':'var(--queda)'};">${fmt(totalLiq)}</div></div>
-            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(escDisp)}</div></div>
+            <div><div style="font-size:0.63em;color:#aaa;">🛡️ Escudo disponível</div><div style="font-weight:bold;color:var(--alta);">${fmt(ops.resumo.escudoDisponivel)}</div></div>
         </div>
     </div>`;
 
@@ -1981,7 +1991,7 @@ function atualizarTela() {
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">BBAS3</span>`;
 
-    // Vender BBAS3 — quantidade exata em carteira
+    // Vender BBAS3
     const qtdParaVender = q;
     document.getElementById('vender-bbas3').innerHTML =
         `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">BBAS3</span>`;
@@ -2055,6 +2065,7 @@ function confirmarCompra() {
     fecharCompra();
     atualizarTela();
 }
+
 function exportar() {
     const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
