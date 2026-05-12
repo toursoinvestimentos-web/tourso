@@ -1269,19 +1269,13 @@ function abrirNovaPut() {
     document.getElementById('nput-venc').value = '';
     document.getElementById('nput-codigo').value = '';
 
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
-    const cotacao = cotacaoAcao || 0;
-    const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
-    const maxAcoes = Math.floor(maxAcoesBruto / 100) * 100;
 
-    document.getElementById('nput-qtd').value = maxAcoes;
+    document.getElementById('nput-qtd').value = '';
 
     const hintQtd = document.getElementById('nput-qtd').nextElementSibling;
     if (hintQtd) {
-        hintQtd.innerText = cotacao > 0
-            ? `Máximo disponível: ${maxAcoes} ações (${Math.floor(maxAcoes/100)} lote(s)).`
-            : 'Cotação indisponível no momento.';
+        hintQtd.innerText = 'Digite o strike para calcular o máximo disponível.';
     }
 
     atualizarHintStrike();
@@ -1325,22 +1319,12 @@ function confirmarNovaPut() {
         return;
     }
 
-    if (!cotacaoAcao || cotacaoAcao <= 0) {
-        alert('Cotação de BBAS3 indisponível no momento.\nAguarde a cotação carregar para validar a garantia necessária.');
-        return;
-    }
+   const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
+    const garantiaNecessaria = parseFloat((strike * qtd).toFixed(2));
 
-    const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
-    const maxAcoes = Math.floor(Math.floor(saldoDisp / cotacaoAcao) / 100) * 100;
-
-    if (qtd > maxAcoes) {
-        alert(`Saldo insuficiente. Com ${fmt(saldoDisp)} você garante no máximo ${maxAcoes} ações BBAS3.`);
-        return;
-    }
-
-    const maxStrike = qtd > 0 ? (saldoDisp / qtd) : 0;
-    if (strike > maxStrike) {
-        alert(`Strike acima do permitido. Com saldo de ${fmt(saldoDisp)} e ${qtd} ações, o strike máximo é R$ ${maxStrike.toFixed(2).replace('.', ',')}.`);
+    if (garantiaNecessaria > saldoDisp + 0.001) {
+        const maxAcoes = Math.floor(Math.floor(saldoDisp / strike) / 100) * 100;
+        alert(`Saldo insuficiente.\nGarantia necessária: ${fmt(garantiaNecessaria)}\nDisponível: ${fmt(saldoDisp)}\nCom este strike, você garante no máximo ${maxAcoes} ações.`);
         return;
     }
 
