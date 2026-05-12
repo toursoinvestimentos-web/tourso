@@ -678,6 +678,8 @@
             <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Ações disponíveis</div>
             <div id="venda-modal-qtd" style="font-size:1.3em; font-weight:bold; color:var(--queda);">0 ações</div>
         </div>
+        <!-- FIX 4: aviso de ações comprometidas com call ativa -->
+        <div id="venda-aviso-call" style="display:none; background:rgba(241,196,15,0.1); border:1px solid #f1c40f; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:0.78em; color:#f1c40f;"></div>
         <div class="modal-campo">
             <label>Quantidade a vender</label>
             <input type="number" inputmode="numeric" id="venda-qtd-input" placeholder="Ex: 100">
@@ -820,13 +822,10 @@ let _metaAtiva   = false;
 
 // ═══════════════════════════════════════════
 // FIX A: toNum() — suporta pontos de milhar e vírgula decimal
-// Antes: .replace(',','.') substituía só a primeira ocorrência.
-// Agora: remove todos os pontos de milhar, depois troca vírgula por ponto.
 // ═══════════════════════════════════════════
 function toNum(v) {
     if (!v && v !== 0) return 0;
     const s = String(v).trim();
-    // Remove pontos de milhar, substitui vírgula decimal por ponto
     const normalizado = s.replace(/\./g, '').replace(',', '.');
     const resultado = parseFloat(normalizado);
     return isNaN(resultado) ? 0 : resultado;
@@ -846,6 +845,30 @@ function formatarDataCurta(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-
 function setStatusDot(cor) {
     const el = document.getElementById('status-online-dot');
     if (el) el.style.background = cor;
+}
+
+// ═══════════════════════════════════════════
+// FIX 1: ajustarReservaB3()
+// Função isolada para calcular e ajustar a Reserva B3.
+// Chamada apenas quando a quantidade de ações muda.
+// ═══════════════════════════════════════════
+function ajustarReservaB3() {
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const rb = zonas.reservaB3PorLote || 0;
+    const lotes = Math.floor(q / 100);
+    const rbTotal = parseFloat((lotes * rb).toFixed(2));
+    if (dados.reservaB3Acumulada === undefined) dados.reservaB3Acumulada = 0;
+    const atual = dados.reservaB3Acumulada;
+    if (atual < rbTotal) {
+        const diff = parseFloat((rbTotal - atual).toFixed(2));
+        const valorSugar = Math.min(diff, dados.caixaDisponivel);
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorSugar).toFixed(2));
+        dados.reservaB3Acumulada = parseFloat((atual + valorSugar).toFixed(2));
+    } else if (atual > rbTotal) {
+        const diff = parseFloat((atual - rbTotal).toFixed(2));
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + diff).toFixed(2));
+        dados.reservaB3Acumulada = rbTotal;
+    }
 }
 
 // ═══════════════════════════════════════════
@@ -906,16 +929,16 @@ function salvarConfigZonas() {
     zonas = { metaSaida:ms, reservaB3PorLote:rb, valorFracaoTesouro:ft };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
     dados.setup.metaSaida = ms;
-    salvar(); fecharConfigZonas(); atualizarTela();
+    // FIX 2: salvar() chamado explicitamente, não via atualizarTela()
+    salvar();
+    fecharConfigZonas();
+    atualizarTela();
 }
 
 // ═══════════════════════════════════════════
 // Tesouro Direto
 // ═══════════════════════════════════════════
 function abrirCompraTesouro() {
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
     document.getElementById('tesouro-modal-saldo').innerText = fmt(saldoDisp);
     document.getElementById('tesouro-valor-input').value = '';
@@ -925,9 +948,6 @@ function fecharCompraTesouro() { document.getElementById('modal-compra-tesouro')
 function confirmarCompraTesouro() {
     const val = toNum(document.getElementById('tesouro-valor-input').value);
     if (!val || val <= 0) { fecharCompraTesouro(); return; }
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
     if (val > saldoDisp + 0.001) {
         alert(`Saldo insuficiente.\nDisponível: ${fmt(saldoDisp)}`);
@@ -936,6 +956,8 @@ function confirmarCompraTesouro() {
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - val).toFixed(2));
     dados.tesouroDireto   = parseFloat(((dados.tesouroDireto || 0) + val).toFixed(2));
     fecharCompraTesouro();
+    // FIX 2: salvar() explícito
+    salvar();
     atualizarTela();
 }
 
@@ -955,17 +977,40 @@ function confirmarResgateTesouro() {
     dados.tesouroDireto = parseFloat((tdVal - valor).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valor).toFixed(2));
     fecharResgateTesouro();
+    // FIX 2: salvar() explícito
+    salvar();
     atualizarTela();
 }
 
 // ═══════════════════════════════════════════
 // Venda BBAS3
-// Sem geração de escudo fiscal — apenas FIFO + crédito no caixa.
+// FIX 4: bloqueia venda de ações comprometidas com call ativa.
 // ═══════════════════════════════════════════
 function abrirVenda() {
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+
+    // FIX 4: calcula ações comprometidas com call ativa
+    const acoesComprometidas = ops.operacaoAtual?.aberta ? (ops.operacaoAtual.quantidade || 0) : 0;
+    const acoesLivres = qtdTotal - acoesComprometidas;
+
+    // Se todas as ações estão comprometidas, bloqueia completamente
+    if (acoesComprometidas > 0 && acoesLivres <= 0) {
+        alert(`Você tem uma Call ativa que compromete todas as ${acoesComprometidas} ações.\nCancele ou encerre a Call antes de vender.`);
+        return;
+    }
+
     document.getElementById('venda-modal-qtd').innerText = qtdTotal + ' ações';
-    document.getElementById('venda-qtd-input').value = qtdTotal;
+
+    // Aviso de ações comprometidas (parcial)
+    const avisoEl = document.getElementById('venda-aviso-call');
+    if (acoesComprometidas > 0 && acoesLivres > 0) {
+        avisoEl.style.display = 'block';
+        avisoEl.innerText = `⚠️ ${acoesComprometidas} ações estão comprometidas com uma Call ativa. Você pode vender no máximo ${acoesLivres} ações.`;
+    } else {
+        avisoEl.style.display = 'none';
+    }
+
+    document.getElementById('venda-qtd-input').value = acoesLivres > 0 ? acoesLivres : qtdTotal;
     document.getElementById('venda-preco-input').value = cotacaoAcao ? cotacaoAcao.toFixed(2).replace('.',',') : '';
     document.getElementById('modal-venda').classList.add('ativo');
 }
@@ -978,6 +1023,14 @@ function confirmarVenda() {
     const qtdTotal = dados.acoes.reduce((a, x) => a + x.qtd, 0);
     if (qtdVenda > qtdTotal) { alert(`Você possui apenas ${qtdTotal} ações.`); return; }
 
+    // FIX 4: impede venda acima das ações livres quando há call ativa
+    const acoesComprometidas = ops.operacaoAtual?.aberta ? (ops.operacaoAtual.quantidade || 0) : 0;
+    const acoesLivres = qtdTotal - acoesComprometidas;
+    if (acoesComprometidas > 0 && qtdVenda > acoesLivres) {
+        alert(`Você pode vender no máximo ${acoesLivres} ações.\n${acoesComprometidas} ações estão comprometidas com uma Call ativa.`);
+        return;
+    }
+
     // Remove ações: FIFO
     let restante = qtdVenda;
     while (restante > 0 && dados.acoes.length > 0) {
@@ -987,7 +1040,13 @@ function confirmarVenda() {
     }
     const valorRecebido = parseFloat((qtdVenda * precoVenda).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + valorRecebido).toFixed(2));
+
+    // FIX 1: ajusta reserva B3 após mudança na carteira
+    ajustarReservaB3();
+
     fecharVenda();
+    // FIX 2: salvar() explícito
+    salvar();
     atualizarTela();
 }
 
@@ -1147,18 +1206,9 @@ function calcPreviewRolagem() {
 }
 
 // ═══════════════════════════════════════════
-// confirmarFinOp – Call (encerramento) 
-// Calcula o resultado bruto, atualiza caixa e escudo fiscal,
-// e registra o ciclo no histórico.
-//
-// Cenários:
-// • Virou pó → prêmio integral (lucro) entra no caixa.
-// • Exercida  → prêmio entra no caixa, ações do lote são
-//               removidas da carteira (FIFO) e o valor ao
-//               strike é creditado no caixa.
-// • Rolada / Liquidada → resultado (prêmio − recompra)
-//               afeta o caixa (positivo ou negativo); se for
-//               negativo, o prejuízo acumula no escudo fiscal.
+// confirmarFinOp – Call (encerramento)
+// FIX 3: removido acúmulo direto de escudoDisponivel.
+//         O escudo é calculado exclusivamente por _calcularEscudoReal().
 // ═══════════════════════════════════════════
 function confirmarFinOp() {
     const op = ops.operacaoAtual; if (!op?.aberta) return;
@@ -1180,14 +1230,15 @@ function confirmarFinOp() {
             else { lote.qtd -= restante; restante = 0; }
         }
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + op.strike * op.quantidade + resultadoBruto).toFixed(2));
+        // FIX 1: ajusta reserva B3 após remoção de ações (exercida)
+        ajustarReservaB3();
     } else {
         const recompra = toNum(document.getElementById('fin-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2));
-        if (resultadoBruto < 0) {
-            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
-        }
+        // FIX 3: removida linha de acúmulo direto do escudo aqui.
+        // O escudo é recalculado por _calcularEscudoReal() via atualizarCardCall().
         statusNome = tipo === 'liquidada' ? 'Liquidada' : 'Rolada';
     }
     ops.resumo.resultadoLiquido = parseFloat(((ops.resumo.resultadoLiquido || 0) + resultadoBruto).toFixed(2));
@@ -1197,7 +1248,11 @@ function confirmarFinOp() {
     ops.historico.unshift({ tipo:'call', dataAbertura:op.dataAbertura, dataFechamento:dataFech, codigoOpcao:op.codigoOpcao||'', precoAcao:op.precoAcao, strike:op.strike, quantidade:op.quantidade, premioPorAcao:op.premio, resultadoBruto, resultadoLiquido:resultadoBruto, status:statusNome, duracaoUteis });
     ops.operacaoAtual = null;
     dados.setup = { ...dados.setup, precoEntrada:0, strike:0, qtdAcoes:0, premioRecebido:0, vencimento:'' };
-    fecharFinOp(); salvarOp(); salvar(); atualizarTela();
+    fecharFinOp();
+    salvarOp();
+    // FIX 2: salvar() explícito
+    salvar();
+    atualizarTela();
 }
 
 // ═══════════════════════════════════════════
@@ -1215,8 +1270,6 @@ function abrirNovaPut() {
     document.getElementById('nput-codigo').value = '';
 
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
     const cotacao = cotacaoAcao || 0;
     const maxAcoesBruto = cotacao > 0 ? Math.floor(saldoDisp / cotacao) : 0;
@@ -1243,9 +1296,6 @@ function atualizarHintStrike() {
     const hint = document.getElementById('nput-strike-hint');
     if (!hint) return;
     if (qtd <= 0) { hint.innerText = ''; return; }
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
     const maxStrike = (saldoDisp / qtd);
     hint.innerText = `Strike máximo: R$ ${maxStrike.toFixed(2).replace('.', ',')} por ação`;
@@ -1261,13 +1311,8 @@ function atualizarHintStrike() {
 }));
 document.getElementById('nput-strike').addEventListener('input', atualizarHintStrike);
 
-// ═══════════════════════════════════════════
 // FIX B: confirmarNovaPut — reservaVendaPut usa = em vez de +=
-// Antes: acumulava com +=, criando risco de saldo fantasma se o estado
-// ficasse inconsistente. Como só existe uma PUT por vez, o correto é
-// simplesmente setar o valor da reserva desta operação.
 // FIX C: Mensagem de erro clara quando cotação está indisponível.
-// ═══════════════════════════════════════════
 function confirmarNovaPut() {
     const dataAb=document.getElementById('nput-data').value, preco=toNum(document.getElementById('nput-preco').value),
           strike=toNum(document.getElementById('nput-strike').value), qtd=parseInt(document.getElementById('nput-qtd').value)||0,
@@ -1280,15 +1325,11 @@ function confirmarNovaPut() {
         return;
     }
 
-    // FIX C: cotação indisponível → mensagem clara, não "saldo insuficiente"
     if (!cotacaoAcao || cotacaoAcao <= 0) {
         alert('Cotação de BBAS3 indisponível no momento.\nAguarde a cotação carregar para validar a garantia necessária.');
         return;
     }
 
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel - (dados.reservaVendaPut || 0));
     const maxAcoes = Math.floor(Math.floor(saldoDisp / cotacaoAcao) / 100) * 100;
 
@@ -1305,8 +1346,6 @@ function confirmarNovaPut() {
 
     const valorReserva = parseFloat((strike * qtd).toFixed(2));
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorReserva).toFixed(2));
-
-    // FIX B: = em vez de += — só uma PUT por vez, reserva é desta operação
     dados.reservaVendaPut = valorReserva;
 
     ops.putAtual = { aberta:true, dataAbertura:dataAb, precoAcao:preco, strike, quantidade:qtd, premio, vencimento:venc, codigoOpcao:codigo };
@@ -1328,20 +1367,14 @@ function atualizarFinPutTipo() {
 
 // ═══════════════════════════════════════════
 // confirmarFinPut – Put (encerramento)
-// Calcula o resultado bruto, devolve ou consome a garantia,
-// atualiza caixa e escudo fiscal, e registra o ciclo.
-//
-// Cenários:
-// • Virou pó → prêmio (lucro) somado ao caixa; garantia
-//              retorna integralmente ao caixa.
-// • Exercida  → garantia é usada para adquirir as ações ao
-//               preço de strike (PM = strike). O prêmio entra
-//               no caixa como lucro. Nenhum escudo é gerado.
-// • Liquidada / Rolada → garantia retorna ao caixa,
-//               resultado (prêmio − recompra) também afeta
-//               o caixa; se negativo, gera escudo fiscal.
+// FIX 3: removido acúmulo direto de escudoDisponivel nos casos
+//         liquidada e rolada. O escudo é calculado exclusivamente
+//         por _calcularEscudoReal().
+// FIX 5: comentário explícito no caso exercida para documentar
+//         o fluxo da garantia.
+// FIX 1: ajusta reserva B3 no caso exercida (ações entram na carteira).
 // ═══════════════════════════════════════════
-    function confirmarFinPut() {
+function confirmarFinPut() {
     const op = ops.putAtual; if (!op?.aberta) return;
     const dataFech = document.getElementById('fin-put-data').value;
     const tipo = document.getElementById('fin-put-tipo').value;
@@ -1357,17 +1390,20 @@ function atualizarFinPutTipo() {
     } else if (tipo === 'exercida') {
         resultadoBruto = parseFloat((op.premio * op.quantidade).toFixed(2));
         statusNome = 'Exercida';
-        dados.acoes.push({ qtd: op.quantidade, preco: op.strike }); // custo real = strike
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2)); // prêmio volta ao caixa
+        // FIX 5: A garantia (strike × qtd) foi consumida para adquirir as ações.
+        // Por isso, a reserva é zerada e NÃO retorna ao caixa.
+        // O prêmio entra como lucro no caixa.
+        dados.acoes.push({ qtd: op.quantidade, preco: op.strike });
+        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + resultadoBruto).toFixed(2));
         dados.reservaVendaPut = 0;
+        // FIX 1: ajusta reserva B3 após entrada de novas ações
+        ajustarReservaB3();
     } else if (tipo === 'liquidada') {
         const recompra = toNum(document.getElementById('fin-put-recompra').value);
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual + resultadoBruto).toFixed(2));
-        if (resultadoBruto < 0) {
-            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
-        }
+        // FIX 3: removida linha de acúmulo direto do escudo aqui.
         statusNome = 'Liquidada';
         dados.reservaVendaPut = 0;
     } else if (tipo === 'rolada') {
@@ -1375,9 +1411,7 @@ function atualizarFinPutTipo() {
         if (!recompra) { alert('Informe o preço de recompra.'); return; }
         resultadoBruto = parseFloat(((op.premio - recompra) * op.quantidade).toFixed(2));
         dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + reservaAtual + resultadoBruto).toFixed(2));
-        if (resultadoBruto < 0) {
-            ops.resumo.escudoDisponivel = parseFloat(((ops.resumo.escudoDisponivel || 0) + Math.abs(resultadoBruto)).toFixed(2));
-        }
+        // FIX 3: removida linha de acúmulo direto do escudo aqui.
         statusNome = 'Rolada';
         dados.reservaVendaPut = 0;
     }
@@ -1392,7 +1426,11 @@ function atualizarFinPutTipo() {
         resultadoBruto, resultadoLiquido: resultadoBruto, status: statusNome, duracaoUteis
     });
     ops.putAtual = null;
-    fecharFinPut(); salvarOp(); salvar(); atualizarTela();
+    fecharFinPut();
+    salvarOp();
+    // FIX 2: salvar() explícito
+    salvar();
+    atualizarTela();
 }
     
 // ═══════════════════════════════════════════
@@ -1431,9 +1469,6 @@ function atualizarCardCall() {
     } else { mmEl.innerText='—'; mmEl.style.color='var(--branco)'; }
 
     // FIX D: Escudo do card sincronizado com o valor real recalculado
-    // Recalcula o escudo real a partir do histórico e atualiza o card corretamente.
-    // Isso corrige o bug onde o card mostrava escudo inflado após ciclos lucrativos
-    // consumirem parte do escudo.
     const escudoReal = _calcularEscudoReal();
     document.getElementById('escudo-total-val').innerText = fmt(escudoReal);
 
@@ -1447,10 +1482,10 @@ function atualizarCardCall() {
 }
 
 // ═══════════════════════════════════════════
-// FIX D: _calcularEscudoReal()
-// Recalcula o escudo disponível real a partir do histórico completo,
-// mês a mês em ordem cronológica. Garante que o card "Escudo fiscal"
-// mostre sempre o valor correto — consumido quando há lucros.
+// _calcularEscudoReal() — única fonte da verdade para o escudo fiscal.
+// Percorre todos os ciclos cronologicamente, mês a mês.
+// Prejuízos aumentam o escudo; lucros o consomem antes de gerar DARF.
+// Atualiza ops.resumo.escudoDisponivel para persistência.
 // ═══════════════════════════════════════════
 function _calcularEscudoReal() {
     const meses = [...new Set(ops.historico.map(c=>(c.dataFechamento||'').slice(0,7)).filter(Boolean))].sort();
@@ -1465,7 +1500,6 @@ function _calcularEscudoReal() {
             escDisp = parseFloat(Math.max(0, escDisp - eu).toFixed(2));
         }
     }
-    // Atualiza o estado persistido para manter consistência
     ops.resumo.escudoDisponivel = escDisp;
     return escDisp;
 }
@@ -1775,7 +1809,6 @@ function abrirExtratoCiclos() {
     const meses = _chavesMes(hist), mesesAsc=[...meses].reverse();
     const darfPorMes={};
 
-    // Recalcula escudo cronologicamente (valor correto para os modais)
     let escDisp=0;
     for (const mes of mesesAsc) {
         const cm = hist.filter(c=>(c.dataFechamento||'').startsWith(mes));
@@ -1784,7 +1817,7 @@ function abrirExtratoCiclos() {
         else { const eu=Math.min(escDisp,lm); const bt=parseFloat((lm-eu).toFixed(2)); const df=parseFloat((bt*0.15).toFixed(2)); escDisp=parseFloat((escDisp-eu).toFixed(2)); darfPorMes[mes]={darf:df,escudoUsado:eu,escDisp,baseTribt:bt,lm}; }
     }
 
-    // FIX D (complemento): Atualiza o escudoDisponivel com o valor recalculado correto
+    // Atualiza o escudoDisponivel com o valor recalculado correto
     ops.resumo.escudoDisponivel = escDisp;
     salvarOp();
 
@@ -1921,7 +1954,8 @@ function deletarLancamento(idx) {
     const tipo=_extratoTipo, lista=carregarHistorico(tipo); if(idx<0||idx>=lista.length)return;
     const val=lista[idx].valor; lista.splice(idx,1); salvarHistorico(tipo,lista);
     dados[tipo].cofre=parseFloat(Math.max(0,dados[tipo].cofre-val).toFixed(2));
-    salvar(); atualizarTela(); abrirExtrato(tipo);
+    // FIX 2: salvar() explícito
+    salvar(); atualizarTela();
 }
 let _editandoLancIdx = -1;
 function editarLancamento(idx) {
@@ -1932,6 +1966,7 @@ function editarLancamento(idx) {
     const val=toNum(nv); if(isNaN(val)||val<=0){alert('Valor inválido.');return;}
     const diff=val-lista[idx].valor; lista[idx].valor=parseFloat(val.toFixed(2)); salvarHistorico(tipo,lista);
     dados[tipo].cofre=parseFloat(Math.max(0,dados[tipo].cofre+diff).toFixed(2));
+    // FIX 2: salvar() explícito
     salvar(); atualizarTela(); abrirExtrato(tipo);
 }
 
@@ -1954,11 +1989,19 @@ function confirmarAcao() {
     const{tipo,acao}=_acaoAtiva;
     if(acao==='guardar'){dados[tipo].cofre=parseFloat((dados[tipo].cofre+val).toFixed(2));registrarLancamento(tipo,val);}
     else{if(val>dados[tipo].cofre+0.001){alert(`Saldo insuficiente.\nGuardado: ${fmt(dados[tipo].cofre)}`);return;}dados[tipo].cofre=parseFloat((dados[tipo].cofre-val).toFixed(2));dados[tipo].transferido=parseFloat((dados[tipo].transferido+val).toFixed(2));dados.caixaDisponivel=parseFloat((dados.caixaDisponivel+val).toFixed(2));}
-    fecharAcao(); salvar(); atualizarTela();
+    fecharAcao();
+    // FIX 2: salvar() explícito
+    salvar();
+    atualizarTela();
 }
 
 // ═══════════════════════════════════════════
 // Tela principal
+// FIX 1: bloco de ajuste da Reserva B3 removido daqui.
+//         Agora é chamado por ajustarReservaB3() apenas quando
+//         a quantidade de ações muda.
+// FIX 2: salvar() removido do final desta função.
+//         Cada função que altera estado chama salvar() explicitamente.
 // ═══════════════════════════════════════════
 function atualizarTela() {
     const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
@@ -1995,30 +2038,12 @@ function atualizarTela() {
         _badgeTxtEl.style.color = _bc;
         _badgeTxtEl.innerText = _bw;
     }
-    
-    // Reserva B3 — idempotente: ajusta só a diferença
-    const rb = zonas.reservaB3PorLote || 0;
-    const lotes = Math.floor(q / 100);
-    const rbTotal = parseFloat((lotes * rb).toFixed(2));
-    if (dados.reservaB3Acumulada === undefined) dados.reservaB3Acumulada = 0;
-    const atual = dados.reservaB3Acumulada;
-    if (atual < rbTotal) {
-        const diff = parseFloat((rbTotal - atual).toFixed(2));
-        const valorSugar = Math.min(diff, dados.caixaDisponivel);
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorSugar).toFixed(2));
-        dados.reservaB3Acumulada = parseFloat((atual + valorSugar).toFixed(2));
-    } else if (atual > rbTotal) {
-        const diff = parseFloat((atual - rbTotal).toFixed(2));
-        dados.caixaDisponivel = parseFloat((dados.caixaDisponivel + diff).toFixed(2));
-        dados.reservaB3Acumulada = rbTotal;
-    }
 
     const reservaPut = dados.reservaVendaPut || 0;
     const saldoExibicao = dados.caixaDisponivel;
-    const saldoDisp = Math.max(0, dados.caixaDisponivel);
 
     document.getElementById('saldo-caixa').innerText = fmt(saldoExibicao);
-    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(dados.reservaB3Acumulada)}`;
+    document.getElementById('reserva-b3-valor').innerText = `- ${fmt(dados.reservaB3Acumulada || 0)}`;
 
     const elReservaPut = document.getElementById('reserva-put-valor');
     elReservaPut.innerText = `- ${fmt(reservaPut)}`;
@@ -2043,6 +2068,7 @@ function atualizarTela() {
     if (_arcPctEl) { _arcPctEl.innerText = _arcPct + '%'; _arcPctEl.style.color = _arcColor; }
 
     // Comprar BBAS3
+    const saldoDisp = Math.max(0, dados.caixaDisponivel);
     const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
         `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">BBAS3</span>`;
@@ -2073,25 +2099,19 @@ function atualizarTela() {
     atualizarMonitorCall();
     atualizarMonitorPut();
     atualizarCardCall();
-    salvar();
+    // FIX 2: salvar() REMOVIDO daqui. Cada função que altera estado chama salvar() explicitamente.
 }
 
 // ═══════════════════════════════════════════
 // Compra / Backup
 // ═══════════════════════════════════════════
 function abrirCompra() {
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
-    
     document.getElementById('compra-modal-saldo').innerText = fmt(saldoDisp);
-    
     const ctp = (cotacaoAcao && cotacaoAcao > 0) ? cotacaoAcao : 1;
     const maxAcoes = Math.floor(saldoDisp / ctp);
     document.getElementById('compra-qtd-input').value = maxAcoes;
     document.getElementById('compra-preco-input').value = cotacaoAcao ? cotacaoAcao.toFixed(2).replace('.',',') : '';
-    
     document.getElementById('modal-compra').classList.add('ativo');
 }
 
@@ -2105,9 +2125,6 @@ function confirmarCompra() {
     if (!qtd || qtd <= 0) { alert('Informe a quantidade a comprar.'); return; }
     if (!preco || preco <= 0) { alert('Informe o preço de compra.'); return; }
     
-    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
-    const rb = zonas.reservaB3PorLote || 0;
-    const rbTotal = parseFloat((Math.floor(q / 100) * rb).toFixed(2));
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
     const valorTotal = parseFloat((qtd * preco).toFixed(2));
     
@@ -2118,7 +2135,13 @@ function confirmarCompra() {
     
     dados.acoes.push({ qtd, preco });
     dados.caixaDisponivel = parseFloat((dados.caixaDisponivel - valorTotal).toFixed(2));
+
+    // FIX 1: ajusta reserva B3 após entrada de novas ações
+    ajustarReservaB3();
+
     fecharCompra();
+    // FIX 2: salvar() explícito
+    salvar();
     atualizarTela();
 }
 
