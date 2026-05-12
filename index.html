@@ -704,7 +704,33 @@
     </div>
 </div>
 
+
+<!-- Modal Comprar BBAS3 -->
+<div class="modal-overlay" id="modal-compra">
+    <div class="modal-box" style="border-top-color:var(--alta);">
+        <h3 style="color:var(--alta);">📈 Comprar Ações BBAS3</h3>
+        <div style="background:rgba(0,230,118,0.08); border:1px solid var(--alta); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no caixa</div>
+            <div id="compra-modal-saldo" style="font-size:1.3em; font-weight:bold; color:var(--alta);">R$ 0,00</div>
+        </div>
+        <div class="modal-campo">
+            <label>Quantidade a comprar</label>
+            <input type="number" inputmode="numeric" id="compra-qtd-input" placeholder="Ex: 100">
+            <small>1 lote = 100 ações</small>
+        </div>
+        <div class="modal-campo">
+            <label>Preço de compra por ação (R$)</label>
+            <input type="text" inputmode="decimal" id="compra-preco-input" placeholder="Ex: 25,50">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancelar" onclick="fecharCompra()">Cancelar</button>
+            <button style="flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:var(--alta); color:var(--fundo); font-size:0.9em;" onclick="confirmarCompra()">Confirmar Compra</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    
 // ═══════════════════════════════════════════
 // PWA
 // ═══════════════════════════════════════════
@@ -1953,24 +1979,24 @@ function atualizarTela() {
     // Comprar BBAS3
     const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
-        `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+        `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">BBAS3</span>`;
 
     // Vender BBAS3 — quantidade exata em carteira
     const qtdParaVender = q;
     document.getElementById('vender-bbas3').innerHTML =
-        `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">ações BBAS3</span>`;
+        `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">BBAS3</span>`;
 
     // Comprar Tesouro
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
     document.getElementById('comprar-tesouro').innerHTML =
-        `<span style="color:#ccc;">Comprar</span> <span style="color:${fracoes > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${fracoes > 0 ? 'bold' : 'normal'};">+${fracoes}</span> <span style="color:#ccc;">fração Tesouro</span>`;
+        `<span style="color:#ccc;">Comprar</span> <span style="color:${fracoes > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${fracoes > 0 ? 'bold' : 'normal'};">+${fracoes}</span> <span style="color:#ccc;">fração</span>`;
 
     // Resgatar Tesouro
     const umLoteValor = ctp * 100;
     const podeResgatar = tdVal >= umLoteValor && umLoteValor > 0;
     document.getElementById('resgatar-tesouro').innerHTML =
-        `<span style="color:#ccc;">Resgatar</span> <span style="color:${podeResgatar ? 'var(--alta)' : '#aaa'}; font-weight:${podeResgatar ? 'bold' : 'normal'};">${podeResgatar ? fmt(tdVal) : 'R$ 0,00'}</span> <span style="color:#ccc;">Tesouro</span>`;
+        `<span style="color:#ccc;">Resgatar</span> <span style="color:${podeResgatar ? 'var(--alta)' : '#aaa'}; font-weight:${podeResgatar ? 'bold' : 'normal'};">${podeResgatar ? fmt(tdVal) : 'R$ 0,00'}</span> <span style="color:#ccc;">Selic</span>`;
 
     document.getElementById('troco-cofre').innerText = fmt(dados.troco.cofre);
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
