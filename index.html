@@ -845,7 +845,12 @@ function toNum(v) {
 // ═══════════════════════════════════════════
 // Utils
 // ═══════════════════════════════════════════
-function fmt(n)    { return 'R$ ' + parseFloat(n).toFixed(2).replace('.',','); }
+function fmt(n)    {
+    const val = parseFloat(n);
+    const partes = val.toFixed(2).split('.');
+    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return 'R$ ' + partes.join(',');
+}
 function fmtP(n)   { return parseFloat(n).toFixed(2).replace('.',',') + '%'; }
 function salvar()  { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
 function salvarOp(){ localStorage.setItem(CHAVE_OP, JSON.stringify(ops)); }
@@ -859,7 +864,7 @@ function setStatusDot(cor) {
     const card = document.getElementById('card-cotacoes');
     if (card) card.style.borderLeftColor = cor;
 }
-
+    
 // ═══════════════════════════════════════════
 // FIX 1: ajustarReservaB3()
 // Função isolada para calcular e ajustar a Reserva B3.
