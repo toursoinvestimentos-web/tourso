@@ -244,7 +244,7 @@
 </div>
 
 <!-- ═══ CARD 5: COBERTURA BBAS3 ═══ -->
-<div class="card">
+<div class="card" id="card-cobertura">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
         <div class="pilar-label">Cobertura BBAS3</div>
     </div>
@@ -2032,6 +2032,7 @@ function atualizarTela() {
         _badgeEl.style.background = _bb;
         _badgeTxtEl.style.color = _bc;
         _badgeTxtEl.innerText = _bw;
+        document.getElementById('card-cobertura').style.borderLeftColor = _bb;
     }
 
     const reservaPut = dados.reservaVendaPut || 0;
