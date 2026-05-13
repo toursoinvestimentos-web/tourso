@@ -139,7 +139,7 @@
 </div>
 
 <!-- ═══ CARD 1: COTAÇÕES ═══ -->
-<div class="card" style="border-left-color:var(--ciano);">
+<div class="card" id="card-cotacoes">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div class="pilar-label">Cotações</div>
         <div style="display:flex; align-items:center; gap:8px;">
@@ -819,7 +819,7 @@ let cotacaoOpcao = null;
     if (ca !== null) {
         cotacaoAcao = parseFloat(ca);
         document.getElementById('txt-cotacao-acao').innerText = 'R$ ' + cotacaoAcao.toFixed(2).replace('.',',');
-        setStatusDot('#888888');
+        setStatusDot('#f1c40f');
     }
     if (co !== null) {
         cotacaoOpcao = parseFloat(co);
@@ -854,8 +854,10 @@ function formatarData(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); r
 function formatarDataCurta(iso) { if(!iso)return'—'; const[y,m,d]=iso.split('-'); return`${d}/${m}/${y.slice(2)}`; }
 
 function setStatusDot(cor) {
-    const el = document.getElementById('status-online-dot');
-    if (el) el.style.background = cor;
+    const dot = document.getElementById('status-online-dot');
+    if (dot) dot.style.background = cor;
+    const card = document.getElementById('card-cotacoes');
+    if (card) card.style.borderLeftColor = cor;
 }
 
 // ═══════════════════════════════════════════
@@ -1088,7 +1090,7 @@ async function buscarCotacao() {
         document.getElementById('txt-cotacao-acao').innerText = 'R$ ' + cotacaoAcao.toFixed(2).replace('.',',');
         setStatusDot('#00e676');
     } else {
-        setStatusDot(cotacaoAcao !== null ? '#888888' : '#f1c40f');
+       setStatusDot(cotacaoAcao !== null ? '#f1c40f' : '#ff6b6b');
         if (cotacaoAcao === null) soAcaoAteAparecer();
     }
     if (planilha.opcao !== null) {
