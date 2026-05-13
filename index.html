@@ -271,7 +271,7 @@
 </div>
 
 <!-- ═══ CARD 6: CAIXA OPERACIONAL ═══ -->
-<div class="card" style="border-left-color:var(--alta);">
+<div class="card" id="card-caixa">
 
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -2060,8 +2060,9 @@ function atualizarTela() {
     else if (_tdProg >= 0.6) _arcColor = '#00e676';
     const _arcEl = document.getElementById('tesouro-arc');
     const _arcPctEl = document.getElementById('tesouro-arc-pct');
-    if (_arcEl) { _arcEl.setAttribute('stroke-dashoffset', _arcOffset); _arcEl.setAttribute('stroke', _arcColor); }
+       if (_arcEl) { _arcEl.setAttribute('stroke-dashoffset', _arcOffset); _arcEl.setAttribute('stroke', _arcColor); }
     if (_arcPctEl) { _arcPctEl.innerText = _arcPct + '%'; _arcPctEl.style.color = _arcColor; }
+    document.getElementById('card-caixa').style.borderLeftColor = _arcColor;
 
     // Comprar BBAS3
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
