@@ -249,7 +249,7 @@
         <div class="pilar-label">Cobertura BBAS3</div>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin:0;">
-        <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--ciano); margin-top:8px;">R$ 0,00</div>
+        <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--branco); margin-top:8px;">R$ 0,00</div>
         <div style="background:rgba(0,0,0,.28); border-radius:8px; padding:7px 10px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; min-width:112px; margin-top:-20px;">
             <div style="font-size:0.6em; color:var(--ciano); font-weight:bold; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:4px; white-space:nowrap;">Venda Coberta Call</div>
             <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
@@ -390,7 +390,7 @@
 </div>
 
 <!-- ═══ FORMAÇÃO DE CAPITAL ═══ -->
-<div class="card" style="border-left-color:var(--ciano);">
+<div class="card" style="border-left-color:var(--alta);">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div class="pilar-label">Formação de Capital</div>
     </div>
@@ -1473,9 +1473,22 @@ function atualizarCardCall() {
     if (ops.operacaoAtual?.aberta) { txtC.innerText='🟡 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-fin'; }
     else { txtC.innerText='⚪ Sem call aberta'; btnC.textContent='Lançar Call'; btnC.className='btn-call btn-call-nova'; }
 
-    const btnP = document.getElementById('btn-put-acao'), txtP = document.getElementById('put-status-txt');
+        const btnP = document.getElementById('btn-put-acao'), txtP = document.getElementById('put-status-txt');
     if (ops.putAtual?.aberta) { txtP.innerText='🟡 Put em operação'; btnP.textContent='Finalizar Put'; btnP.className='btn-call btn-call-fin'; btnP.style.background=''; }
     else { txtP.innerText='⚪ Sem put aberta'; btnP.textContent='Lançar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
+
+    const cardOp = document.getElementById('card-operacoes');
+    if (cardOp) {
+        const callAberta = ops.operacaoAtual?.aberta;
+        const putAberta  = ops.putAtual?.aberta;
+        if (callAberta && putAberta) {
+            cardOp.style.borderLeftColor = '#00bcd4';
+        } else if (callAberta || putAberta) {
+            cardOp.style.borderLeftColor = '#00e676';
+        } else {
+            cardOp.style.borderLeftColor = '#888888';
+        }
+    }
 }
 
 // ═══════════════════════════════════════════
