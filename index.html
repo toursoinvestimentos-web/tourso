@@ -2163,44 +2163,115 @@ function confirmarCompra() {
 }
 
 function exportar() {
-    const payload={...dados,opsCall:ops,histTroco:carregarHistorico('troco'),histAportes:carregarHistorico('aportes'),zonasConfig:zonas};
+    const payload={
+        _versao: 'v5.5',
+        ...dados,
+        opsCall:ops,
+        histTroco:carregarHistorico('troco'),
+        histAportes:carregarHistorico('aportes'),
+        zonasConfig:zonas
+    };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TOURSO_v55_BACKUP_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function importar(input) {
-    const r=new FileReader();
-    r.onload=function(){
-        try{
-            const payload=JSON.parse(r.result);
-           if(payload.opsCall){
-               ops=payload.opsCall;
-               if(ops.resumo&&ops.resumo.premiosLiquidos!==undefined){ops.resumo.resultadoLiquido=ops.resumo.premiosLiquidos;delete ops.resumo.premiosLiquidos;}
-               if(!ops.resumo.resultadoLiquido)ops.resumo.resultadoLiquido=0;
-               if(!ops.resumo.escudoDisponivel)ops.resumo.escudoDisponivel=0;
-               if(ops.putAtual===undefined)ops.putAtual=null;
-               ops.historico.forEach(c=>{if(!c.tipo)c.tipo='call';});
-               delete payload.opsCall; salvarOp();
-        }
-            if(payload.histTroco){salvarHistorico('troco',payload.histTroco);delete payload.histTroco;}
-            if(payload.histAportes){salvarHistorico('aportes',payload.histAportes);delete payload.histAportes;}
-            if(payload.zonasConfig){
-                zonas=payload.zonasConfig;
-                if(!zonas.metaSaida)zonas.metaSaida=65;
-                if(!zonas.reservaB3PorLote)zonas.reservaB3PorLote=50;
-                if(!zonas.valorFracaoTesouro)zonas.valorFracaoTesouro=180;
-                delete zonas.monitor;delete zonas.acao;
-                localStorage.setItem(CHAVE_ZONAS,JSON.stringify(zonas));
+    const r = new FileReader();
+    r.onload = function() {
+        try {
+            const payload = JSON.parse(r.result);
+
+            // ── Operações (Call/Put) ──────────────────────────────────
+            if (payload.opsCall) {
+                ops = payload.opsCall;
+                if (!ops.resumo) ops.resumo = {...BASE_OP.resumo};
+                // migração de nome antigo
+                if (ops.resumo.premiosLiquidos !== undefined) {
+                    ops.resumo.resultadoLiquido = ops.resumo.premiosLiquidos;
+                    delete ops.resumo.premiosLiquidos;
+                }
+                if (!ops.resumo.resultadoLiquido)  ops.resumo.resultadoLiquido  = 0;
+                if (!ops.resumo.escudoDisponivel)  ops.resumo.escudoDisponivel  = 0;
+                if (!ops.resumo.totalOps)          ops.resumo.totalOps          = 0;
+                if (!ops.resumo.somaOtm)           ops.resumo.somaOtm           = 0;
+                if (!ops.historico)                ops.historico                = [];
+                if (ops.putAtual  === undefined)   ops.putAtual                 = null;
+                if (ops.operacaoAtual === undefined) ops.operacaoAtual          = null;
+                ops.historico.forEach(c => { if (!c.tipo) c.tipo = 'call'; });
+                delete payload.opsCall;
+                salvarOp();
+            }
+
+            // ── Histórico dos pilares ─────────────────────────────────
+            if (payload.histTroco)   { salvarHistorico('troco',   payload.histTroco);   delete payload.histTroco;   }
+            if (payload.histAportes) { salvarHistorico('aportes', payload.histAportes); delete payload.histAportes; }
+
+            // ── Configurações de zonas ────────────────────────────────
+            if (payload.zonasConfig) {
+                zonas = payload.zonasConfig;
+                if (!zonas.metaSaida)          zonas.metaSaida          = 65;
+                if (!zonas.reservaB3PorLote)   zonas.reservaB3PorLote   = 50;
+                if (!zonas.valorFracaoTesouro) zonas.valorFracaoTesouro = 180;
+                delete zonas.monitor; delete zonas.acao;
+                localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
                 delete payload.zonasConfig;
             }
-            dados=payload;
-            if(!dados.troco)dados.troco={cofre:0,transferido:0};
-            if(!dados.aportes)dados.aportes={cofre:0,transferido:0};
-            if(!dados.setup)dados.setup={...BASE.setup};
-            if(!dados.tesouroDireto)dados.tesouroDireto=0;
-            cotacaoOpcao=null;
-            document.getElementById('txt-cotacao-opcao').innerText='—';
-            atualizarTela();alert("Backup restaurado com sucesso, TOURSO!");
-        }catch(e){alert("Erro ao ler o arquivo de backup.");}
+
+            // ── Migração de nomes de campos antigos ───────────────────
+            // Caixa operacional (nomes usados em versões antigas)
+            if (payload.caixaOperacional !== undefined && payload.caixaDisponivel === undefined)
+                payload.caixaDisponivel = payload.caixaOperacional;
+            if (payload.caixa !== undefined && payload.caixaDisponivel === undefined)
+                payload.caixaDisponivel = payload.caixa;
+
+            // Cobertura / ações (nomes alternativos)
+            if (payload.cobertura !== undefined && payload.acoes === undefined)
+                payload.acoes = payload.cobertura;
+            if (payload.carteira !== undefined && payload.acoes === undefined)
+                payload.acoes = payload.carteira;
+
+            // Reserva PUT (nomes alternativos)
+            if (payload.reservaPut !== undefined && payload.reservaVendaPut === undefined)
+                payload.reservaVendaPut = payload.reservaPut;
+
+            // Setup: campos que mudaram de nome
+            if (payload.setup) {
+                if (!payload.setup.premioRecebido && payload.setup.premio)
+                    payload.setup.premioRecebido = payload.setup.premio;
+                if (!payload.setup.codigoOpcao && payload.setup.codigo)
+                    payload.setup.codigoOpcao = payload.setup.codigo;
+                if (!payload.setup.precoEntrada && payload.setup.preco)
+                    payload.setup.precoEntrada = payload.setup.preco;
+            }
+
+            // ── Aplicar dados e garantir defaults obrigatórios ────────
+            dados = payload;
+            delete dados._versao; // campo de controle, não faz parte do estado
+
+            if (!dados.acoes)               dados.acoes               = [];
+            if (!dados.setup)               dados.setup               = {...BASE.setup};
+            if (!dados.setup.codigoOpcao)   dados.setup.codigoOpcao   = '';
+            if (!dados.troco)               dados.troco               = {cofre:0, transferido:0};
+            if (!dados.aportes)             dados.aportes             = {cofre:0, transferido:0};
+            if (dados.caixaDisponivel   === undefined) dados.caixaDisponivel   = 0;
+            if (dados.tesouroDireto     === undefined) dados.tesouroDireto     = 0;
+            if (dados.reservaVendaPut   === undefined) dados.reservaVendaPut   = 0;
+            if (dados.reservaB3Acumulada === undefined) dados.reservaB3Acumulada = 0;
+
+            // Garante que cada lote de acoes tem o formato correto
+            dados.acoes = dados.acoes.map(a => ({
+                qtd:   parseInt(a.qtd   || a.quantidade || 0),
+                preco: parseFloat(a.preco || a.precoMedio || 0)
+            })).filter(a => a.qtd > 0);
+
+            salvar();
+            cotacaoOpcao = null;
+            document.getElementById('txt-cotacao-opcao').innerText = '—';
+            atualizarTela();
+            alert('Backup restaurado com sucesso, TOURSO!');
+
+        } catch(e) {
+            alert('Erro ao ler o arquivo de backup.\nVerifique se o arquivo está correto.');
+        }
     };
     r.readAsText(input.files[0]);
 }
