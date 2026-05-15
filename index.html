@@ -462,11 +462,12 @@
             <input type="number" inputmode="numeric" id="zona-meta-saida" placeholder="Ex: 65" min="1" max="100" value="65">
             <small id="zona-meta-hint" style="color:var(--ciano);"></small>
         </div>
-        <div class="modal-campo">
-            <label>Reserva B3 por Lote (R$)</label>
-            <input type="number" inputmode="decimal" id="zona-reserva-b3" step="1" min="0" placeholder="Ex: 50">
-            <small>Valor reservado a cada 100 ações em carteira.</small>
-        </div>
+       <div class="modal-campo">
+    <label>Reserva B3 por Lote (R$)</label>
+    <input type="number" inputmode="decimal" id="zona-reserva-b3" step="1" min="0" placeholder="Ex: 50" oninput="validarReservaB3()">
+    <small>Valor reservado a cada 100 ações em carteira.</small>
+    <small id="zona-reserva-b3-erro" style="color:var(--queda); display:none;"></small>
+</div>
         <div class="modal-campo">
             <label>Valor da Fração do Tesouro Direto (R$)</label>
             <input type="number" inputmode="decimal" id="zona-fracao-tesouro" step="1" min="0" placeholder="Ex: 180">
@@ -921,6 +922,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const msi = document.getElementById('zona-meta-saida');
     if (msi) msi.addEventListener('input', atualizarHintMetaZona);
 });
+function validarReservaB3() {
+    const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
+    const input = document.getElementById('zona-reserva-b3');
+    const erro = document.getElementById('zona-reserva-b3-erro');
+    if (isNaN(rb) || rb < 0) { input.style.borderColor = '#555'; erro.style.display = 'none'; return; }
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const lotes = Math.floor(q / 100);
+    const rbTotal = parseFloat((lotes * rb).toFixed(2));
+    const atual = dados.reservaB3Acumulada || 0;
+    const diff = parseFloat((rbTotal - atual).toFixed(2));
+    if (diff > (dados.caixaDisponivel || 0) + 0.001) {
+        input.style.borderColor = 'var(--queda)';
+        const maxPorLote = lotes > 0 ? parseFloat(((atual + (dados.caixaDisponivel||0)) / lotes).toFixed(2)) : 0;
+        erro.innerText = `Saldo insuficiente. Máximo possível: R$ ${maxPorLote.toFixed(2).replace('.',',')} / lote`;
+        erro.style.display = 'block';
+    } else {
+        input.style.borderColor = '#555';
+        erro.style.display = 'none';
+    }
+}
 function salvarConfigZonas() {
     const ms = parseInt(document.getElementById('zona-meta-saida').value);
     const rb = parseFloat(document.getElementById('zona-reserva-b3').value);
@@ -928,9 +949,16 @@ function salvarConfigZonas() {
     if (isNaN(ms)||ms<=0||ms>100) { alert('Meta de Saída deve ser entre 1 e 100%.'); return; }
     if (isNaN(rb)||rb<0) { alert('Reserva B3 deve ser zero ou maior.'); return; }
     if (isNaN(ft)||ft<0) { alert('Valor da fração do Tesouro deve ser zero ou maior.'); return; }
+    const q = dados.acoes.reduce((a, x) => a + x.qtd, 0);
+    const lotes = Math.floor(q / 100);
+    const rbTotal = parseFloat((lotes * rb).toFixed(2));
+    const atual = dados.reservaB3Acumulada || 0;
+    const diff = parseFloat((rbTotal - atual).toFixed(2));
+    if (diff > (dados.caixaDisponivel || 0) + 0.001) { return; }
     zonas = { metaSaida:ms, reservaB3PorLote:rb, valorFracaoTesouro:ft };
     localStorage.setItem(CHAVE_ZONAS, JSON.stringify(zonas));
     dados.setup.metaSaida = ms;
+    ajustarReservaB3();
     salvar();
     fecharConfigZonas();
     atualizarTela();
