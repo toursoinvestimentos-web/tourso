@@ -223,11 +223,11 @@
         </div>
     </div>
     <div class="call-status-row" style="border-top:1px solid #333;">
-        <span class="call-status-txt" id="call-status-txt">⚪ Sem call aberta</span>
+        <span class="call-status-txt" id="call-status-txt">🔘 Sem call aberta</span>
         <button class="btn-call btn-call-nova" id="btn-call-acao" onclick="acaoBotaoCall()">Lançar Call</button>
     </div>
     <div class="call-status-row" style="margin-top:6px; padding-top:6px; border-top:1px solid #5a5a5a;">
-        <span class="call-status-txt" id="put-status-txt">⚪ Sem put aberta</span>
+        <span class="call-status-txt" id="put-status-txt">🔘 Sem put aberta</span>
         <button class="btn-call btn-call-nova" id="btn-put-acao" onclick="acaoBotaoPut()" style="background:#f39c12;">Lançar Put</button>
     </div>
 </div>
@@ -307,7 +307,7 @@
                 </div>
                 <div id="comprar-tesouro" style="font-size:0.87em; color:#ccc;">Comprar +0 fração</div>
             </div>
-            <button onclick="abrirCompraTesouro()" class="caixa-btn caixa-btn-ciano">Comprar</button>
+            <button onclick="abrirCompraTesouro()" class="caixa-btn" style="background:var(--alta);color:var(--fundo);">Comprar</button>
         </div>
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
@@ -319,7 +319,7 @@
                 </div>
                 <div id="resgatar-tesouro" style="font-size:0.87em; color:#ccc;">Resgatar R$ 0,00 Selic</div>
             </div>
-            <button onclick="abrirResgateTesouro()" class="caixa-btn caixa-btn-laranja">Resgatar</button>
+           <button onclick="abrirResgateTesouro()" class="caixa-btn" style="background:#f1c40f;color:var(--fundo);">Resgatar</button>
         </div>
     </div>
 
@@ -360,7 +360,7 @@
                 </div>
                 <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 BBAS3</div>
             </div>
-            <button onclick="abrirCompra()" class="caixa-btn caixa-btn-ciano">Comprar</button>
+           <button onclick="abrirCompra()" class="caixa-btn" style="background:var(--alta);color:var(--fundo);">Comprar</button>
         </div>
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
@@ -1492,12 +1492,12 @@ function atualizarCardCall() {
     document.getElementById('escudo-total-val').innerText = fmt(escudoReal);
 
     const btnC = document.getElementById('btn-call-acao'), txtC = document.getElementById('call-status-txt');
-    if (ops.operacaoAtual?.aberta) { txtC.innerText='🟡 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-fin'; }
-    else { txtC.innerText='⚪ Sem call aberta'; btnC.textContent='Lançar Call'; btnC.className='btn-call btn-call-nova'; }
+    if (ops.operacaoAtual?.aberta) { txtC.innerText='🔵 Call em operação'; btnC.textContent='Finalizar Call'; btnC.className='btn-call btn-call-nova'; }
+    else { txtC.innerText='🔘 Sem call aberta'; btnC.textContent='Lançar Call'; btnC.className='btn-call btn-call-nova'; }
 
     const btnP = document.getElementById('btn-put-acao'), txtP = document.getElementById('put-status-txt');
-    if (ops.putAtual?.aberta) { txtP.innerText='🟡 Put em operação'; btnP.textContent='Finalizar Put'; btnP.className='btn-call btn-call-fin'; btnP.style.background=''; }
-    else { txtP.innerText='⚪ Sem put aberta'; btnP.textContent='Lançar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
+   if (ops.putAtual?.aberta) { txtP.innerText='🟠 Put em operação'; btnP.textContent='Finalizar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
+    else { txtP.innerText='🔘 Sem put aberta'; btnP.textContent='Lançar Put'; btnP.className='btn-call btn-call-nova'; btnP.style.background='#f39c12'; }
 
     const cardOp = document.getElementById('card-operacoes');
     if (cardOp) {
