@@ -382,47 +382,54 @@
 <div class="card" style="border-left-color:var(--alta);">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div class="pilar-label">Formação de Capital</div>
+        <span style="font-size:1.1em; cursor:pointer;" title="Extrato de Alocações" onclick="abrirExtratoFormacao()">☰</span>
     </div>
 
+    <!-- TROCO/TROCA -->
     <div class="caixa-bloco" style="margin-top:0;">
         <div class="caixa-bloco-header" style="display:flex; justify-content:space-between; align-items:center;">
             <span class="caixa-bloco-titulo">Troco/Troca</span>
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('troco')">☰</span>
         </div>
-        <div class="caixa-linha" style="align-items:center;">
-            <div class="caixa-linha-esq">
-                <span style="font-size:1em; color:var(--alta);">▼</span> Guardado:&nbsp;
-            </div>
-            <span class="caixa-linha-valor" id="troco-cofre" style="color:var(--alta); margin-right:auto;">R$ 0,00</span>
-            <button class="caixa-btn caixa-btn-ciano" style="background:#4d8f76; min-width:80px; margin-left:10px;" onclick="abrirAcao('troco','guardar')">Guardar</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px 14px 6px;">
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#444; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('troco','guardar')">Guardar</button>
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#4d8f76; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('troco','enviar')">Investir</button>
         </div>
-        <div class="caixa-linha" style="align-items:center;">
-            <div class="caixa-linha-esq">
-                <span style="font-size:1em; color:var(--ciano);">▲</span> Alocado:&nbsp;
-            </div>
-            <span class="caixa-linha-valor" id="troco-transferido" style="color:var(--ciano); margin-right:auto;">R$ 0,00</span>
-            <button class="caixa-btn caixa-btn-ciano" style="min-width:80px; margin-left:10px;" onclick="abrirAcao('troco','enviar')">Investir</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 14px 10px; text-align:center;">
+            <div style="font-size:0.75em; color:#aaa;">Guardado: <span id="troco-cofre" style="color:var(--alta); font-weight:bold;">R$ 0,00</span></div>
+            <div style="font-size:0.75em; color:#aaa;">Alocado: <span id="troco-transferido" style="color:var(--ciano); font-weight:bold;">R$ 0,00</span></div>
         </div>
     </div>
 
+    <!-- APORTES -->
     <div class="caixa-bloco">
         <div class="caixa-bloco-header" style="display:flex; justify-content:space-between; align-items:center;">
             <span class="caixa-bloco-titulo">Aportes</span>
             <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('aportes')">☰</span>
         </div>
-        <div class="caixa-linha" style="align-items:center;"> 
-            <div class="caixa-linha-esq">
-                <span style="font-size:1em; color:var(--alta);">▼</span> Guardado:&nbsp;
-            </div>
-            <span class="caixa-linha-valor" id="aportes-cofre" style="color:var(--alta); margin-right:auto;">R$ 0,00</span>
-            <button class="caixa-btn caixa-btn-ciano" style="background:#4d8f76; min-width:80px; margin-left:10px;" onclick="abrirAcao('aportes','guardar')">Guardar</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px 14px 6px;">
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#444; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('aportes','guardar')">Guardar</button>
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#4d8f76; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('aportes','enviar')">Investir</button>
         </div>
-        <div class="caixa-linha" style="align-items:center;">
-            <div class="caixa-linha-esq">
-                <span style="font-size:1em; color:var(--ciano);">▲</span> Alocado:&nbsp;
-            </div>
-            <span class="caixa-linha-valor" id="aportes-transferido" style="color:var(--ciano); margin-right:auto;">R$ 0,00</span>
-            <button class="caixa-btn caixa-btn-ciano" style="min-width:80px; margin-left:10px;" onclick="abrirAcao('aportes','enviar')">Investir</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 14px 10px; text-align:center;">
+            <div style="font-size:0.75em; color:#aaa;">Guardado: <span id="aportes-cofre" style="color:var(--alta); font-weight:bold;">R$ 0,00</span></div>
+            <div style="font-size:0.75em; color:#aaa;">Alocado: <span id="aportes-transferido" style="color:var(--ciano); font-weight:bold;">R$ 0,00</span></div>
+        </div>
+    </div>
+
+    <!-- PROVENTOS -->
+    <div class="caixa-bloco">
+        <div class="caixa-bloco-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="caixa-bloco-titulo">Proventos</span>
+            <span style="font-size:1.1em; cursor:pointer;" onclick="abrirExtrato('proventos')">☰</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px 14px 6px;">
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#444; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('proventos','guardar')">Guardar</button>
+            <button style="padding:12px 0; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#4d8f76; color:var(--branco); font-size:0.9em;" onclick="abrirAcao('proventos','enviar')">Investir</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 14px 10px; text-align:center;">
+            <div style="font-size:0.75em; color:#aaa;">Guardado: <span id="proventos-cofre" style="color:var(--alta); font-weight:bold;">R$ 0,00</span></div>
+            <div style="font-size:0.75em; color:#aaa;">Alocado: <span id="proventos-transferido" style="color:var(--ciano); font-weight:bold;">R$ 0,00</span></div>
         </div>
     </div>
 </div>
@@ -620,6 +627,15 @@
     </div>
 </div>
 
+<!-- Modal Extrato Formação de Capital -->
+<div class="modal-overlay" id="modal-extrato-formacao">
+    <div class="modal-box" style="border-top-color:var(--alta);">
+        <h3 style="color:var(--alta);">📊 Extrato — Formação de Capital</h3>
+        <div id="extrato-formacao-corpo"></div>
+        <button class="btn-extrato-fechar" onclick="fecharExtratoFormacao()">Fechar</button>
+    </div>
+</div>
+
 <!-- Modal Comprar Tesouro Direto -->
 <div class="modal-overlay" id="modal-compra-tesouro">
     <div class="modal-box" style="border-top-color:#f39c12;">
@@ -744,7 +760,7 @@ function instalarApp() { if(!deferredPrompt) return; deferredPrompt.prompt(); de
 const CHAVE       = 'dados_tourso_v5';
 const CHAVE_OP    = 'dados_call_ops_v5';
 const CHAVE_ZONAS = 'dados_zonas_v26';
-const HIST_KEYS   = { troco:'hist_troco', aportes:'hist_aportes' };
+const HIST_KEYS   = { troco:'hist_troco', aportes:'hist_aportes', proventos:'hist_proventos' };
 
 let zonas = (() => {
     try { return JSON.parse(localStorage.getItem(CHAVE_ZONAS)) || { metaSaida:65, reservaB3PorLote:50, valorFracaoTesouro:180 }; }
@@ -756,7 +772,7 @@ if (!zonas.valorFracaoTesouro)  zonas.valorFracaoTesouro = 180;
 
 const BASE = {
     acoes:[], caixaDisponivel:0,
-    troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0},
+    troco:{cofre:0,transferido:0}, aportes:{cofre:0,transferido:0}, proventos:{cofre:0,transferido:0},
     tesouroDireto:0,
     reservaVendaPut:0,
     reservaB3Acumulada:0,
@@ -777,6 +793,7 @@ let dados = (() => {
 if (!dados.setup)         dados.setup   = {...BASE.setup};
 if (!dados.troco)         dados.troco   = {cofre:0,transferido:0};
 if (!dados.aportes)       dados.aportes = {cofre:0,transferido:0};
+if (!dados.proventos)     dados.proventos = {cofre:0,transferido:0};
 if (!dados.tesouroDireto) dados.tesouroDireto = 0;
 if (dados.reservaVendaPut === undefined) dados.reservaVendaPut = 0;
 
@@ -894,7 +911,7 @@ function confirmarZerar() { document.getElementById('modal-zerar').classList.add
 function fecharZerar()    { document.getElementById('modal-zerar').classList.remove('ativo'); }
 function limparTudo() {
     fecharZerar();
-    [CHAVE, CHAVE_OP, 'dados_call_ops', CHAVE_ZONAS, HIST_KEYS.troco, HIST_KEYS.aportes].forEach(k => localStorage.removeItem(k));
+    [CHAVE, CHAVE_OP, 'dados_call_ops', CHAVE_ZONAS, HIST_KEYS.troco, HIST_KEYS.aportes, HIST_KEYS.proventos].forEach(k => localStorage.removeItem(k));
     location.reload();
 }
 
@@ -1956,8 +1973,36 @@ function registrarLancamento(tipo,valor) {
     const mesAno=agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(' de ','/').replace(/^\w/,c=>c.toUpperCase());
     const lista=carregarHistorico(tipo); lista.unshift({valor:parseFloat(valor.toFixed(2)),data,hora,mesAno}); salvarHistorico(tipo,lista);
 }
-const NOMES = { troco:'Troco/Troca', aportes:'Aportes' };
+const NOMES = { troco:'Troco/Troca', aportes:'Aportes', proventos:'Proventos' };
 let _extratoTipo = '';
+function abrirExtratoFormacao() {
+    const trocoAlocado    = dados.troco.transferido || 0;
+    const aportesAlocado  = dados.aportes.transferido || 0;
+    const proventosAloc   = dados.proventos.transferido || 0;
+    const premiosLiq      = ops.resumo.resultadoLiquido || 0;
+    const totalGeral      = parseFloat((trocoAlocado + aportesAlocado + proventosAloc + premiosLiq).toFixed(2));
+
+    const linha = (label, val, cor) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.18);margin-bottom:6px;">
+            <span style="font-size:0.83em;color:#aaa;">${label}</span>
+            <span style="font-weight:bold;color:${cor};">${fmt(val)}</span>
+        </div>`;
+
+    const html = `
+        ${linha('Troco/Troca — Alocado', trocoAlocado, 'var(--ciano)')}
+        ${linha('Aportes — Alocado', aportesAlocado, 'var(--ciano)')}
+        ${linha('Proventos — Alocado', proventosAloc, 'var(--ciano)')}
+        ${linha('Prêmios — Líquido total', premiosLiq, premiosLiq >= 0 ? 'var(--alta)' : 'var(--queda)')}
+        <div style="border-top:1px solid #444;margin:10px 0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:rgba(0,230,118,0.08);border:1px solid var(--alta);">
+            <span style="font-size:0.88em;font-weight:bold;color:var(--branco);">Total Geral</span>
+            <span style="font-size:1.1em;font-weight:bold;color:${totalGeral>=0?'var(--alta)':'var(--queda)'};">${fmt(totalGeral)}</span>
+        </div>`;
+
+    document.getElementById('extrato-formacao-corpo').innerHTML = html;
+    document.getElementById('modal-extrato-formacao').classList.add('ativo');
+}
+function fecharExtratoFormacao() { document.getElementById('modal-extrato-formacao').classList.remove('ativo'); }
 function abrirExtrato(tipo) {
     _extratoTipo=tipo;
     const lista=carregarHistorico(tipo);
@@ -2109,6 +2154,8 @@ function atualizarTela() {
     document.getElementById('troco-transferido').innerText = fmt(dados.troco.transferido);
     document.getElementById('aportes-cofre').innerText = fmt(dados.aportes.cofre);
     document.getElementById('aportes-transferido').innerText = fmt(dados.aportes.transferido);
+    document.getElementById('proventos-cofre').innerText = fmt(dados.proventos.cofre);
+    document.getElementById('proventos-transferido').innerText = fmt(dados.proventos.transferido);
 
     atualizarHeader();
     atualizarMonitorCall();
@@ -2155,6 +2202,7 @@ function exportar() {
         opsCall:ops,
         histTroco:carregarHistorico('troco'),
         histAportes:carregarHistorico('aportes'),
+        histProventos:carregarHistorico('proventos'),
         zonasConfig:zonas
     };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -2186,8 +2234,9 @@ function importar(input) {
                 salvarOp();
             }
 
-            if (payload.histTroco)   { salvarHistorico('troco',   payload.histTroco);   delete payload.histTroco;   }
-            if (payload.histAportes) { salvarHistorico('aportes', payload.histAportes); delete payload.histAportes; }
+            if (payload.histTroco)     { salvarHistorico('troco',     payload.histTroco);     delete payload.histTroco;     }
+            if (payload.histAportes)   { salvarHistorico('aportes',   payload.histAportes);   delete payload.histAportes;   }
+            if (payload.histProventos) { salvarHistorico('proventos', payload.histProventos); delete payload.histProventos; }
 
             if (payload.zonasConfig) {
                 zonas = payload.zonasConfig;
@@ -2227,6 +2276,7 @@ function importar(input) {
             if (!dados.setup.codigoOpcao)   dados.setup.codigoOpcao   = '';
             if (!dados.troco)               dados.troco               = {cofre:0, transferido:0};
             if (!dados.aportes)             dados.aportes             = {cofre:0, transferido:0};
+            if (!dados.proventos)           dados.proventos           = {cofre:0, transferido:0};
             if (dados.caixaDisponivel   === undefined) dados.caixaDisponivel   = 0;
             if (dados.tesouroDireto     === undefined) dados.tesouroDireto     = 0;
             if (dados.reservaVendaPut   === undefined) dados.reservaVendaPut   = 0;
