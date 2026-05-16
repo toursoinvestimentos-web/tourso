@@ -1979,8 +1979,21 @@ function abrirExtratoFormacao() {
     const trocoAlocado    = dados.troco.transferido || 0;
     const aportesAlocado  = dados.aportes.transferido || 0;
     const proventosAloc   = dados.proventos.transferido || 0;
-    const premiosLiq      = ops.resumo.resultadoLiquido || 0;
-    const totalGeral      = parseFloat((trocoAlocado + aportesAlocado + proventosAloc + premiosLiq).toFixed(2));
+
+    // Calcula líquido exato igual ao histórico de ciclos (bruto - DARF)
+    const hist = ops.historico || [];
+    const totalBruto = hist.reduce((s,c) => s + (c.resultadoBruto||0), 0);
+    const mesesAsc = [..._chavesMes(hist)].reverse();
+    let escDisp = 0;
+    let totalDarf = 0;
+    for (const mes of mesesAsc) {
+        const lm = hist.filter(c=>(c.dataFechamento||'').startsWith(mes)).reduce((s,c)=>s+(c.resultadoBruto||0),0);
+        if (lm <= 0) { escDisp = parseFloat((escDisp + Math.abs(lm)).toFixed(2)); }
+        else { const eu = Math.min(escDisp, lm); const bt = parseFloat((lm - eu).toFixed(2)); totalDarf = parseFloat((totalDarf + bt * 0.15).toFixed(2)); escDisp = parseFloat((escDisp - eu).toFixed(2)); }
+    }
+    const premiosLiq = parseFloat((totalBruto - totalDarf).toFixed(2));
+
+    const totalGeral = parseFloat((trocoAlocado + aportesAlocado + proventosAloc + premiosLiq).toFixed(2));
 
     const linha = (label, val, cor) =>
         `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.18);margin-bottom:6px;">
