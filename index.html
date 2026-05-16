@@ -2148,6 +2148,22 @@ function atualizarTela() {
     document.getElementById('proventos-cofre').innerText = fmt(dados.proventos.cofre);
     document.getElementById('proventos-transferido').innerText = fmt(dados.proventos.transferido);
 
+   (function(){
+        var mr=null;
+        ['troco','aportes','proventos'].forEach(function(t){
+            try{
+                var h=JSON.parse(localStorage.getItem(HIST_KEYS[t])||'[]');
+                if(!h.length)return;
+                var p=h[0].data.split('/'),hh=h[0].hora.split(':');
+                var ts=new Date(new Date().getFullYear(),+p[1]-1,+p[0],+hh[0],+hh[1]).getTime();
+                if(mr===null||ts>mr)mr=ts;
+            }catch(e){}
+        });
+        var cor='#888888';
+        if(mr!==null){var d=(Date.now()-mr)/86400000;if(d<=1)cor='var(--ciano)';else if(d<=2)cor='var(--alta)';else if(d<=3)cor='#f1c40f';else if(d<=4)cor='var(--queda)';}
+        document.getElementById('troco-cofre').closest('.card').style.borderLeftColor=cor;
+    })();
+
     atualizarHeader();
     atualizarMonitorCall();
     atualizarMonitorPut();
