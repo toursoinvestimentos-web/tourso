@@ -2113,7 +2113,7 @@ function atualizarTela() {
     const _tdProg = _alvoLote > 0 ? Math.min(1, tdVal / _alvoLote) : 0;
     const _arcOffset = parseFloat((_arcTotal * (1 - _tdProg)).toFixed(2));
     const _arcPct = Math.round(_tdProg * 100);
-    let _arcColor = '#f1c40f';
+    let _arcColor = _tdProg === 0 ? '#888888' : '#f1c40f';
     if (_tdProg >= 0.9) _arcColor = '#00bcd4';
     else if (_tdProg >= 0.6) _arcColor = '#00e676';
     const _arcEl = document.getElementById('tesouro-arc');
