@@ -138,7 +138,7 @@
     </div>
     <div style="display:flex; gap:10px;">
         <div class="cot-box">
-            <div class="cot-box-label">Ação BBAS3</div>
+            <div class="cot-box-label">Ação ITUB4</div>
             <div class="cot-box-val" id="txt-cotacao-acao">—</div>
         </div>
         <div class="cot-box">
@@ -235,7 +235,7 @@
 <!-- CARD 5: COBERTURA BBAS3 -->
 <div class="card" id="card-cobertura">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
-        <div class="pilar-label">Cobertura BBAS3</div>
+        <div class="pilar-label">Cobertura ITUB4</div>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin:0;">
         <div id="total-acoes-valor" style="font-size:1.6em; font-weight:bold; color:var(--branco); margin-top:8px;">R$ 0,00</div>
@@ -279,7 +279,7 @@
             </div>
             <div style="position:absolute; bottom:8px; left:0; right:0; text-align:center;">
                 <div id="tesouro-arc-pct" style="font-size:15px; font-weight:bold; color:#f1c40f; line-height:1; margin-top:12px;">0%</div>
-                <div style="font-size:10px; color:#aaa; margin-top:1px;">+ 1 L BBAS3</div>
+                <div style="font-size:10px; color:#aaa; margin-top:1px;">+ 1 L ITUB4</div>
             </div>
         </div>
     </div>
@@ -341,14 +341,14 @@
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                <div class="caixa-linha-icone" style="font-size:1.1em; color:#008000;">+</div>
-                <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 BBAS3</div>
+                <div id="comprar" style="font-size:0.87em; color:#ccc;">Comprar +0 ITUB4</div>
             </div>
           <button onclick="abrirCompra()" class="caixa-btn" style="background:#008000;color:#ccc;min-width:90px;">Comprar</button>
         </div>
         <div class="caixa-linha">
             <div class="caixa-linha-esq">
                 <div class="caixa-linha-icone" style="font-size:1.1em; color:#ff6b6b;">−</div>
-                <div id="vender-bbas3" style="font-size:0.87em; color:#ccc;">Vender -0 BBAS3</div>
+                <div id="vender-itub4" style="font-size:0.87em; color:#ccc;">Vender -0 ITUB4</div>
             </div>
             <button onclick="abrirVenda()" class="caixa-btn caixa-btn-vender" style="min-width:90px;">Vender</button>
         </div>
@@ -666,7 +666,7 @@
 <!-- Modal Vender BBAS3 -->
 <div class="modal-overlay" id="modal-venda">
     <div class="modal-box" style="border-top-color:var(--queda);">
-        <h3 style="color:var(--queda);">📉 Vender Ações BBAS3</h3>
+        <h3 style="color:var(--queda);">📉 Vender Ações ITUB4</h3>
         <div style="background:rgba(255,107,107,0.08); border:1px solid var(--queda); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
             <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Ações disponíveis</div>
             <div id="venda-modal-qtd" style="font-size:1.3em; font-weight:bold; color:var(--queda);">0 ações</div>
@@ -691,7 +691,7 @@
 <!-- Modal Comprar BBAS3 -->
 <div class="modal-overlay" id="modal-compra">
     <div class="modal-box" style="border-top-color:var(--alta);">
-        <h3 style="color:var(--alta);">📈 Comprar Ações BBAS3</h3>
+        <h3 style="color:var(--alta);">📈 Comprar Ações ITUB4</h3>
         <div style="background:rgba(0,230,118,0.08); border:1px solid var(--alta); border-radius:8px; padding:10px 14px; margin-bottom:14px; text-align:center;">
             <div style="font-size:0.65em; color:#aaa; text-transform:uppercase; margin-bottom:3px;">Disponível no caixa</div>
             <div id="compra-modal-saldo" style="font-size:1.3em; font-weight:bold; color:var(--alta);">R$ 0,00</div>
@@ -1182,7 +1182,7 @@ function confirmarNovaOp() {
 
     const totalAcoes = dados.acoes.reduce((s, x) => s + x.qtd, 0);
     if (qtd > totalAcoes) {
-        alert(`Você possui apenas ${totalAcoes} ações BBAS3. Ajuste a quantidade.`);
+        alert(`Você possui apenas ${totalAcoes} ações ITUB4. Ajuste a quantidade.`);
         return;
     }
 
@@ -2125,11 +2125,11 @@ function atualizarTela() {
     const saldoDisp = Math.max(0, dados.caixaDisponivel);
     const acoesCompra = Math.floor(saldoDisp / ctp);
     document.getElementById('comprar').innerHTML =
-        `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">BBAS3</span>`;
+        `<span style="color:#ccc;">Comprar</span> <span style="color:${acoesCompra > 0 ? 'var(--alta)' : '#aaa'}; font-weight:${acoesCompra > 0 ? 'bold' : 'normal'};">+${acoesCompra}</span> <span style="color:#ccc;">ITUB4</span>`;
 
     const qtdParaVender = q;
-    document.getElementById('vender-bbas3').innerHTML =
-        `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">BBAS3</span>`;
+    document.getElementById('vender-itub4').innerHTML =
+        `<span style="color:#ccc;">Vender</span> <span style="color:${qtdParaVender > 0 ? 'var(--queda)' : '#aaa'}; font-weight:${qtdParaVender > 0 ? 'bold' : 'normal'};">-${qtdParaVender}</span> <span style="color:#ccc;">ITUB4</span>`;
 
     const valorFracao = zonas.valorFracaoTesouro || 180;
     const fracoes = valorFracao > 0 ? Math.floor(saldoDisp / valorFracao) : 0;
@@ -2370,7 +2370,7 @@ function abrirResumoAnual() {
         html+=`<div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:14px;margin-bottom:14px;border-left:3px solid var(--ciano);">
             <div style="font-size:0.85em;font-weight:bold;color:var(--ciano);margin-bottom:10px;">ANO: ${ano} — ${cC} call${cC!==1?'s':''}${cC>0&&cP>0?' | ':''}${cP>0?cP+' put':''}</div>
             <div style="font-size:0.72em;color:#aaa;text-transform:uppercase;margin-bottom:6px;">📊 Ações</div>
-            <div class="ciclo-linha"><span class="ciclo-label">Ativo</span><span class="ciclo-valor">BBAS3</span></div>
+            <div class="ciclo-linha"><span class="ciclo-label">Ativo</span><span class="ciclo-valor">ITUB4</span></div>
             <div class="ciclo-linha"><span class="ciclo-label">Quantidade</span><span class="ciclo-valor">${qtdAcoes}</span></div>
             <div class="ciclo-linha"><span class="ciclo-label">Preço médio</span><span class="ciclo-valor">${fmt(pm)}</span></div>
             <div style="font-size:0.72em;color:#aaa;text-transform:uppercase;margin:10px 0 6px;">📊 Opções — Resultado</div>
